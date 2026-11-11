@@ -576,7 +576,7 @@
     const diff = doughWeight - total0;
     if (diff && compLines.length) {
       const big = compLines.reduce((a, l) => (l.grams > a.grams ? l : a), compLines[0]);
-      big.grams += diff;
+      big.grams = Math.round(big.grams + diff); // duże pozycje w pełnych gramach (bilans ±0,5 g)
     }
 
     const lines = [{ key: "flour", label: bake.target && bake.target.starch && bake.target.starch[0] >= 90 ? "Skrobia / mąki razem" : "Mąki razem", grams: flourTotal, pct: 100 }, ...flourLines, ...compLines];

@@ -1,0 +1,16 @@
+{
+  "name": "Kalkulator ciast bezglutenowych",
+  "short_name": "Bezglutenowo",
+  "description": "Proporcje i instrukcje 55 bezglutenowych przepisów, dobór mąk ze spiżarni.",
+  "lang": "pl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#15170f",
+  "theme_color": "#4f6b2e",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

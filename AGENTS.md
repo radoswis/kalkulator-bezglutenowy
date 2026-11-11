@@ -35,6 +35,8 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
   - `GET/PUT /api/state` – wspólny stan domu w KV `DATA` (klucz `state:v1`): `{pantry, custom, calib}`; bez logowania; UI zapisuje grupowo co 1,5 s (limit darmowy KV: 1000 zapisów/dzień).
   - `GET /api/off?q=` – pośrednik do Open Food Facts (nazwa lub kod kreskowy), zwraca do 6 produktów.
 - Kalibracja „Jak wyszło?” (index.html: `FB_RULE`, `applyFeedback`): oceny zmieniają per przepis `calib[bakeId] = {water (pkt %), yeast (%), temp (°C), time (%)}` z limitami `CAP`. Silniki przyjmują `calib`; `ovenPlan(b, calib)` przelicza temperaturę i czas; w przepisach bezdrożdżowych i smażonych korekta temp./czasu jest pokazywana jako notka.
+- Aplikacja na telefon (PWA): `manifest.webmanifest`, ikony `icon-*.png`, `sw.js` (praca bez internetu: pliki z pamięci, nowa wersja pobierana w tle; `/api/*` zawsze z sieci). Przycisk „Zainstaluj na telefonie” (beforeinstallprompt). Przy zmianie listy plików podbij `CACHE` w sw.js.
+- Tryb gotowania (index.html): `openCook()` – kroki na cały ekran, przesuwanie palcem/strzałkami, minutniki wykrywane z tekstu kroku (`findTimes`), dźwięk + wibracja, blokada wygaszania ekranu (Wake Lock), pasek minutników na dole po zamknięciu.
 - Kategorie w UI: `CATEGORIES` (8 grup), wypieki drożdżowe mapowane w `YEAST_CATEGORY`.
 - `index.html` – interfejs; spiżarnia i własne mąki w `localStorage`.
 - Psyllium = łuska babki jajowatej (Plantago ovata) lub płesznik.

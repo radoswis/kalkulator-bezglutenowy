@@ -4,6 +4,9 @@ Liczy proporcje 55 bezglutenowych przepisów: ciasta drożdżowe, pierogi i klus
 
 Pliki: `index.html` (interfejs), `engine.js` (silnik drożdżowy), `pastry.js` (wyroby bezdrożdżowe).
 
+## Na telefonie
+Otwórz stronę w Chrome na telefonie i kliknij „Zainstaluj na telefonie” (albo menu ⋮ → „Dodaj do ekranu głównego”). Aplikacja działa wtedy bez internetu.
+
 ## Uruchomienie lokalne
 Otwórz `index.html` w przeglądarce. Nic nie trzeba instalować.
 

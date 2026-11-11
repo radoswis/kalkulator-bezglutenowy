@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kalkulator ciast bezglutenowych</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#4f6b2e">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -56,6 +59,23 @@ details .inner{display:grid;gap:10px;margin-top:12px}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .msg{font-size:.85rem;color:var(--muted)}
 [hidden]{display:none!important}
+.cookbtn{justify-self:start}
+.cook{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;gap:14px;padding-block:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow:auto}
+.cookbar{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.cookbar b{font-family:var(--display);font-size:1.1rem;text-align:center;min-width:0}
+.cookstep{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;max-width:760px;margin:0 auto;width:100%}
+.cooknum{font-family:var(--mono);color:var(--accent);font-size:.95rem}
+#cookText{font-size:clamp(1.35rem,4.6vw,2rem);line-height:1.4;margin:0}
+.cooknav{display:flex;gap:12px;max-width:760px;margin:0 auto;width:100%}
+.cooknav .btn{flex:1;padding:16px;font-size:1.1rem}
+.cooknav .btn:disabled{opacity:.4}
+.cooking{max-width:760px;margin:0 auto;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.cooktimers,.timerbadge{display:grid;gap:8px;max-width:760px;margin:0 auto;width:100%}
+.timer{display:flex;align-items:center;gap:12px;justify-content:space-between;background:var(--accent-soft);border-radius:10px;padding:10px 14px}
+.timer b{font-family:var(--mono);font-size:1.4rem;color:var(--accent)}
+.timer.done{background:var(--warn-soft)}.timer.done b{color:var(--warn)}
+.timerbadge{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--bg);border-top:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-left,0px)) max(10px,env(safe-area-inset-bottom,0px));max-width:none}
+#installBtn{margin-top:10px}
 .fb{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px;font-size:.95rem}
 .linkbtn{font:inherit;background:none;border:0;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
 .offlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
@@ -84,6 +104,7 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 <div class="wrap">
 <header>
 <h1>Kalkulator ciast bezglutenowych</h1>
+<button type="button" class="btn" id="installBtn" hidden>Zainstaluj na telefonie</button>
 <p>Wybierz, co chcesz zrobić, zaznacz, co masz w spiżarni, i podaj ilość. Aplikacja sama dobierze mąki i policzy składniki co do grama.</p>
 </header>
 <div class="grid">
@@ -132,6 +153,15 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 <aside class="card" aria-live="polite" id="out"></aside>
 </div>
 </div>
+
+<div id="cook" class="cook" hidden role="dialog" aria-modal="true" aria-labelledby="cookTitle">
+ <div class="cookbar"><button type="button" class="btn ghost" data-cookclose="1">Zamknij</button><b id="cookTitle"></b><button type="button" class="btn ghost" data-cooking="1">Składniki</button></div>
+ <div id="cookTimers" class="cooktimers"></div>
+ <div id="cookIng" class="cooking" hidden></div>
+ <div class="cookstep"><div id="cookNum" class="cooknum"></div><p id="cookText"></p><div id="cookTimerBtns" class="chips"></div></div>
+ <div class="cooknav"><button type="button" class="btn ghost" data-cookprev="1">← Wstecz</button><button type="button" class="btn" data-cooknext="1">Dalej →</button></div>
+</div>
+<div id="timerBadge" class="timerbadge" hidden></div>
 
 <script src="engine.js"></script>
 <script src="pastry.js"></script>
@@ -244,6 +274,7 @@ function calc(){
   `Od razu, bez wyrastania w misce, ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
   "Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na 45–60 minut, aż wyraźnie się napuszą.",
   `Na koniec: ${b.bakeNote}.`];
+ cur={title:b.name,steps,lines:r.lines};
  const tip=pour?"":`<div class="note">Ciasto bezglutenowe rośnie tylko raz. Jeśli wyrośnie w misce, a potem je ugnieciesz, już się nie podniesie, dlatego formujemy od razu.</div>`;
  $("out").innerHTML=`<h3>${b.name}</h3>
  <div class="hyd"><div><b>${water} g</b><span>wody wlej</span></div><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div></div>
@@ -253,6 +284,7 @@ function calc(){
  <div class="note"><b>Dlaczego tyle wody?</b> ${why.length?why.join(", ").replace(/^./,c=>c.toUpperCase())+".":"To typowa ilość wody dla tego wypieku."}</div>
  <div class="note"><b>Dlaczego te mąki?</b> ${whyTxt()}${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
  ${idealHtml(b.id)}
+ <button type="button" class="btn cookbtn" data-cook="1">Gotuj krok po kroku (z minutnikami)</button>
  <div class="note"><b>Jak zrobić:</b><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>${tip}${b.doneness?`<div class="note"><b>Czy już upieczone?</b> ${b.doneness}</div>`:""}${fbHtml(b)}
  <details class="tech"><summary>Szczegóły techniczne</summary><div class="note">Hydratacja efektywna ${h.effective.toFixed(1)}% (baza klasy ${h.base.toFixed(1)}% ${sg(h.deltaWAC)} chłonność mieszanki, WAC ${p.wacMix.toFixed(2)}${h.deltaFat?`, ${sg(h.deltaFat)} tłuszcz`:""}${h.deltaSugar?`, ${sg(h.deltaSugar)} cukier`:""}). Profil mieszanki: białko ${p.protein.toFixed(1)}% (cel ${t.protein.join("–")}%), frakcja skrobiowa ${p.starch.toFixed(0)}% (cel ${t.starch.join("–")}%), błonnik ${p.fiber.toFixed(1)}% (cel ${t.fiber.join("–")}%). Klasa: ${CLS[b.rheologyClass].label}. Procenty w tabeli liczone od masy mąk.</div></details>`;
  $("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());
@@ -288,6 +320,7 @@ function srcBar(){return `<div class="seg srcbar" role="group" aria-label="Z jak
  <div class="note">${src==="ideal"?"Podgląd przepisu na najlepszych mąkach. Zaznacz w spiżarni, co masz, a przeliczę przepis na Twoje mąki.":"Przepis przeliczony na mąki z Twojej spiżarni."}</div>`}
 const whyTxt=()=>src==="ideal"?"To najlepszy zestaw z całej bazy mąk dla tego przepisu.":"Z tego, co masz w domu, ta mieszanka da wynik najbardziej podobny do tradycyjnego, pszennego.";
 function renderPastry(r,b,D){
+ cur={title:b.name,steps:r.steps,lines:r.lines};
  const p=r.profile,t=p.target;
  const rows=r.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
  const flour=r.lines.find(l=>l.key==="flour").grams,pcs=Math.max(1,Math.round(D/b.unitWeight));
@@ -297,6 +330,7 @@ function renderPastry(r,b,D){
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
  <div class="note"><b>Dlaczego te mąki?</b> ${whyTxt()}${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
  ${idealHtml(b.id)}
+ <button type="button" class="btn cookbtn" data-cook="1">Gotuj krok po kroku (z minutnikami)</button>
  <div class="note"><b>Jak zrobić:</b><ol class="steps">${r.steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>
  ${r.tip?`<div class="note">${r.tip}</div>`:""}
  ${fbHtml(b)}
@@ -323,6 +357,49 @@ $("searchBtn").onclick=async()=>{const q=$("q").value.trim();if(!q){$("searchMsg
    $("nName").value=p.name+(p.brands?` (${p.brands.split(",")[0]})`:"");$("nProt").value=p.protein??"";$("nFib").value=p.fiber??"";offComposition=p.composition||"";updEst();
    $("searchMsg").textContent="Dane wpisane. Sprawdź je z etykietą"+(p.fiber==null?" (brak błonnika w bazie, wpisz z opakowania)":"")+" i kliknij „Dodaj do moich mąk”."})}
  catch(e){$("searchMsg").textContent="Wyszukiwanie nie działa w tym podglądzie albo serwer nie odpowiada ("+e.message+"). Wpisz dane z etykiety ręcznie."}};
+
+
+// ===== Tryb gotowania: kroki na cały ekran, minutniki, ekran nie gaśnie =====
+let cur=null,ci=0,wake=null,audio=null;const timers=[];
+const fmtT=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+function findTimes(t){const out=[];let m;const re=/(\d+)(?:\s*[–-]\s*(\d+))?\s*(minut|min\b)/g;
+ while((m=re.exec(t)))out.push(+m[1]);if(/godzin[ęy]|1\s*h\b/.test(t)&&!out.includes(60))out.push(60);return [...new Set(out)].filter(x=>x>0&&x<=240)}
+async function keepAwake(){try{if("wakeLock" in navigator&&!$("cook").hidden)wake=await navigator.wakeLock.request("screen")}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")keepAwake()});
+function showStep(){const n=cur.steps.length;ci=Math.max(0,Math.min(n-1,ci));
+ $("cookNum").textContent=`Krok ${ci+1} z ${n}`;$("cookText").textContent=cur.steps[ci];
+ $("cookTimerBtns").innerHTML=findTimes(cur.steps[ci]).map(m=>`<button type="button" class="chip" data-timer="${m}">Minutnik ${m} min</button>`).join("");
+ document.querySelector("[data-cookprev]").disabled=ci===0;const nx=document.querySelector("[data-cooknext]");nx.textContent=ci===n-1?"Koniec":"Dalej →"}
+function openCook(){if(!cur)return;ci=0;$("cookTitle").textContent=cur.title;
+ $("cookIng").innerHTML="<table>"+cur.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("")+"</table>";
+ $("cookIng").hidden=true;$("cook").hidden=false;document.body.style.overflow="hidden";showStep();keepAwake()}
+function closeCook(){$("cook").hidden=true;document.body.style.overflow="";try{wake&&wake.release()}catch(e){}wake=null}
+function beep(){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();for(let i=0;i<3;i++){const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=880;o.connect(g);g.connect(audio.destination);const t=audio.currentTime+i*0.45;g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);o.start(t);o.stop(t+0.36)}}catch(e){}
+ try{navigator.vibrate&&navigator.vibrate([400,200,400,200,400])}catch(e){}}
+function startTimer(min){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
+ timers.push({label:`${cur?cur.title+": ":""}${min} min`,end:Date.now()+min*60000,done:false});renderTimers()}
+function renderTimers(){const now=Date.now();
+ for(const t of timers)if(!t.done&&t.end<=now){t.done=true;beep()}
+ const html=timers.map((t,i)=>`<div class="timer${t.done?" done":""}"><span>${t.label}</span><b>${t.done?"Gotowe!":fmtT(Math.ceil((t.end-now)/1000))}</b><button type="button" class="linkbtn" data-timerdel="${i}">${t.done?"OK":"Anuluj"}</button></div>`).join("");
+ $("cookTimers").innerHTML=html;$("timerBadge").innerHTML=html;$("timerBadge").hidden=!timers.length||!$("cook").hidden}
+setInterval(()=>{if(timers.length)renderTimers()},1000);
+document.addEventListener("click",e=>{const t=e.target;
+ if(t.closest("[data-cook]")){openCook();renderTimers()}
+ else if(t.closest("[data-cookclose]")){closeCook();renderTimers()}
+ else if(t.closest("[data-cooknext]")){if(ci>=cur.steps.length-1)closeCook();else{ci++;showStep()}}
+ else if(t.closest("[data-cookprev]")){ci--;showStep()}
+ else if(t.closest("[data-cooking]")){$("cookIng").hidden=!$("cookIng").hidden}
+ else if(t.closest("[data-timer]")){startTimer(+t.closest("[data-timer]").dataset.timer)}
+ else if(t.closest("[data-timerdel]")){timers.splice(+t.closest("[data-timerdel]").dataset.timerdel,1);renderTimers()}});
+document.addEventListener("keydown",e=>{if($("cook").hidden)return;if(e.key==="ArrowRight"){ci++;showStep()}if(e.key==="ArrowLeft"){ci--;showStep()}if(e.key==="Escape")closeCook()});
+let tx=null;$("cook").addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
+$("cook").addEventListener("touchend",e=>{if(tx==null)return;const dx=e.changedTouches[0].clientX-tx;tx=null;if(Math.abs(dx)>60){ci+=dx<0?1:-1;showStep()}},{passive:true});
+
+// ===== Aplikacja na telefonie: instalacja i praca bez internetu =====
+let installEv=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEv=e;$("installBtn").hidden=false});
+$("installBtn").onclick=async()=>{if(!installEv)return;installEv.prompt();try{await installEv.userChoice}catch(e){}installEv=null;$("installBtn").hidden=true};
+if("serviceWorker" in navigator&&location.protocol==="https:"&&!/claude|anthropic/.test(location.hostname)){navigator.serviceWorker.register("/sw.js").catch(()=>{})}
 
 renderPantry();setDefaults();calc();loadShared();
 </script>
