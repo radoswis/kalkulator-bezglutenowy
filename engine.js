@@ -319,7 +319,7 @@
     let wAddFrac = hEff / 100 - E * EGG_WATER;
     if (wAddFrac < 0) { warnings.push("Jajka wnoszą więcej wody niż potrzeba: zmniejsz ilość jajek."); wAddFrac = 0; }
     const FRESH_PER_DRY = 3;
-    const frac = { psy: psy / 100, xan: xan / 100, salt: bake.salt / 100, yeast: yeastEff * FRESH_PER_DRY / 100, // drożdże świeże (priorytet) fat: bake.fat / 100, sugar: bake.sugar / 100 };
+    const frac = { psy: psy / 100, xan: xan / 100, salt: bake.salt / 100, yeast: yeastEff * FRESH_PER_DRY / 100 /* drożdże świeże (priorytet) */, fat: bake.fat / 100, sugar: bake.sugar / 100 };
     const sumFrac = 1 + wAddFrac + E + frac.psy + frac.xan + frac.salt + frac.yeast + frac.fat + frac.sugar;
     const flour = doughWeight / sumFrac;
 
