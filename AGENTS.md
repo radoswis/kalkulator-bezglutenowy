@@ -16,9 +16,9 @@ Jeden plik `index.html` (HTML + CSS + JS, bez builda). Dane w tablicach JS:
 - `BASE` – mąki: `a` chłonność wody (g/g), `P` białko %, `F` błonnik %, `fl` siła smaku 0–1, `cap` maks. udział, `t` typ: `pelna` | `skrobia` | `mix`, `b` = zawiera zagęstnik.
 - `B` / `BAKES` – 27 wypieków: `s` docelowy udział skrobi, `psy` % psyllium, `h` mnożnik hydratacji, `sol`, `dr` (drożdże suche), `ol`, `cu`, `ja` – w % od masy mąki; `w` waga sztuki.
 - `TGT` – cele mieszanki dla grup wypieków (białko, błonnik, maks. smak).
-- `optimize()` – przeszukuje kombinacje do 4 mąk z krokiem 5% i minimalizuje funkcję `score()` (odchyłka białka, błonnika, udziału skrobi, kara za smak i przekroczenie `cap`).
+- Zaznaczone mąki to SPIŻARNIA (stan magazynowy), nie lista do użycia. `optimize()` sam wybiera od 1 do wszystkich: wspinaczka z krokiem 5% (przesunięcia między parami mąk), start z każdej mąki i każdej pary. Minimalizuje `score()`: odchyłka białka, błonnika, udziału skrobi (`ss` – mix liczony jako ok. połowa skrobi), kara za smak, `cap`, liczbę mąk; premia za gotowy mix (sprawdzona baza), kara za Mix C w drożdżowym.
 - Hydratacja = Σ(udział × chłonność) + psyllium × 9 (+ guma ksantanowa × 5), × mnożnik wypieku.
-- Gotowe mixy (Schär Mix B, Mix It!) zajmują 70% gdy są inne mąki, 100% gdy same. Mix C ostrzega (nie do drożdżowych).
+- Gotowe mixy: optymalizator może użyć ich jako bazy i zaproponować dosypanie innych mąk. Psyllium zmniejszane proporcjonalnie do udziału mixu (mix ma już zagęstnik). P/F mixów są SZACUNKOWE – do podmiany na dane z etykiet.
 - Własne mąki: formularz; chłonność szacowana z białka i błonnika; zapis w `localStorage`.
 
 Wszystkie współczynniki są SZACUNKOWE. Nie podawaj ich jako pewnych.

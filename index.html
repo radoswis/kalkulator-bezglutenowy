@@ -72,7 +72,8 @@ details .inner{display:grid;gap:10px;margin-top:12px}
 <div class="note" id="bakeInfo"></div>
 </section>
 
-<section><h2><span>2</span>Jakie mąki masz?</h2>
+<section><h2><span>2</span>Twoja spiżarnia</h2>
+<div class="note">Zaznacz wszystko, co masz w domu. Aplikacja sama wybierze, których i ile użyć.</div>
 <div id="flours"></div>
 <div class="group">Dodatki wiążące</div>
 <div class="chips" id="addons"></div>
@@ -119,8 +120,8 @@ const BASE=[
 {id:"mig",n:"Migdałowa",t:"pelna",a:.5,P:21,F:11,fl:.4,cap:.1},{id:"kok",n:"Kokosowa",t:"pelna",a:2.0,P:19,F:39,fl:.7,cap:.08},
 {id:"szi",n:"Skrobia ziemniaczana",t:"skrobia",a:.55,P:.5,F:0,fl:0},{id:"skk",n:"Skrobia kukurydziana",t:"skrobia",a:.5,P:.5,F:0,fl:0},
 {id:"tap",n:"Tapioka",t:"skrobia",a:.55,P:.5,F:0,fl:0},
-{id:"mixb",n:"Schär Mix B",t:"mix",a:.82,b:1},{id:"mixit",n:"Schär Mix It! Universal",t:"mix",a:.8,b:1},
-{id:"mixc",n:"Schär Mix C",t:"mix",a:.7,b:1,sweet:1}];
+{id:"mixb",n:"Schär Mix B",t:"mix",a:.82,b:1,P:6,F:5,fl:.1,ss:.5},{id:"mixit",n:"Schär Mix It! Universal",t:"mix",a:.8,b:1,P:4,F:4,fl:.1,ss:.55},
+{id:"mixc",n:"Schär Mix C",t:"mix",a:.7,b:1,sweet:1,P:3,F:3,fl:.1,ss:.6}];
 const ADDONS=[{id:"psy",n:"Psyllium: łuska babki jajowatej (Plantago ovata) lub płesznik"},{id:"xan",n:"Guma ksantanowa"}];
 // Wypieki: s=udział skrobi, psy=% psyllium, h=mnożnik hydratacji, sol, dr=drożdże suche %, ol=tłuszcz %, cu=cukier %, ja=jajka %, w=waga sztuki, u=jednostka, p=pieczenie
 const B=[
@@ -180,45 +181,43 @@ $("bake").onchange=()=>{$("portion").value=BAKES[$("bake").value].w;calc()};
 const TGT={"Pizza i płaskie":{P:8,F:3.5,fl:.3},"Chleby":{P:9,F:5,fl:.45},"Bułki":{P:8,F:3.5,fl:.3},"Nadziewane i słodkie":{P:7,F:3,fl:.2}};
 const tgt=b=>b.n.startsWith("Chleb gryczany")?{P:9.5,F:6,fl:.8}:TGT[b.g];
 let blendInfo=null;const cache={};
-function score(sub,w,b,T){let P=0,F=0,fl=0,st=0,pen=0;
- for(let i=0;i<sub.length;i++){const f=sub[i],x=w[i];P+=x*f.P;F+=x*f.F;fl+=x*f.fl;if(f.t==="skrobia")st+=x;if(f.cap&&x>f.cap)pen+=(x-f.cap)*60}
- const s=((P-T.P)/2)**2+((F-T.F)/1.5)**2+((st-b.s)/.1)**2+Math.max(0,fl-T.fl)*25+pen+.15*sub.length;
- return {s,P,F,st,fl}}
-// Przeszukuje wszystkie kombinacje do 4 mąk z krokiem 5% i wybiera najlepszą
+// ss = jaka część działa jak skrobia (mix ok. połowa); mixy mają P/F szacunkowe do czasu skanu etykiety
+const ssOf=f=>f.t==="skrobia"?1:f.t==="mix"?(f.ss??.5):0;
+function score(list,w,b,T){let P=0,F=0,fl=0,st=0,pen=0,mix=0,n=0;
+ for(let i=0;i<list.length;i++){const x=w[i];if(x<=1e-9)continue;const f=list[i];n++;P+=x*f.P;F+=x*f.F;fl+=x*f.fl;st+=x*ssOf(f);
+  if(f.cap&&x>f.cap)pen+=(x-f.cap)*60;if(f.t==="mix"){if(f.sweet)pen+=x*4;else mix+=x}}
+ const s=((P-T.P)/2)**2+((F-T.F)/1.5)**2+((st-b.s)/.1)**2+Math.max(0,fl-T.fl)*25+pen+.15*n-mix*2.0;
+ return {s,P,F,st,fl,mix}}
+// Spiżarnia = wszystko, co masz. Wspinaczka po przesunięciach 5% między mąkami, start z każdej mąki i każdej pary; aplikacja używa od 1 do wszystkich
 function optimize(list,b){const T=tgt(b),key=b.n+list.map(f=>f.id).join();if(cache[key])return cache[key];
- let best=null;const n=list.length,K=Math.min(4,n),N=20;
- const comps=(k,left,acc,out)=>{if(k===1){out.push(acc.concat(left));return}for(let x=1;x<=left-k+1;x++)comps(k-1,left-x,acc.concat(x),out)};
- const subsets=(start,k,acc)=>{if(acc.length===k){const ws=[];comps(k,N,[],ws);
-  for(const c of ws){const w=c.map(x=>x/N),r=score(acc,w,b,T);if(!best||r.s<best.s)best={...r,sub:acc.slice(),w}}return}
-  for(let i=start;i<n;i++)subsets(i+1,k,acc.concat(list[i]))};
- for(let k=1;k<=K;k++)subsets(0,k,[]);
- best.T=T;return cache[key]=best}
+ const n=list.length,st=.05,starts=[];let best=null;
+ for(let i=0;i<n;i++){const w=Array(n).fill(0);w[i]=1;starts.push(w);for(let j=i+1;j<n;j++){const v=Array(n).fill(0);v[i]=v[j]=.5;starts.push(v)}}
+ for(const w of starts){let cur=score(list,w,b,T);
+  for(let it=0;it<60;it++){let mv=null,ms=cur.s;
+   for(let i=0;i<n;i++){if(w[i]<st-1e-9)continue;for(let j=0;j<n;j++){if(i===j)continue;w[i]-=st;w[j]+=st;const r=score(list,w,b,T);if(r.s<ms-1e-9){ms=r.s;mv=[i,j]}w[i]+=st;w[j]-=st}}
+   if(!mv)break;w[mv[0]]-=st;w[mv[1]]+=st;cur=score(list,w,b,T)}
+  if(!best||cur.s<best.s)best={...cur,w:w.map(x=>Math.round(x*100)/100)}}
+ best.sub=list.filter((f,i)=>best.w[i]>1e-9);best.w=best.w.filter(x=>x>1e-9);best.T=T;return cache[key]=best}
 
 function blend(b,warn){
- const fl=all().filter(f=>sel.has(f.id));
- const mixes=fl.filter(f=>f.t==="mix"&&!f.sweet), sweet=fl.filter(f=>f.sweet);
- let st=fl.filter(f=>f.t==="skrobia"), wh=fl.filter(f=>f.t==="pelna");
- const parts=[];let opt=null;
- const spread=(list,share)=>list.forEach(f=>parts.push([f,share/list.length]));
- const raw=st.concat(wh);
- if(raw.length){opt=optimize(raw,b);const share=mixes.length?.3:1;opt.sub.forEach((f,i)=>parts.push([f,opt.w[i]*share]))}
- if(mixes.length)spread(mixes,raw.length?.7:1);
- if(!mixes.length&&raw.length&&!st.length)warn.push("Brak skrobi: ciasto będzie zbite i twarde. Dokup skrobię ziemniaczaną lub tapiokę.");
- if(!mixes.length&&raw.length&&!wh.length)warn.push("Same skrobie bez mąki: ciasto będzie gumowate i bez smaku. Dodaj np. mąkę ryżową lub z sorgo.");
- if(!parts.length&&sweet.length)spread(sweet,1);
- if(opt){const un=raw.filter(f=>!opt.sub.includes(f));blendInfo=opt;blendInfo.unused=un}else blendInfo=null;
- if(sweet.length)warn.push("Schär Mix C jest przeznaczony do ciast na proszku do pieczenia. Do ciasta drożdżowego lepszy będzie Mix B lub Mix It!.");
- return {parts,onlyMix:mixes.length&&!st.length&&!wh.length,anyMix:mixes.length>0};
+ const inv=all().filter(f=>sel.has(f.id));blendInfo=null;
+ if(!inv.length)return {parts:[],mixShare:0};
+ const opt=optimize(inv,b),parts=opt.sub.map((f,i)=>[f,opt.w[i]]);
+ if(!inv.some(f=>f.t!=="pelna"))warn.push("W spiżarni brak skrobi i gotowej mieszanki: ciasto będzie zbite. Dokup skrobię ziemniaczaną lub tapiokę.");
+ if(!inv.some(f=>f.t!=="skrobia"))warn.push("W spiżarni są same skrobie: ciasto będzie gumowate. Dodaj np. mąkę ryżową lub z sorgo.");
+ if(opt.sub.some(f=>f.sweet))warn.push("Schär Mix C jest do ciast na proszku do pieczenia. Do drożdżowego lepszy Mix B lub Mix It!.");
+ blendInfo={...opt,unused:inv.filter(f=>!opt.sub.includes(f))};
+ return {parts,mixShare:opt.mix};
 }
 
 function calc(){
  const b=BAKES[$("bake").value];const warn=[];
  $("bakeInfo").textContent=`Domyślna sztuka: ${b.w} g · Pieczenie: ${b.p}`;
- const {parts,onlyMix,anyMix}=blend(b,warn);
+ const {parts,mixShare}=blend(b,warn);
  if(!parts.length){$("out").innerHTML=`<h3>${b.n}</h3><div class="warn">Zaznacz przynajmniej jedną mąkę lub mieszankę.</div>`;return}
  let base=parts.reduce((s,[f,sh])=>s+sh*f.a,0);
  let psy=b.psy/100;
- if(onlyMix)psy=sel.has("psy")?.01:0; else if(anyMix)psy*=.4;
+ psy*=1-.75*mixShare;
  let xan=0;
  if(!sel.has("psy")&&psy>0){if(sel.has("xan")){xan=.015;warn.push("Brak psyllium: liczę gumę ksantanową. Ciasto będzie mniej elastyczne, trudniej je formować.");}else warn.push("Brak psyllium i gumy ksantanowej: ciasto nie utrzyma gazu. Dokup łuskę babki jajowatej (psyllium).");psy=0}
  const hyd=(base+psy*9+xan*5)*b.h;
@@ -235,7 +234,7 @@ function calc(){
  <div class="hyd"><div><b>${Math.round(hyd*100)}%</b><span>hydratacja</span></div><div><b>${g(D)} g</b><span>ciasta</span></div>${mode==="pcs"?`<div><b>${$("count").value}×${$("portion").value} g</b><span>${b.u}</span></div>`:""}</div>
  <table>${t}</table>
  <div class="note">Drożdże świeże zamiast suchych: ${g(F*pct.dr*3)} g. Procenty liczone od masy mąki.${pct.ja?" Jajka wliczone w płyny.":""}</div>
- ${blendInfo?`<div class="note"><b>Dlaczego taka mieszanka:</b> białko ${blendInfo.P.toFixed(1)}% (cel ${blendInfo.T.P}%), błonnik ${blendInfo.F.toFixed(1)}% (cel ${blendInfo.T.F}%), skrobie ${Math.round(blendInfo.st*100)}% (cel ${Math.round(b.s*100)}%), smak ${blendInfo.fl<.25?"łagodny":blendInfo.fl<.5?"wyraźny":"mocny"}.${blendInfo.unused.length?` Pominięte, bo nie poprawiają wyniku: ${blendInfo.unused.map(f=>f.n).join(", ")}.`:""}</div>`:""}
+ ${blendInfo?`<div class="note"><b>Dobrana mieszanka:</b> białko ${blendInfo.P.toFixed(1)}% (cel ${blendInfo.T.P}%), błonnik ${blendInfo.F.toFixed(1)}% (cel ${blendInfo.T.F}%), skrobie ${Math.round(blendInfo.st*100)}% (cel ${Math.round(b.s*100)}%), smak ${blendInfo.fl<.25?"łagodny":blendInfo.fl<.5?"wyraźny":"mocny"}.${blendInfo.unused.length?` Masz, ale w tym przepisie niepotrzebne: ${blendInfo.unused.map(f=>f.n).join(", ")}.`:""}</div>`:""}
  ${warn.map(x=>`<div class="warn">${x}</div>`).join("")}
  <div class="note"><b>Wykonanie:</b> psyllium wymieszaj z wodą i odstaw na 5 min do zżelowania, dodaj resztę składników, wyrabiaj 3–4 min. Wyrastanie około 60 min w cieple. ${b.p}.</div>`;
 }
