@@ -17,7 +17,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
   - `BAKES` – 27 wypieków zmapowanych na klasy; domyślne porcje 500–750 g.
   - `solveFlourBlend()` – zaznaczone mąki to SPIŻARNIA. Gdy jest gotowy mix: baza (Mix B > Mix It! > Mix C) 65–100% + 1–2 mąki 20–35%, czyste skrobie zablokowane (wyjątek: tapioka 5% w klasach formowanych/wałkowanych/bogatych). Bez mixu: wspinaczka po siatce 5%. Filtr smaku dla słodkich (tylko jaglana, owsiana, ryżowa, migdałowa, sorgo).
   - `calculateLaboratoryFormulation()` – ΔWAC = (WAC_mix − 0,96) × 0,65 × 100 pp; tłuszcz −0,40 pp na każdy % powyżej 5; cukier −0,25 pp powyżej 6% i kompensacja drożdży; jajka = 75% wody (odejmowane od wody do dolania); mikroskładniki < 10 g zaokrąglane do 0,5 g, woda domyka bilans.
-  - Drożdże suche: baza 1,45% (wytrawne), 1,5% (słodkie); mnożnik osmotyczny podnosi słodkie do ok. 1,9–2,25%.
+  - Przepis podaje DROŻDŻE ŚWIEŻE (= suche × 3, wliczone w bilans masy); suche tylko jako zamiennik w notce. Drożdże suche: baza 1,45% (wytrawne), 1,5% (słodkie); mnożnik osmotyczny podnosi słodkie do ok. 1,9–2,25%.
   - Klasa wałkowana ma `proteinPriority: 2` (większa waga białka w koszcie solvera).
   - Instrukcje: ciasta formowane rosną RAZ, po uformowaniu (bez wyrastania w misce); ciasta wlewane rosną w formie.
   - `validateDefaultBatches()` – kontrola: porcje 500–750 g, sól/drożdże/psyllium ≥ 4,5 g. Uruchom po każdej zmianie danych.

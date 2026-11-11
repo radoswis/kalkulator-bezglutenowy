@@ -318,7 +318,8 @@
     const E = bake.eggs / 100;
     let wAddFrac = hEff / 100 - E * EGG_WATER;
     if (wAddFrac < 0) { warnings.push("Jajka wnoszą więcej wody niż potrzeba: zmniejsz ilość jajek."); wAddFrac = 0; }
-    const frac = { psy: psy / 100, xan: xan / 100, salt: bake.salt / 100, yeast: yeastEff / 100, fat: bake.fat / 100, sugar: bake.sugar / 100 };
+    const FRESH_PER_DRY = 3;
+    const frac = { psy: psy / 100, xan: xan / 100, salt: bake.salt / 100, yeast: yeastEff * FRESH_PER_DRY / 100, // drożdże świeże (priorytet) fat: bake.fat / 100, sugar: bake.sugar / 100 };
     const sumFrac = 1 + wAddFrac + E + frac.psy + frac.xan + frac.salt + frac.yeast + frac.fat + frac.sugar;
     const flour = doughWeight / sumFrac;
 
@@ -333,7 +334,7 @@
     add("psy", "Psyllium", frac.psy);
     add("xan", "Guma ksantanowa", frac.xan);
     add("salt", "Sól", frac.salt);
-    add("yeast", "Drożdże suche", frac.yeast);
+    add("yeast", "Drożdże świeże", frac.yeast);
     add("fat", bake.sweet ? "Masło" : "Oliwa / masło", frac.fat);
     add("sugar", "Cukier", frac.sugar);
     const others = lines.filter(l => !l.sub && l.key !== "flour").reduce((s, l) => s + l.grams, 0) + flourTotal;
@@ -352,7 +353,7 @@
       blend: sol.blend.map(([ingredient, share]) => ({ ingredient, share })),
       profile: { protein: prof.protein, fiber: prof.fiber, starch: prof.starch, wacMix: prof.wac, target: cls.target },
       hydration: { base: hBase, deltaWAC: dWAC, deltaFat: dFat, deltaSugar: dSugar, effective: hEff },
-      yeast: { dryEffective: yeastEff, freshGrams: rg(flour * frac.yeast * 3) },
+      yeast: { dryEffective: yeastEff, freshPct: yeastEff * FRESH_PER_DRY, dryGrams: rg(flour * yeastEff / 100) },
       mixShare, flourExact: flour, lines,
       total: lines.filter(l => !l.sub).reduce((s, l) => s + l.grams, 0),
       unused: pantryFlours.filter(i => !used.has(i.id)),

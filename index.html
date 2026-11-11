@@ -156,8 +156,8 @@ function calc(){
  if(hasEggs)why.push("jajka też są płynem i już odjęliśmy je od wody");
  const cl=b.rheologyClass,pour=cl==="RHEO_POURABLE_HIGH_HYDRATION";
  const pcs=mode==="pcs"?+$("count").value:Math.max(1,Math.round(D/b.unitWeight)),pw=mode==="pcs"?+$("portion").value:Math.round(D/pcs);
- const s1=hasPsy?`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej). Wsyp psyllium i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej)${hasXan?" i wymieszaj z gumą ksantanową":""}.`;
- const s2=`Dodaj mąki, drożdże, sól${b.sugar?", cukier":""}${b.fat?(b.sweet?", roztopione masło":", oliwę"):""}${hasEggs?" i roztrzepane jajka":""}. Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż zwykłe i tak ma być.`
+ const s1=hasPsy?`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej). Rozkrusz w niej drożdże i wymieszaj, aż się rozpuszczą. Wsyp psyllium i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej) i rozkrusz w niej drożdże${hasXan?", potem wmieszaj gumę ksantanową":""}.`;
+ const s2=`Dodaj mąki, sól${b.sugar?", cukier":""}${b.fat?(b.sweet?", roztopione masło":", oliwę"):""}${hasEggs?" i roztrzepane jajka":""}. Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż zwykłe i tak ma być.`
   +((cl==="RHEO_LAMINATED_ROLLED_STUFFED"||cl==="RHEO_ENRICHED_BRIOCHE_FRIED")?" Potem odstaw ciasto na 10–15 minut, żeby dobrze związało wodę. Wtedy łatwiej się wałkuje.":"");
  const shape={RHEO_FREE_STANDING_LOAF:`uformuj ${pcs>1?`${pcs} szt. po około ${pw} g`:"bochenek"}`,RHEO_TENSILE_SHAPED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
   RHEO_LAMINATED_ROLLED_STUFFED:`podziel na ${pcs} kawałków po około ${pw} g, rozwałkuj, nałóż farsz i zlep lub zwiń`,RHEO_STIFF_EXTRUDED_BOILED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
@@ -174,7 +174,7 @@ function calc(){
  $("out").innerHTML=`<h3>${b.name}</h3>
  <div class="hyd"><div><b>${water} g</b><span>wody wlej</span></div><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div></div>
  <table>${rows}</table>
- <div class="note">Masz drożdże świeże (w kostce)? Weź ${fmt(r.yeast.freshGrams)} g zamiast suchych.</div>
+ <div class="note">Masz tylko drożdże suche (instant)? Weź ${fmt(r.yeast.dryGrams)} g zamiast świeżych i wsyp je razem z mąką.</div>
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
  <div class="note"><b>Dlaczego tyle wody?</b> ${why.length?why.join(", ").replace(/^./,c=>c.toUpperCase())+".":"To typowa ilość wody dla tego wypieku."}</div>
  <div class="note"><b>Dlaczego te mąki?</b> Z tego, co masz w domu, ta mieszanka da ciasto najbardziej podobne do zwykłego, pszennego.${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
