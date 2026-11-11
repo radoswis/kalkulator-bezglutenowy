@@ -28,28 +28,57 @@ async function handleState(req, env) {
   return json({ error: "Metoda niedozwolona." }, 405);
 }
 
+// Słowa, po których rozpoznajemy mąkę, skrobię lub mieszankę mąk (nazwa lub kategoria)
+const FLOUR_RE = /m[aą]k|mieszank|skrobi|mix|flour|farin|mehl|starch|amido|tapiok|psyllium|babk|otr[eę]b|kasza manna/i;
+const NOT_FLOUR_RE = /chleb (krojony|tostowy)|bu[lł]k|pain |bread slice|ciastk|herbatnik|makaron|pieczywo|wafl/i;
+
+async function offSearch(params) {
+  const headers = { "User-Agent": "KalkulatorBezglutenowy/2.1 (prywatna aplikacja domowa)" };
+  const r = await fetch("https://pl.openfoodfacts.org/cgi/search.pl?" + new URLSearchParams(params), { headers, cf: { cacheTtl: 3600 } });
+  if (!r.ok) throw new Error(`Open Food Facts nie odpowiada (kod ${r.status}). Spróbuj za chwilę.`);
+  return (await r.json()).products || [];
+}
+
 async function handleOff(url) {
   const q = (url.searchParams.get("q") || "").trim();
   if (!q) return json({ error: "Podaj nazwę lub kod kreskowy." }, 400);
-  const headers = { "User-Agent": "KalkulatorBezglutenowy/2.0 (prywatna aplikacja domowa)" };
-  const fields = "code,product_name,product_name_pl,brands,nutriments,ingredients_text_pl,ingredients_text";
+  const fields = "code,product_name,product_name_pl,brands,nutriments,ingredients_text_pl,ingredients_text,countries_tags,categories_tags";
   const isCode = /^\d{8,14}$/.test(q);
-  const api = isCode
-    ? `https://world.openfoodfacts.org/api/v2/product/${q}.json?fields=${fields}`
-    : `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&json=1&page_size=6&fields=${fields}`;
-  const r = await fetch(api, { headers, cf: { cacheTtl: 3600 } });
-  if (!r.ok) return json({ error: `Open Food Facts nie odpowiada (kod ${r.status}). Spróbuj za chwilę.` }, 502);
-  const d = await r.json();
-  const list = (isCode ? (d.product ? [d.product] : []) : d.products || []).map(p => ({
+  let products = [];
+  if (isCode) {
+    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${q}.json?fields=${fields}`, { headers: { "User-Agent": "KalkulatorBezglutenowy/2.1" } });
+    const d = r.ok ? await r.json() : {};
+    products = d.product ? [d.product] : [];
+  } else {
+    // 1) Polska + kategoria mąki, 2) Polska + dowolna kategoria (filtr po nazwie), 3) cały świat, kategoria mąki
+    const base = { search_terms: q, json: "1", page_size: "24", fields, lc: "pl", sort_by: "unique_scans_n" };
+    const pl = { tagtype_0: "countries", tag_contains_0: "contains", tag_0: "poland" };
+    const flour = { tagtype_1: "categories", tag_contains_1: "contains", tag_1: "flours" };
+    const steps = [{ ...base, ...pl, ...flour }, { ...base, ...pl }, { ...base, tagtype_0: "categories", tag_contains_0: "contains", tag_0: "flours" }];
+    const seen = new Set();
+    for (const params of steps) {
+      for (const p of await offSearch(params)) {
+        const name = p.product_name_pl || p.product_name || "";
+        const cats = (p.categories_tags || []).join(" ");
+        if (!name || seen.has(p.code)) continue;
+        if (!(FLOUR_RE.test(name) || /flour|starch/.test(cats)) || NOT_FLOUR_RE.test(name)) continue;
+        seen.add(p.code); products.push(p);
+      }
+      if (products.length >= 8) break;
+    }
+  }
+  const list = products.slice(0, 8).map(p => ({
     code: p.code,
     name: p.product_name_pl || p.product_name || "",
     brands: p.brands || "",
+    poland: (p.countries_tags || []).includes("en:poland"),
     protein: p.nutriments?.proteins_100g ?? null,
     fiber: p.nutriments?.fiber_100g ?? null,
     carbs: p.nutriments?.carbohydrates_100g ?? null,
     fat: p.nutriments?.fat_100g ?? null,
     composition: p.ingredients_text_pl || p.ingredients_text || ""
-  })).filter(p => p.name);
+  })).filter(p => p.name)
+    .sort((a, b) => Number(b.poland) - Number(a.poland));
   return json({ results: list });
 }
 

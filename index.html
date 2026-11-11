@@ -125,7 +125,7 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 <div class="chips" id="addons"></div>
 <details id="addBox"><summary>Dodaj własną mąkę</summary>
 <div class="inner">
-<div class="row"><input id="q" placeholder="Nazwa lub kod kreskowy, np. Bezgluten mąka uniwersalna"><button class="btn ghost" id="searchBtn" type="button">Szukaj w internecie</button></div>
+<div class="row"><input id="q" placeholder="Nazwa lub kod kreskowy, np. mąka gryczana Bezgluten"><button class="btn ghost" id="searchBtn" type="button">Szukaj w internecie</button></div>
 <div class="msg" id="searchMsg"></div>
 <div class="row">
 <label>Nazwa<input id="nName" placeholder="np. Mąka z sorgo XYZ"></label>
@@ -352,7 +352,7 @@ $("searchBtn").onclick=async()=>{const q=$("q").value.trim();if(!q){$("searchMsg
  $("searchMsg").textContent="Szukam w Open Food Facts…";
  try{const r=await fetch("/api/off?q="+encodeURIComponent(q));const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
   if(!j.results.length){$("searchMsg").textContent="Nic nie znaleziono. Spróbuj innej nazwy albo wpisz dane z etykiety ręcznie.";return}
-  $("searchMsg").innerHTML="Wybierz produkt:<div class=\"offlist\">"+j.results.map((p,i)=>`<button type="button" class="chip" data-off="${i}">${p.name}${p.brands?` <small>${p.brands}</small>`:""}</button>`).join("")+"</div>";
+  $("searchMsg").innerHTML="Wybierz produkt:<div class=\"offlist\">"+j.results.map((p,i)=>`<button type="button" class="chip" data-off="${i}">${p.name}${p.brands?` <small>${p.brands}</small>`:""}${p.poland?"":` <small>· spoza PL</small>`}${p.protein!=null?` <small>· białko ${p.protein} g</small>`:""}</button>`).join("")+"</div>";
   $("searchMsg").querySelectorAll("[data-off]").forEach(btn=>btn.onclick=()=>{const p=j.results[+btn.dataset.off];
    $("nName").value=p.name+(p.brands?` (${p.brands.split(",")[0]})`:"");$("nProt").value=p.protein??"";$("nFib").value=p.fiber??"";offComposition=p.composition||"";updEst();
    $("searchMsg").textContent="Dane wpisane. Sprawdź je z etykietą"+(p.fiber==null?" (brak błonnika w bazie, wpisz z opakowania)":"")+" i kliknij „Dodaj do moich mąk”."})}
