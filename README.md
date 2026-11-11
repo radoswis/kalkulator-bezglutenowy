@@ -1,6 +1,8 @@
 # Kalkulator ciast bezglutenowych
 
-Liczy hydratację i proporcje bezglutenowych ciast drożdżowych (pizza, chleby, bułki, słodkie). Sam dobiera mieszankę z mąk, które masz.
+Liczy proporcje 55 bezglutenowych przepisów: ciasta drożdżowe, pierogi i kluski, naleśniki i panierki, kruche, biszkopty i desery. Sam dobiera mieszankę z mąk, które masz w spiżarni, i podaje instrukcję krok po kroku.
+
+Pliki: `index.html` (interfejs), `engine.js` (silnik drożdżowy), `pastry.js` (wyroby bezdrożdżowe).
 
 ## Uruchomienie lokalne
 Otwórz `index.html` w przeglądarce. Nic nie trzeba instalować.

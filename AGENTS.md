@@ -10,7 +10,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - Bez logowania. Dwie osoby w domu, wspólne dane.
 - Działa na telefonie (Samsung S21 Ultra) i laptopie.
 
-## Stan obecny (v1.0 – GF Rheology & Formulation Engine)
+## Stan obecny (v2.0 – 55 przepisów: 27 drożdżowych + 28 bezdrożdżowych)
 - `engine.js` – silnik (globalny `GFEngine`, działa też w Node: `require("./engine.js")`). Typy w JSDoc.
   - `INGREDIENT_MATRIX` – składniki: `macros` (g/100 g), `wac_cold`, `wac_hot` (na razie informacyjnie), `flavorProfile`, `role`, mixy: `isCommercialMix`, `hasHPMC`, `starchBase`, `mixPriority`; `maxShare` = limit udziału.
   - `RHEOLOGY_CLASSES` – 6 klas reologicznych: zakresy hydratacji bazowej, psyllium, tłuszczu, jajek, cukru i cel profilu mąk (skrobia = udział frakcji skrobiowej, białko, błonnik).
@@ -21,6 +21,13 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
   - Klasa wałkowana ma `proteinPriority: 2` (większa waga białka w koszcie solvera).
   - Instrukcje: ciasta formowane rosną RAZ, po uformowaniu (bez wyrastania w misce); ciasta wlewane rosną w formie.
   - `validateDefaultBatches()` – kontrola: porcje 500–750 g, sól/drożdże/psyllium ≥ 4,5 g. Uruchom po każdej zmianie danych.
+- `pastry.js` – rozszerzenie (ładowane PO engine.js): 28 przepisów bezdrożdżowych, klasy 7–12 (`PASTRY_CLASSES`), składniki receptur (`COMPONENTS`), solver `solvePastryBlend()`:
+  - `YEAST_HYDROCOLLOID_MODE` (klasa 7: pierogi, tortilla, makaron) – jedna baza komercyjna, Mix B pierwszy, tapioka preferowana ok. 10–15%.
+  - `PASTRY_STARCH_MODE` (klasy 8–12) – czyste skrobie odblokowane, Mix C preferowany, tapioka karana (gumowatość) chyba że przepis ją preferuje; koszt = odległość od ZAKRESU celu.
+  - Receptury w % od mąk (`basis: "flour"`) albo od masy ciasta (`basis: "total"` + `flourPct`, np. kopytka, sernik).
+  - Każdy przepis ma własne `steps(ctx)` (gramatury wstawiane w tekst, jajka z liczbą sztuk). Bilans masy domyka największy składnik.
+  - `calculateRecipe()` – jedno wejście dla wszystkich 55 przepisów; `validateAllRecipes(pantryIds)` – test całości.
+- Kategorie w UI: `CATEGORIES` (8 grup), wypieki drożdżowe mapowane w `YEAST_CATEGORY`.
 - `index.html` – interfejs; spiżarnia i własne mąki w `localStorage`.
 - Psyllium = łuska babki jajowatej (Plantago ovata) lub płesznik.
 - Wszystkie współczynniki są SZACUNKOWE (ze specyfikacji, bez pomiarów). Makro Mix It!/Mix C do weryfikacji z etykietą.

@@ -68,11 +68,11 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 <div class="wrap">
 <header>
 <h1>Kalkulator ciast bezglutenowych</h1>
-<p>Demo. Wybierz wypiek, zaznacz mąki, które masz, i podaj ilość. Proporcje liczone są w procentach piekarskich na podstawie chłonności wody każdej mąki. Współczynniki są szacunkowe i do kalibracji testami.</p>
+<p>Wybierz, co chcesz zrobić, zaznacz, co masz w spiżarni, i podaj ilość. Aplikacja sama dobierze mąki i policzy składniki co do grama.</p>
 </header>
 <div class="grid">
 <div class="col">
-<section><h2><span>1</span>Co pieczesz?</h2>
+<section><h2><span>1</span>Co robisz?</h2>
 <select id="bake"></select>
 <div class="note" id="bakeInfo"></div>
 </section>
@@ -114,8 +114,10 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 </div>
 
 <script src="engine.js"></script>
+<script src="pastry.js"></script>
 <script>
-const {INGREDIENT_MATRIX:ING,RHEOLOGY_CLASSES:CLS,BAKES,calculateLaboratoryFormulation,defaultDough}=GFEngine;
+const {INGREDIENT_MATRIX:ING,RHEOLOGY_CLASSES:CLS,ALL_BAKES,CATEGORIES,calculateRecipe}=GFEngine;
+const BAKES=ALL_BAKES,defaultDough=b=>b.unitWeight*b.defaultCount;
 const $=id=>document.getElementById(id);
 let custom=[];try{custom=JSON.parse(localStorage.getItem("gf_custom_v1")||"[]")}catch(e){}
 let sel=new Set(["ryz","szi","tap","mixb","psy"]);try{const s=JSON.parse(localStorage.getItem("gf_pantry_v1")||"null");if(s)sel=new Set(s)}catch(e){}
@@ -124,7 +126,7 @@ const all=()=>ING.concat(custom);
 const save=()=>{try{localStorage.setItem("gf_pantry_v1",JSON.stringify([...sel]));localStorage.setItem("gf_custom_v1",JSON.stringify(custom))}catch(e){}};
 const fmt=g=>(Number.isInteger(g)?g:g.toFixed(1).replace(".",","));
 
-$("bake").innerHTML=Object.entries(CLS).map(([k,c])=>`<optgroup label="${c.label}">`+BAKES.filter(b=>b.rheologyClass===k).map(b=>`<option value="${b.id}">${b.name}</option>`).join("")+"</optgroup>").join("");
+$("bake").innerHTML=CATEGORIES.map(c=>`<optgroup label="${c}">`+BAKES.filter(b=>b.category===c).map(b=>`<option value="${b.id}">${b.name}</option>`).join("")+"</optgroup>").join("");
 $("bake").value="pizza_neapol";
 function chip(f){return `<button type="button" class="chip" data-id="${f.id}" aria-pressed="${sel.has(f.id)}">${f.name}${f.custom?" <small>(własna)</small>":""}</button>`}
 function renderPantry(){const g=[["Mąki",f=>["wholegrain_structure","high_protein"].includes(f.role)],["Skrobie",f=>f.role==="pure_starch"],["Gotowe mieszanki",f=>f.role==="commercial_base"]];
@@ -140,11 +142,12 @@ $("bake").onchange=()=>{setDefaults();calc()};
 
 function calc(){
  const bakeId=$("bake").value,b=BAKES.find(x=>x.id===bakeId);
- $("bakeInfo").textContent=`Klasa: ${CLS[b.rheologyClass].label} · Domyślnie ${b.defaultCount} × ${b.unitWeight} g · Pieczenie: ${b.bakeNote}`;
+ $("bakeInfo").textContent=`Rodzaj: ${CLS[b.rheologyClass].label} · Domyślnie ${b.defaultCount} × ${b.unitWeight} g (${b.unit}) · ${b.bakeNote}`;
  const D=mode==="pcs"?(+$("count").value||0)*(+$("portion").value||0):(+$("grams").value||0);
  if(D<50){$("out").innerHTML=`<h3>${b.name}</h3><div class="warn">Podaj ilość ciasta (min. 50 g).</div>`;return}
- const r=calculateLaboratoryFormulation({bakeId,pantryIds:[...sel],doughWeight:D,extraIngredients:custom});
+ const r=calculateRecipe({bakeId,pantryIds:[...sel],doughWeight:D,extraIngredients:custom});
  if(r.empty){$("out").innerHTML=`<h3>${b.name}</h3>${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}`;return}
+ if(r.family==="pastry"){renderPastry(r,b,D);return}
  const h=r.hydration,p=r.profile,t=p.target,sg=x=>(x>=0?"+":"")+x.toFixed(1);
  const rows=r.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
  const water=r.lines.find(l=>l.key==="water").grams,hasEggs=b.eggs>0,hasPsy=r.lines.some(l=>l.key==="psy"),hasXan=r.lines.some(l=>l.key==="xan");
@@ -180,6 +183,20 @@ function calc(){
  <div class="note"><b>Dlaczego te mąki?</b> Z tego, co masz w domu, ta mieszanka da ciasto najbardziej podobne do zwykłego, pszennego.${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
  <div class="note"><b>Jak zrobić:</b><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>${tip}
  <details class="tech"><summary>Szczegóły techniczne</summary><div class="note">Hydratacja efektywna ${h.effective.toFixed(1)}% (baza klasy ${h.base.toFixed(1)}% ${sg(h.deltaWAC)} chłonność mieszanki, WAC ${p.wacMix.toFixed(2)}${h.deltaFat?`, ${sg(h.deltaFat)} tłuszcz`:""}${h.deltaSugar?`, ${sg(h.deltaSugar)} cukier`:""}). Profil mieszanki: białko ${p.protein.toFixed(1)}% (cel ${t.protein.join("–")}%), frakcja skrobiowa ${p.starch.toFixed(0)}% (cel ${t.starch.join("–")}%), błonnik ${p.fiber.toFixed(1)}% (cel ${t.fiber.join("–")}%). Klasa: ${CLS[b.rheologyClass].label}. Procenty w tabeli liczone od masy mąk.</div></details>`;
+}
+
+function renderPastry(r,b,D){
+ const p=r.profile,t=p.target;
+ const rows=r.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
+ const flour=r.lines.find(l=>l.key==="flour").grams,pcs=Math.max(1,Math.round(D/b.unitWeight));
+ $("out").innerHTML=`<h3>${b.name}</h3>
+ <div class="hyd"><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div><div><b>${flour} g</b><span>mąk razem</span></div>${b.defaultCount>1||pcs>1?`<div><b>${pcs} × ${Math.round(D/pcs)} g</b><span>${b.unit}</span></div>`:""}</div>
+ <table>${rows}</table>
+ ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
+ <div class="note"><b>Dlaczego te mąki?</b> Z tego, co masz w domu, ta mieszanka da wyrób najbardziej podobny do tradycyjnego, pszennego.${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
+ <div class="note"><b>Jak zrobić:</b><ol class="steps">${r.steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>
+ ${r.tip?`<div class="note">${r.tip}</div>`:""}
+ <details class="tech"><summary>Szczegóły techniczne</summary><div class="note">Rodzaj: ${r.cls.label}. Profil mieszanki: białko ${p.protein.toFixed(1)}% (cel ${t.protein.join("–")}%), frakcja skrobiowa ${p.starch.toFixed(0)}% (cel ${t.starch.join("–")}%), błonnik ${p.fiber.toFixed(1)}% (cel ${t.fiber.join("–")}%). Procenty w tabeli liczone od masy mąk.</div></details>`;
 }
 
 // Własna mąka
