@@ -182,7 +182,7 @@
     ciabatta: [230, 25, 30, "steam"], chleb_jasny: [220, 45, 55, "twoStage"], chleb_gryczany: [220, 50, 60, "twoStage"], bagietka: [240, 22, 25, "steam"],
     pizza_neapol: [300, 6, 8, "stone"], pita: [260, 4, 5, "stone"], naan: [0, 2, 2, "pan"],
     hamburger: [200, 16, 18], subway: [200, 18, 20], kajzerki: [220, 18, 20, "steam"],
-    calzone: [240, 12, 15, "filled"], paszteciki: [200, 18, 20, "filled"], pierogi_drozdzowe: [190, 18, 20, "filled"],
+    calzone: [240, 12, 15, "filled"], paszteciki: [200, 14, 17, "filled"] /* kalibracja 11.11: 200°C/16 min = wierzch gotowy, środek o chwilę za krótko → 180°C, 20–24 min */, pierogi_drozdzowe: [190, 18, 20, "filled"],
     bajgle: [210, 18, 20, "boil"], precle: [210, 13, 15, "boil"], grissini: [200, 13, 15],
     chalka: [180, 30, 35], babka: [175, 45, 50], drozdzowki: [180, 18, 20], cynamonki: [180, 20, 22], buleczki_maslane: [190, 16, 18],
     paczki: [170, 0, 0, "fry"], langosz: [175, 0, 0, "fry"]
