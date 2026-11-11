@@ -154,12 +154,23 @@ function calc(){
  if(h.deltaFat)why.push("tłuszcz sam zmiękcza ciasto, więc wody jest mniej");
  if(h.deltaSugar)why.push("cukier rozrzedza ciasto, więc wody jest mniej");
  if(hasEggs)why.push("jajka też są płynem i już odjęliśmy je od wody");
- const steps=[
-  hasPsy?`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej). Wsyp psyllium i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej)${hasXan?" i wymieszaj z gumą ksantanową":""}.`,
-  `Dodaj mąki, drożdże, sól${b.sugar?", cukier":""}${b.fat?(b.sweet?", roztopione masło":", oliwę"):""}${hasEggs?" i roztrzepane jajka":""}.`,
-  "Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż zwykłe ciasto i tak ma być. Zwilż dłonie wodą, wtedy łatwiej się formuje.",
-  "Przykryj ściereczką i odstaw w ciepłe miejsce na około godzinę, aż wyraźnie urośnie.",
-  `Uformuj ${mode==="pcs"?`${$("count").value} szt. po około ${$("portion").value} g`:"ciasto"} i piecz: ${b.bakeNote}.`];
+ const cl=b.rheologyClass,pour=cl==="RHEO_POURABLE_HIGH_HYDRATION";
+ const pcs=mode==="pcs"?+$("count").value:Math.max(1,Math.round(D/b.unitWeight)),pw=mode==="pcs"?+$("portion").value:Math.round(D/pcs);
+ const s1=hasPsy?`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej). Wsyp psyllium i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej)${hasXan?" i wymieszaj z gumą ksantanową":""}.`;
+ const s2=`Dodaj mąki, drożdże, sól${b.sugar?", cukier":""}${b.fat?(b.sweet?", roztopione masło":", oliwę"):""}${hasEggs?" i roztrzepane jajka":""}. Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż zwykłe i tak ma być.`
+  +((cl==="RHEO_LAMINATED_ROLLED_STUFFED"||cl==="RHEO_ENRICHED_BRIOCHE_FRIED")?" Potem odstaw ciasto na 10–15 minut, żeby dobrze związało wodę. Wtedy łatwiej się wałkuje.":"");
+ const shape={RHEO_FREE_STANDING_LOAF:`uformuj ${pcs>1?`${pcs} szt. po około ${pw} g`:"bochenek"}`,RHEO_TENSILE_SHAPED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
+  RHEO_LAMINATED_ROLLED_STUFFED:`podziel na ${pcs} kawałków po około ${pw} g, rozwałkuj, nałóż farsz i zlep lub zwiń`,RHEO_STIFF_EXTRUDED_BOILED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
+  RHEO_ENRICHED_BRIOCHE_FRIED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`}[cl];
+ const steps=pour?[s1,s2,
+  "Od razu przełóż ciasto do naoliwionej formy lub na blachę i rozprowadź mokrymi dłońmi.",
+  "Przykryj ściereczką i zostaw w formie w ciepłym miejscu na 45–60 minut, aż wyraźnie urośnie.",
+  `Na koniec: ${b.bakeNote}.`]
+ :[s1,s2,
+  `Od razu, bez wyrastania w misce, ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
+  "Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na 45–60 minut, aż wyraźnie się napuszą.",
+  `Na koniec: ${b.bakeNote}.`];
+ const tip=pour?"":`<div class="note">Ciasto bezglutenowe rośnie tylko raz. Jeśli wyrośnie w misce, a potem je ugnieciesz, już się nie podniesie, dlatego formujemy od razu.</div>`;
  $("out").innerHTML=`<h3>${b.name}</h3>
  <div class="hyd"><div><b>${water} g</b><span>wody wlej</span></div><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div></div>
  <table>${rows}</table>
@@ -167,7 +178,7 @@ function calc(){
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
  <div class="note"><b>Dlaczego tyle wody?</b> ${why.length?why.join(", ").replace(/^./,c=>c.toUpperCase())+".":"To typowa ilość wody dla tego wypieku."}</div>
  <div class="note"><b>Dlaczego te mąki?</b> Z tego, co masz w domu, ta mieszanka da ciasto najbardziej podobne do zwykłego, pszennego.${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
- <div class="note"><b>Jak zrobić:</b><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>
+ <div class="note"><b>Jak zrobić:</b><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>${tip}
  <details class="tech"><summary>Szczegóły techniczne</summary><div class="note">Hydratacja efektywna ${h.effective.toFixed(1)}% (baza klasy ${h.base.toFixed(1)}% ${sg(h.deltaWAC)} chłonność mieszanki, WAC ${p.wacMix.toFixed(2)}${h.deltaFat?`, ${sg(h.deltaFat)} tłuszcz`:""}${h.deltaSugar?`, ${sg(h.deltaSugar)} cukier`:""}). Profil mieszanki: białko ${p.protein.toFixed(1)}% (cel ${t.protein.join("–")}%), frakcja skrobiowa ${p.starch.toFixed(0)}% (cel ${t.starch.join("–")}%), błonnik ${p.fiber.toFixed(1)}% (cel ${t.fiber.join("–")}%). Klasa: ${CLS[b.rheologyClass].label}. Procenty w tabeli liczone od masy mąk.</div></details>`;
 }
 

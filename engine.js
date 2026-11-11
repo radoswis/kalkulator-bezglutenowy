@@ -66,6 +66,7 @@
    * @property {[number,number]} fat        %
    * @property {[number,number]} eggs       %
    * @property {[number,number]} sugar      %
+   * @property {number} [proteinPriority]  mnożnik wagi białka w koszcie solvera
    * @property {{starch:[number,number], protein:[number,number], fiber:[number,number]}} target
    *   starch = udział frakcji skrobiowej w mieszance mąk (czyste skrobie + starchBase mieszanek), %
    */
@@ -77,7 +78,7 @@
       target: { starch: [35, 40], protein: [8.0, 9.5], fiber: [5.0, 6.5] } },
     RHEO_TENSILE_SHAPED: { label: "Rozciągane i formowane ręcznie", hydration: [80, 85], psyllium: [2.5, 2.8], fat: [4, 7], eggs: [0, 8], sugar: [0, 6],
       target: { starch: [40, 43], protein: [7.5, 8.5], fiber: [4.0, 5.0] } },
-    RHEO_LAMINATED_ROLLED_STUFFED: { label: "Wałkowane, zwijane, lepione", hydration: [73, 77], psyllium: [2.7, 3.0], fat: [9, 12], eggs: [8, 12], sugar: [0, 5],
+    RHEO_LAMINATED_ROLLED_STUFFED: { label: "Wałkowane, zwijane, lepione", proteinPriority: 2, hydration: [73, 77], psyllium: [2.7, 3.0], fat: [9, 12], eggs: [8, 12], sugar: [0, 5],
       target: { starch: [38, 42], protein: [7.5, 8.5], fiber: [4.0, 4.8] } },
     RHEO_STIFF_EXTRUDED_BOILED: { label: "Sztywne, wałeczki i obgotowywane", hydration: [65, 71], psyllium: [2.3, 2.6], fat: [4, 10], eggs: [0, 5], sugar: [0, 4],
       target: { starch: [42, 45], protein: [8.0, 9.0], fiber: [3.5, 4.5] } },
@@ -106,38 +107,38 @@
   /** @type {Bake[]} */
   const BAKES = [
     // RHEO_POURABLE_HIGH_HYDRATION
-    { id: "focaccia",    name: "Focaccia",              rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.2, yeastDry: 1.8, fat: 6, sugar: 0, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "blacha", bakeNote: "230°C, 20–25 min" },
-    { id: "pizza_blacha", name: "Pizza z blachy",       rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.0, yeastDry: 1.8, fat: 5, sugar: 1, eggs: 0, unitWeight: 650, defaultCount: 1, unit: "blacha", bakeNote: "230°C, 18–22 min" },
-    { id: "pizza_patelnia", name: "Pizza z patelni",    rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.0, yeastDry: 1.8, fat: 6, sugar: 1, eggs: 0, unitWeight: 300, defaultCount: 2, unit: "pizza", bakeNote: "220°C, 15 min" },
-    { id: "chleb_tostowy", name: "Chleb tostowy",       rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.0, yeastDry: 1.8, fat: 4, sugar: 3, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "forma", bakeNote: "190°C, 45 min" },
-    { id: "ciabatta",    name: "Ciabatta",              rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.0, yeastDry: 1.6, fat: 3, sugar: 0, eggs: 0, unitWeight: 300, defaultCount: 2, unit: "bochenek", bakeNote: "230°C, 30 min z parą" },
+    { id: "focaccia",    name: "Focaccia",              rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.2, yeastDry: 1.45, fat: 6, sugar: 0, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "blacha", bakeNote: "230°C, 20–25 min" },
+    { id: "pizza_blacha", name: "Pizza z blachy",       rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.0, yeastDry: 1.45, fat: 5, sugar: 1, eggs: 0, unitWeight: 750, defaultCount: 1, unit: "blacha", bakeNote: "230°C, 18–22 min" },
+    { id: "pizza_patelnia", name: "Pizza z patelni",    rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.0, yeastDry: 1.45, fat: 6, sugar: 1, eggs: 0, unitWeight: 350, defaultCount: 2, unit: "pizza", bakeNote: "220°C, 15 min" },
+    { id: "chleb_tostowy", name: "Chleb tostowy",       rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.0, yeastDry: 1.45, fat: 4, sugar: 3, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "forma", bakeNote: "190°C, 45 min" },
+    { id: "ciabatta",    name: "Ciabatta",              rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.0, yeastDry: 1.45, fat: 3, sugar: 0, eggs: 0, unitWeight: 350, defaultCount: 2, unit: "bochenek", bakeNote: "230°C, 30 min z parą" },
     // RHEO_FREE_STANDING_LOAF
-    { id: "chleb_jasny", name: "Chleb jasny",           rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.8, fat: 2, sugar: 1, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 40 min" },
-    { id: "chleb_gryczany", name: "Chleb gryczany / ciemny", rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.8, fat: 2, sugar: 1, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 45 min" },
-    { id: "bagietka",    name: "Bagietka",              rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.8, fat: 2, sugar: 0, eggs: 0, unitWeight: 300, defaultCount: 2, unit: "bagietka", bakeNote: "240°C, 25 min z parą" },
+    { id: "chleb_jasny", name: "Chleb jasny",           rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 2, sugar: 1, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 40 min" },
+    { id: "chleb_gryczany", name: "Chleb gryczany / ciemny", rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 2, sugar: 1, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 45 min" },
+    { id: "bagietka",    name: "Bagietka",              rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 2, sugar: 0, eggs: 0, unitWeight: 300, defaultCount: 2, unit: "bagietka", bakeNote: "240°C, 25 min z parą" },
     // RHEO_TENSILE_SHAPED
-    { id: "pizza_neapol", name: "Pizza neapolitańska",  rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.2, yeastDry: 1.6, fat: 4, sugar: 0, eggs: 0, unitWeight: 220, defaultCount: 3, unit: "pizza", bakeNote: "250–300°C, 6–8 min, najlepiej na kamieniu" },
-    { id: "pita",        name: "Pita",                  rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.0, yeastDry: 1.8, fat: 4, sugar: 1, eggs: 0, unitWeight: 90, defaultCount: 6, unit: "placek", bakeNote: "260°C, 4–5 min" },
-    { id: "naan",        name: "Naan",                  rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 1.8, fat: 6, sugar: 3, eggs: 0, unitWeight: 100, defaultCount: 6, unit: "placek", bakeNote: "sucha patelnia, ok. 2 min na stronę" },
-    { id: "hamburger",   name: "Bułki hamburgerowe",    rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 2.0, fat: 7, sugar: 5, eggs: 8, unitWeight: 90, defaultCount: 6, unit: "bułka", bakeNote: "200°C, 18 min" },
-    { id: "subway",      name: "Bułki subway / hot dog", rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 2.0, fat: 6, sugar: 4, eggs: 5, unitWeight: 110, defaultCount: 5, unit: "bułka", bakeNote: "200°C, 20 min" },
-    { id: "kajzerki",    name: "Kajzerki",              rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.0, yeastDry: 1.8, fat: 4, sugar: 2, eggs: 0, unitWeight: 80, defaultCount: 8, unit: "bułka", bakeNote: "220°C, 20 min z parą" },
+    { id: "pizza_neapol", name: "Pizza neapolitańska",  rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.2, yeastDry: 1.45, fat: 4, sugar: 0, eggs: 0, unitWeight: 220, defaultCount: 3, unit: "pizza", bakeNote: "250–300°C, 6–8 min, najlepiej na kamieniu" },
+    { id: "pita",        name: "Pita",                  rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.0, yeastDry: 1.45, fat: 4, sugar: 1, eggs: 0, unitWeight: 90, defaultCount: 8, unit: "placek", bakeNote: "260°C, 4–5 min" },
+    { id: "naan",        name: "Naan",                  rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 1.45, fat: 6, sugar: 3, eggs: 0, unitWeight: 100, defaultCount: 6, unit: "placek", bakeNote: "sucha patelnia, ok. 2 min na stronę" },
+    { id: "hamburger",   name: "Bułki hamburgerowe",    rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 1.45, fat: 7, sugar: 5, eggs: 8, unitWeight: 90, defaultCount: 8, unit: "bułka", bakeNote: "200°C, 18 min" },
+    { id: "subway",      name: "Bułki subway / hot dog", rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 1.45, fat: 6, sugar: 4, eggs: 5, unitWeight: 110, defaultCount: 6, unit: "bułka", bakeNote: "200°C, 20 min" },
+    { id: "kajzerki",    name: "Kajzerki",              rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.0, yeastDry: 1.45, fat: 4, sugar: 2, eggs: 0, unitWeight: 80, defaultCount: 8, unit: "bułka", bakeNote: "220°C, 20 min z parą" },
     // RHEO_LAMINATED_ROLLED_STUFFED
-    { id: "calzone",     name: "Calzone",               rheologyClass: "RHEO_LAMINATED_ROLLED_STUFFED", salt: 2.0, yeastDry: 1.8, fat: 10, sugar: 1, eggs: 8, unitWeight: 250, defaultCount: 3, unit: "calzone", bakeNote: "240°C, 12–15 min" },
-    { id: "paszteciki",  name: "Paszteciki",            rheologyClass: "RHEO_LAMINATED_ROLLED_STUFFED", salt: 1.8, yeastDry: 2.0, fat: 11, sugar: 3, eggs: 10, unitWeight: 60, defaultCount: 12, unit: "pasztecik", bakeNote: "200°C, 20 min" },
-    { id: "pierogi_drozdzowe", name: "Pierogi drożdżowe", rheologyClass: "RHEO_LAMINATED_ROLLED_STUFFED", salt: 1.6, yeastDry: 2.0, fat: 11, sugar: 4, eggs: 10, unitWeight: 50, defaultCount: 12, unit: "pieróg", bakeNote: "190°C, 20 min" },
+    { id: "calzone",     name: "Calzone",               rheologyClass: "RHEO_LAMINATED_ROLLED_STUFFED", salt: 2.0, yeastDry: 1.45, fat: 10, sugar: 1, eggs: 8, unitWeight: 250, defaultCount: 3, unit: "calzone", bakeNote: "240°C, 12–15 min" },
+    { id: "paszteciki",  name: "Paszteciki",            rheologyClass: "RHEO_LAMINATED_ROLLED_STUFFED", salt: 1.8, yeastDry: 1.45, fat: 11, sugar: 3, eggs: 10, unitWeight: 60, defaultCount: 12, unit: "pasztecik", bakeNote: "200°C, 20 min" },
+    { id: "pierogi_drozdzowe", name: "Pierogi drożdżowe", rheologyClass: "RHEO_LAMINATED_ROLLED_STUFFED", salt: 1.6, yeastDry: 1.45, fat: 11, sugar: 4, eggs: 10, unitWeight: 50, defaultCount: 12, unit: "pieróg", bakeNote: "190°C, 20 min" },
     // RHEO_STIFF_EXTRUDED_BOILED
-    { id: "bajgle",      name: "Bajgle",                rheologyClass: "RHEO_STIFF_EXTRUDED_BOILED", salt: 2.0, yeastDry: 1.8, fat: 4, sugar: 3, eggs: 0, unitWeight: 100, defaultCount: 6, unit: "bajgiel", bakeNote: "1 min gotowania, potem 210°C 20 min" },
-    { id: "precle",      name: "Precle",                rheologyClass: "RHEO_STIFF_EXTRUDED_BOILED", salt: 2.0, yeastDry: 1.8, fat: 5, sugar: 2, eggs: 0, unitWeight: 100, defaultCount: 6, unit: "precel", bakeNote: "kąpiel sodowa, potem 210°C 15 min" },
-    { id: "grissini",    name: "Grissini",              rheologyClass: "RHEO_STIFF_EXTRUDED_BOILED", salt: 2.0, yeastDry: 1.8, fat: 10, sugar: 0, eggs: 0, unitWeight: 30, defaultCount: 20, unit: "paluch", bakeNote: "200°C, 15 min" },
+    { id: "bajgle",      name: "Bajgle",                rheologyClass: "RHEO_STIFF_EXTRUDED_BOILED", salt: 2.0, yeastDry: 1.45, fat: 4, sugar: 3, eggs: 0, unitWeight: 100, defaultCount: 6, unit: "bajgiel", bakeNote: "1 min gotowania, potem 210°C 20 min" },
+    { id: "precle",      name: "Precle",                rheologyClass: "RHEO_STIFF_EXTRUDED_BOILED", salt: 2.0, yeastDry: 1.45, fat: 5, sugar: 2, eggs: 0, unitWeight: 100, defaultCount: 6, unit: "precel", bakeNote: "kąpiel sodowa, potem 210°C 15 min" },
+    { id: "grissini",    name: "Grissini",              rheologyClass: "RHEO_STIFF_EXTRUDED_BOILED", salt: 2.0, yeastDry: 1.45, fat: 10, sugar: 0, eggs: 0, unitWeight: 30, defaultCount: 20, unit: "paluch", bakeNote: "200°C, 15 min" },
     // RHEO_ENRICHED_BRIOCHE_FRIED
-    { id: "chalka",      name: "Chałka",                rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 2.0, fat: 12, sugar: 12, eggs: 20, unitWeight: 600, defaultCount: 1, unit: "chałka", bakeNote: "180°C, 35 min", sweet: true },
-    { id: "babka",       name: "Babka drożdżowa",       rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.4, yeastDry: 2.2, fat: 18, sugar: 16, eggs: 25, unitWeight: 750, defaultCount: 1, unit: "babka", bakeNote: "175°C, 50 min", sweet: true },
-    { id: "drozdzowki",  name: "Drożdżówki",            rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.6, yeastDry: 2.0, fat: 15, sugar: 14, eggs: 20, unitWeight: 90, defaultCount: 7, unit: "drożdżówka", bakeNote: "180°C, 20 min", sweet: true },
-    { id: "cynamonki",   name: "Cynamonki",             rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.6, yeastDry: 2.0, fat: 15, sugar: 13, eggs: 20, unitWeight: 95, defaultCount: 7, unit: "cynamonka", bakeNote: "180°C, 22 min", sweet: true },
-    { id: "buleczki_maslane", name: "Bułeczki maślane", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 2.0, fat: 12, sugar: 10, eggs: 15, unitWeight: 70, defaultCount: 9, unit: "bułka", bakeNote: "190°C, 18 min", sweet: true },
-    { id: "paczki",      name: "Pączki",                rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.8, yeastDry: 2.0, fat: 14, sugar: 14, eggs: 22, unitWeight: 70, defaultCount: 8, unit: "pączek", bakeNote: "smażenie w 170°C", sweet: true },
-    { id: "langosz",     name: "Langosz",               rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 2.0, yeastDry: 1.8, fat: 6, sugar: 2, eggs: 3, unitWeight: 120, defaultCount: 5, unit: "placek", bakeNote: "smażenie w 175°C" }
+    { id: "chalka",      name: "Chałka",                rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 12, sugar: 12, eggs: 20, unitWeight: 600, defaultCount: 1, unit: "chałka", bakeNote: "180°C, 35 min", sweet: true },
+    { id: "babka",       name: "Babka drożdżowa",       rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.4, yeastDry: 1.5, fat: 18, sugar: 16, eggs: 25, unitWeight: 750, defaultCount: 1, unit: "babka", bakeNote: "175°C, 50 min", sweet: true },
+    { id: "drozdzowki",  name: "Drożdżówki",            rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.6, yeastDry: 1.5, fat: 15, sugar: 14, eggs: 20, unitWeight: 90, defaultCount: 7, unit: "drożdżówka", bakeNote: "180°C, 20 min", sweet: true },
+    { id: "cynamonki",   name: "Cynamonki",             rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.6, yeastDry: 1.5, fat: 15, sugar: 13, eggs: 20, unitWeight: 95, defaultCount: 7, unit: "cynamonka", bakeNote: "180°C, 22 min", sweet: true },
+    { id: "buleczki_maslane", name: "Bułeczki maślane", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 12, sugar: 10, eggs: 15, unitWeight: 70, defaultCount: 9, unit: "bułka", bakeNote: "190°C, 18 min", sweet: true },
+    { id: "paczki",      name: "Pączki",                rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.8, yeastDry: 1.5, fat: 14, sugar: 14, eggs: 22, unitWeight: 70, defaultCount: 8, unit: "pączek", bakeNote: "smażenie w 170°C", sweet: true },
+    { id: "langosz",     name: "Langosz",               rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 2.0, yeastDry: 1.45, fat: 6, sugar: 2, eggs: 3, unitWeight: 120, defaultCount: 5, unit: "placek", bakeNote: "smażenie w 175°C" }
   ];
 
   // ---------- Stałe modelu ----------
@@ -180,7 +181,8 @@
   /** Funkcja kosztu solvera. @param {Blend} blend @param {RheologyClass} cls */
   function blendCost(blend, cls) {
     const p = profileOf(blend), t = cls.target;
-    let c = ((p.protein - mid(t.protein)) / 0.5) ** 2
+    const pDiv = cls.proteinPriority ? 0.5 / cls.proteinPriority : 0.5;
+    let c = ((p.protein - mid(t.protein)) / pDiv) ** 2
           + ((p.starch - mid(t.starch)) / 2) ** 2
           + ((p.fiber - mid(t.fiber)) / 0.5) ** 2;
     for (const [ing, x] of blend) {
