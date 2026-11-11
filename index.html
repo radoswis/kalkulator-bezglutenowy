@@ -56,6 +56,10 @@ details .inner{display:grid;gap:10px;margin-top:12px}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .msg{font-size:.85rem;color:var(--muted)}
 [hidden]{display:none!important}
+.steps{margin:6px 0 0;padding-left:1.3em;display:grid;gap:6px}
+.note{font-size:.95rem}
+details.tech{background:transparent;padding:8px 12px}
+details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -143,14 +147,28 @@ function calc(){
  if(r.empty){$("out").innerHTML=`<h3>${b.name}</h3>${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}`;return}
  const h=r.hydration,p=r.profile,t=p.target,sg=x=>(x>=0?"+":"")+x.toFixed(1);
  const rows=r.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
+ const water=r.lines.find(l=>l.key==="water").grams,hasEggs=b.eggs>0,hasPsy=r.lines.some(l=>l.key==="psy"),hasXan=r.lines.some(l=>l.key==="xan");
+ const why=[];
+ if(h.deltaWAC<-0.5)why.push("te mąki piją mniej wody niż zwykle, więc dajemy jej trochę mniej");
+ if(h.deltaWAC>0.5)why.push("te mąki piją więcej wody niż zwykle, więc dajemy jej trochę więcej");
+ if(h.deltaFat)why.push("tłuszcz sam zmiękcza ciasto, więc wody jest mniej");
+ if(h.deltaSugar)why.push("cukier rozrzedza ciasto, więc wody jest mniej");
+ if(hasEggs)why.push("jajka też są płynem i już odjęliśmy je od wody");
+ const steps=[
+  hasPsy?`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej). Wsyp psyllium i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej)${hasXan?" i wymieszaj z gumą ksantanową":""}.`,
+  `Dodaj mąki, drożdże, sól${b.sugar?", cukier":""}${b.fat?(b.sweet?", roztopione masło":", oliwę"):""}${hasEggs?" i roztrzepane jajka":""}.`,
+  "Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż zwykłe ciasto i tak ma być. Zwilż dłonie wodą, wtedy łatwiej się formuje.",
+  "Przykryj ściereczką i odstaw w ciepłe miejsce na około godzinę, aż wyraźnie urośnie.",
+  `Uformuj ${mode==="pcs"?`${$("count").value} szt. po około ${$("portion").value} g`:"ciasto"} i piecz: ${b.bakeNote}.`];
  $("out").innerHTML=`<h3>${b.name}</h3>
- <div class="hyd"><div><b>${h.effective.toFixed(0)}%</b><span>hydratacja efektywna</span></div><div><b>${r.lines.find(l=>l.key==="water").grams} g</b><span>woda do dolania</span></div><div><b>${fmt(r.total)} g</b><span>ciasta${mode==="pcs"?` · ${$("count").value} × ${$("portion").value} g`:""}</span></div></div>
+ <div class="hyd"><div><b>${water} g</b><span>wody wlej</span></div><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div></div>
  <table>${rows}</table>
- <div class="note">Drożdże świeże zamiast suchych: ${fmt(r.yeast.freshGrams)} g. Procenty liczone od masy mąk. Mikroskładniki zaokrąglone do 0,5 g.</div>
- <div class="note"><b>Hydratacja:</b> baza klasy ${h.base.toFixed(1)}% ${sg(h.deltaWAC)} (chłonność mieszanki, WAC ${p.wacMix.toFixed(2)})${h.deltaFat?` ${sg(h.deltaFat)} (tłuszcz)`:""}${h.deltaSugar?` ${sg(h.deltaSugar)} (cukier)`:""}${b.eggs?`. Jajka wnoszą 75% wody, uwzględnione w wodzie do dolania`:""}.</div>
- <div class="note"><b>Dobrana mieszanka:</b> białko ${p.protein.toFixed(1)}% (cel ${t.protein.join("–")}%), skrobia ${p.starch.toFixed(0)}% (cel ${t.starch.join("–")}%), błonnik ${p.fiber.toFixed(1)}% (cel ${t.fiber.join("–")}%).${r.unused.length?` Masz, ale tu niepotrzebne: ${r.unused.map(f=>f.name).join(", ")}.`:""}</div>
+ <div class="note">Masz drożdże świeże (w kostce)? Weź ${fmt(r.yeast.freshGrams)} g zamiast suchych.</div>
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
- <div class="note"><b>Wykonanie:</b> psyllium wymieszaj z wodą i odstaw na 5 min do zżelowania, dodaj resztę składników, wyrabiaj 3–4 min. Wyrastanie około 60 min w cieple. ${b.bakeNote}.</div>`;
+ <div class="note"><b>Dlaczego tyle wody?</b> ${why.length?why.join(", ").replace(/^./,c=>c.toUpperCase())+".":"To typowa ilość wody dla tego wypieku."}</div>
+ <div class="note"><b>Dlaczego te mąki?</b> Z tego, co masz w domu, ta mieszanka da ciasto najbardziej podobne do zwykłego, pszennego.${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
+ <div class="note"><b>Jak zrobić:</b><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>
+ <details class="tech"><summary>Szczegóły techniczne</summary><div class="note">Hydratacja efektywna ${h.effective.toFixed(1)}% (baza klasy ${h.base.toFixed(1)}% ${sg(h.deltaWAC)} chłonność mieszanki, WAC ${p.wacMix.toFixed(2)}${h.deltaFat?`, ${sg(h.deltaFat)} tłuszcz`:""}${h.deltaSugar?`, ${sg(h.deltaSugar)} cukier`:""}). Profil mieszanki: białko ${p.protein.toFixed(1)}% (cel ${t.protein.join("–")}%), frakcja skrobiowa ${p.starch.toFixed(0)}% (cel ${t.starch.join("–")}%), błonnik ${p.fiber.toFixed(1)}% (cel ${t.fiber.join("–")}%). Klasa: ${CLS[b.rheologyClass].label}. Procenty w tabeli liczone od masy mąk.</div></details>`;
 }
 
 // Własna mąka
