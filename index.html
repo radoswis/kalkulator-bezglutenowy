@@ -78,7 +78,9 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 <div class="grid">
 <div class="col">
 <section><h2><span>1</span>Co robisz?</h2>
+<input id="bakeSearch" type="search" placeholder="Szukaj przepisu, np. pierogi, pizza, gofry" autocomplete="off" aria-label="Szukaj przepisu">
 <select id="bake"></select>
+<div class="msg" id="bakeSearchMsg" hidden></div>
 <div class="note" id="bakeInfo"></div>
 </section>
 
@@ -131,7 +133,17 @@ const all=()=>ING.concat(custom);
 const save=()=>{try{localStorage.setItem("gf_pantry_v1",JSON.stringify([...sel]));localStorage.setItem("gf_custom_v1",JSON.stringify(custom))}catch(e){}};
 const fmt=g=>(Number.isInteger(g)?g:g.toFixed(1).replace(".",","));
 
-$("bake").innerHTML=CATEGORIES.map(c=>`<optgroup label="${c}">`+BAKES.filter(b=>b.category===c).map(b=>`<option value="${b.id}">${b.name}</option>`).join("")+"</optgroup>").join("");
+// Lista przepisów z wyszukiwarką (bez polskich znaków i wielkości liter)
+const norm=t=>t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ł/g,"l");
+let lastBake="pizza_neapol";
+function renderBakeList(q){const n=norm(q||""),cur=$("bake").value||lastBake;
+ const byName=BAKES.some(b=>norm(b.name).includes(n));
+ const hit=b=>!n||norm(byName?b.name:b.name+" "+b.category).includes(n);
+ $("bake").innerHTML=CATEGORIES.map(c=>{const l=BAKES.filter(b=>b.category===c&&hit(b));return l.length?`<optgroup label="${c}">`+l.map(b=>`<option value="${b.id}">${b.name}</option>`).join("")+"</optgroup>":""}).join("");
+ const cnt=BAKES.filter(hit).length;$("bakeSearchMsg").hidden=!n;$("bakeSearchMsg").textContent=cnt?`Znaleziono: ${cnt}`:"Nie ma takiego przepisu. Spróbuj innego słowa.";
+ if(cnt&&[...$("bake").options].some(o=>o.value===cur))$("bake").value=cur;return cnt}
+renderBakeList("");
+$("bakeSearch").oninput=()=>{const prev=lastBake,cnt=renderBakeList($("bakeSearch").value);if(cnt){lastBake=$("bake").value;if(lastBake!==prev){setDefaults();calc()}}};
 $("bake").value="pizza_neapol";
 function chip(f){return `<button type="button" class="chip" data-id="${f.id}" aria-pressed="${sel.has(f.id)}"${f.composition?` title="Skład: ${f.composition}"`:""}>${f.name}${f.brands?` <small>${f.brands}</small>`:""}${f.wheatStarch?` <small>· skrobia pszenna</small>`:""}${f.custom?" <small>(własna)</small>":""}</button>`}
 function renderPantry(){const g=[["Mąki",f=>["wholegrain_structure","high_protein"].includes(f.role)],["Skrobie",f=>f.role==="pure_starch"],["Gotowe mieszanki",f=>f.role==="commercial_base"]];
@@ -142,7 +154,7 @@ document.addEventListener("click",e=>{const a=e.target.closest("[data-add]");if(
 function setDefaults(){const b=BAKES.find(x=>x.id===$("bake").value);$("count").value=b.defaultCount;$("portion").value=b.unitWeight;$("grams").value=defaultDough(b)}
 function setMode(m){mode=m;$("mPcs").setAttribute("aria-pressed",m==="pcs");$("mGr").setAttribute("aria-pressed",m==="gr");$("lblCount").hidden=$("lblPortion").hidden=m!=="pcs";$("lblGrams").hidden=m==="pcs";calc()}
 $("mPcs").onclick=()=>setMode("pcs");$("mGr").onclick=()=>setMode("gr");
-$("bake").onchange=()=>{setDefaults();calc()};
+$("bake").onchange=()=>{lastBake=$("bake").value;setDefaults();calc()};
 ["count","portion","grams"].forEach(i=>$(i).oninput=calc);
 
 function calc(){
