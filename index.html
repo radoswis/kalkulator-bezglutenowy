@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kalkulator ciast bezglutenowych</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Układ: dwie kolumny — wybory po lewej, przepis (karta wagi) po prawej; na telefonie jedna kolumna */
+:root{--bg:#f6f6f2;--surface:#ffffff;--fg:#1f2219;--muted:#666b5c;--line:#dcded3;--accent:#4f6b2e;--accent-soft:#e7eedc;--warn:#9a5b10;--warn-soft:#fbefdc;
+--display:"Bricolage Grotesque",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15170f;--surface:#1e2117;--fg:#e9eadf;--muted:#a1a593;--line:#343828;--accent:#a3c46f;--accent-soft:#2b3520;--warn:#f0b35c;--warn-soft:#3a2c17;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15170f;--surface:#1e2117;--fg:#e9eadf;--muted:#a1a593;--line:#343828;--accent:#a3c46f;--accent-soft:#2b3520;--warn:#f0b35c;--warn-soft:#3a2c17;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:24px}
+header h1{font-family:var(--display);font-size:clamp(1.6rem,4vw,2.3rem);margin:0;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);max-width:62ch}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+section{display:grid;gap:12px}
+h2{font-family:var(--display);font-size:1.1rem;margin:0;display:flex;gap:10px;align-items:baseline}
+h2 span{font-family:var(--mono);font-size:.8rem;color:var(--accent)}
+.col{display:grid;gap:28px;min-width:0}
+select,input{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;box-sizing:border-box}
+select:focus,input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.group{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:6px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.chip small{opacity:.7}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 140px;min-width:0}
+label{font-size:.85rem;color:var(--muted);display:grid;gap:4px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;font:inherit;border:0;background:var(--surface);color:var(--fg);padding:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:14px;position:sticky;top:max(12px,env(safe-area-inset-top,0px))}
+@media (max-width:820px){.card{position:static}}
+.card h3{font-family:var(--display);margin:0;font-size:1.3rem}
+.hyd{display:flex;gap:20px;flex-wrap:wrap}
+.hyd div{display:grid}
+.hyd b{font-family:var(--mono);font-size:1.6rem;color:var(--accent)}
+.hyd span{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+td{padding:6px 0;border-bottom:1px dashed var(--line)}
+td.g{font-family:var(--mono);text-align:right;font-weight:600;white-space:nowrap}
+td.p{font-family:var(--mono);text-align:right;color:var(--muted);font-size:.8rem;width:64px}
+tr.sub td:first-child{padding-left:14px;color:var(--muted)}
+.warn{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:.88rem}
+.note{font-size:.85rem;color:var(--muted)}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:12px 14px}
+summary{cursor:pointer;font-weight:600}
+details .inner{display:grid;gap:10px;margin-top:12px}
+.btn{font:inherit;font-weight:600;background:var(--accent);color:var(--bg);border:0;border-radius:8px;padding:9px 14px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.msg{font-size:.85rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+<h1>Kalkulator ciast bezglutenowych</h1>
+<p>Demo. Wybierz wypiek, zaznacz mąki, które masz, i podaj ilość. Proporcje liczone są w procentach piekarskich na podstawie chłonności wody każdej mąki. Współczynniki są szacunkowe i do kalibracji testami.</p>
+</header>
+<div class="grid">
+<div class="col">
+<section><h2><span>1</span>Co pieczesz?</h2>
+<select id="bake"></select>
+<div class="note" id="bakeInfo"></div>
+</section>
+
+<section><h2><span>2</span>Jakie mąki masz?</h2>
+<div id="flours"></div>
+<div class="group">Dodatki wiążące</div>
+<div class="chips" id="addons"></div>
+<details id="addBox"><summary>Dodaj własną mąkę</summary>
+<div class="inner">
+<div class="row"><input id="q" placeholder="Nazwa lub kod kreskowy, np. Bezgluten mąka uniwersalna"><button class="btn ghost" id="searchBtn" type="button">Szukaj w internecie</button></div>
+<div class="msg" id="searchMsg"></div>
+<div class="row">
+<label>Nazwa<input id="nName" placeholder="np. Mąka z sorgo XYZ"></label>
+<label>Rodzaj<select id="nType"><option value="pelna">Mąka (białko/błonnik)</option><option value="skrobia">Skrobia</option><option value="mix">Gotowy mix z zagęstnikiem</option></select></label>
+</div>
+<div class="row">
+<label>Białko g/100 g<input id="nProt" type="number" step="0.1" value="8"></label>
+<label>Błonnik g/100 g<input id="nFib" type="number" step="0.1" value="4"></label>
+</div>
+<div class="msg" id="nEst"></div>
+<button class="btn" id="addBtn" type="button">Dodaj do moich mąk</button>
+</div></details>
+</section>
+
+<section><h2><span>3</span>Ile ciasta?</h2>
+<div class="seg" role="group" aria-label="Tryb ilości"><button id="mPcs" aria-pressed="true" type="button">Sztuki</button><button id="mGr" aria-pressed="false" type="button">Gramy ciasta</button></div>
+<div class="row">
+<label id="lblCount">Liczba sztuk<input id="count" type="number" min="1" value="2"></label>
+<label id="lblPortion">Waga sztuki (g)<input id="portion" type="number" min="10" value="250"></label>
+<label id="lblGrams" hidden>Ciasto razem (g)<input id="grams" type="number" min="50" value="500"></label>
+</div>
+</section>
+</div>
+
+<aside class="card" aria-live="polite" id="out"></aside>
+</div>
+</div>
+
+<script>
+// Mąki: t = typ, a = chłonność wody (g wody na g mąki), b = zawiera zagęstnik
+// P = białko %, F = błonnik %, fl = siła smaku 0–1, cap = maks. udział w mieszance
+const BASE=[
+{id:"ryz",n:"Ryżowa biała",t:"pelna",a:.75,P:7,F:2.4,fl:.1},{id:"ryzb",n:"Ryżowa brązowa",t:"pelna",a:.85,P:7.5,F:4,fl:.3},
+{id:"gry",n:"Gryczana jasna",t:"pelna",a:1.0,P:12,F:6,fl:.8,cap:.4},{id:"kuk",n:"Kukurydziana",t:"pelna",a:.7,P:7,F:7,fl:.5,cap:.3},
+{id:"jag",n:"Jaglana",t:"pelna",a:.85,P:11,F:4,fl:.6,cap:.25},{id:"ows",n:"Owsiana bezglutenowa",t:"pelna",a:1.0,P:13,F:10,fl:.4,cap:.35},
+{id:"cie",n:"Z ciecierzycy",t:"pelna",a:.95,P:20,F:11,fl:.7,cap:.2},{id:"ama",n:"Amarantusowa",t:"pelna",a:.95,P:14,F:7,fl:.7,cap:.25},
+{id:"sor",n:"Z sorgo",t:"pelna",a:.85,P:10,F:6,fl:.2},{id:"tef",n:"Z teff",t:"pelna",a:.95,P:12,F:8,fl:.5,cap:.35},
+{id:"mig",n:"Migdałowa",t:"pelna",a:.5,P:21,F:11,fl:.4,cap:.1},{id:"kok",n:"Kokosowa",t:"pelna",a:2.0,P:19,F:39,fl:.7,cap:.08},
+{id:"szi",n:"Skrobia ziemniaczana",t:"skrobia",a:.55,P:.5,F:0,fl:0},{id:"skk",n:"Skrobia kukurydziana",t:"skrobia",a:.5,P:.5,F:0,fl:0},
+{id:"tap",n:"Tapioka",t:"skrobia",a:.55,P:.5,F:0,fl:0},
+{id:"mixb",n:"Schär Mix B",t:"mix",a:.82,b:1},{id:"mixit",n:"Schär Mix It! Universal",t:"mix",a:.8,b:1},
+{id:"mixc",n:"Schär Mix C",t:"mix",a:.7,b:1,sweet:1}];
+const ADDONS=[{id:"psy",n:"Psyllium: łuska babki jajowatej (Plantago ovata) lub płesznik"},{id:"xan",n:"Guma ksantanowa"}];
+// Wypieki: s=udział skrobi, psy=% psyllium, h=mnożnik hydratacji, sol, dr=drożdże suche %, ol=tłuszcz %, cu=cukier %, ja=jajka %, w=waga sztuki, u=jednostka, p=pieczenie
+const B=[
+["Pizza i płaskie",[
+["Pizza neapolitańska",.45,4,1.0,2.2,1.0,2,0,0,250,"pizza","250–300°C, 6–8 min, najlepiej na kamieniu"],
+["Pizza z blachy",.4,4,1.05,2,1.2,5,1,0,900,"blacha","230°C, 18–22 min"],
+["Pizza z patelni",.4,4,1.05,2,1.2,6,1,0,350,"pizza","220°C, 15 min"],
+["Calzone",.45,4.5,.95,2,1.0,3,0,0,280,"calzone","240°C, 12–15 min"],
+["Focaccia",.4,4,1.2,2.2,1.2,6,0,0,700,"blacha","230°C, 20–25 min"],
+["Pita",.45,4,1.0,2,1.2,3,1,0,90,"placek","260°C, 4–5 min"],
+["Naan",.45,3.5,.95,1.8,1.2,6,3,0,100,"placek","sucha patelnia, ok. 2 min na stronę"],
+["Langosz",.45,4,1.05,2,1.4,4,1,0,120,"placek","smażenie w 175°C"]]],
+["Chleby",[
+["Chleb jasny",.4,5,1.1,2,1.4,2,1,0,900,"bochenek","220°C 15 min, potem 200°C 40 min"],
+["Chleb gryczany / ciemny",.25,5,1.15,2,1.4,2,1,0,900,"bochenek","220°C 15 min, potem 200°C 45 min"],
+["Chleb tostowy",.45,4.5,1.0,2,1.5,5,4,0,800,"forma","190°C, 45 min"],
+["Ciabatta",.4,4,1.2,2,1.0,3,0,0,350,"bochenek","230°C, 30 min z parą"],
+["Bagietka",.45,4.5,1.0,2,1.2,2,0,0,300,"bagietka","240°C, 25 min z parą"]]],
+["Bułki",[
+["Bułki hamburgerowe",.45,4,.9,1.8,1.5,6,6,10,90,"bułka","200°C, 18 min"],
+["Bułki subway / hot dog",.45,4,.95,1.8,1.5,5,5,0,110,"bułka","200°C, 20 min"],
+["Kajzerki",.45,4,.95,2,1.4,3,2,0,80,"bułka","220°C, 20 min z parą"],
+["Bułeczki maślane",.45,3.5,.85,1.5,1.6,8,8,15,70,"bułka","190°C, 18 min"],
+["Bajgle",.45,5,.85,2,1.2,2,3,0,100,"bajgiel","1 min gotowania, potem 210°C 20 min"],
+["Precle",.45,4.5,.85,2,1.2,3,2,0,100,"precel","kąpiel sodowa, potem 210°C 15 min"],
+["Grissini",.45,3.5,.9,2,1.0,8,0,0,15,"paluch","200°C, 15 min"]]],
+["Nadziewane i słodkie",[
+["Paszteciki",.45,4,.9,1.8,1.6,8,4,10,60,"pasztecik","200°C, 20 min"],
+["Pierogi drożdżowe",.45,3.5,.9,1.5,1.5,6,5,10,70,"pieróg","190°C, 20 min"],
+["Chałka",.45,4,.85,1.5,1.8,8,12,15,600,"chałka","180°C, 35 min"],
+["Babka drożdżowa",.5,3.5,.85,1,2,12,18,20,900,"babka","175°C, 50 min"],
+["Drożdżówki",.5,3.5,.85,1,2,10,15,15,90,"drożdżówka","180°C, 20 min"],
+["Cynamonki",.5,3.5,.85,1,2,12,12,15,95,"cynamonka","180°C, 22 min"],
+["Pączki",.5,3.5,.85,1,2,10,12,20,70,"pączek","smażenie w 170°C"]]]];
+const BAKES=[];B.forEach(([g,l])=>l.forEach(r=>BAKES.push({g,n:r[0],s:r[1],psy:r[2],h:r[3],sol:r[4],dr:r[5],ol:r[6],cu:r[7],ja:r[8],w:r[9],u:r[10],p:r[11]})));
+
+let custom=[];try{custom=JSON.parse(localStorage.getItem("bg_custom")||"[]").map(f=>({P:6,F:3,fl:.4,...f}))}catch(e){}
+const sel=new Set(["ryz","szi","tap","mixb","psy"]);
+let mode="pcs";
+const $=id=>document.getElementById(id);
+const all=()=>BASE.concat(custom);
+const est=(t,p,f)=>Math.round(((t==="skrobia"?.5:.6)+p*.01+f*.03+(t==="mix"?.1:0))*100)/100;
+
+function renderSelect(){$("bake").innerHTML=B.map(([g])=>`<optgroup label="${g}">`+BAKES.filter(b=>b.g===g).map(b=>`<option value="${BAKES.indexOf(b)}">${b.n}</option>`).join("")+"</optgroup>").join("")}
+function chip(f){return `<button type="button" class="chip" data-id="${f.id}" aria-pressed="${sel.has(f.id)}">${f.n}${f.own?" <small>(własna)</small>":""}</button>`}
+function renderFlours(){const g=[["Mąki",x=>x.t==="pelna"],["Skrobie",x=>x.t==="skrobia"],["Gotowe mieszanki",x=>x.t==="mix"]];
+$("flours").innerHTML=g.map(([n,fn])=>`<div class="group">${n}</div><div class="chips">${all().filter(fn).map(chip).join("")}</div>`).join("");
+$("addons").innerHTML=ADDONS.map(chip).join("")}
+document.addEventListener("click",e=>{const c=e.target.closest(".chip");if(!c)return;const id=c.dataset.id;sel.has(id)?sel.delete(id):sel.add(id);c.setAttribute("aria-pressed",sel.has(id));calc()});
+
+function setMode(m){mode=m;$("mPcs").setAttribute("aria-pressed",m==="pcs");$("mGr").setAttribute("aria-pressed",m==="gr");$("lblCount").hidden=$("lblPortion").hidden=m!=="pcs";$("lblGrams").hidden=m==="pcs";calc()}
+$("mPcs").onclick=()=>setMode("pcs");$("mGr").onclick=()=>setMode("gr");
+$("bake").onchange=()=>{$("portion").value=BAKES[$("bake").value].w;calc()};
+["count","portion","grams"].forEach(i=>$(i).oninput=calc);
+
+// Cele mieszanki dla grup wypieków: białko %, błonnik %, maks. siła smaku
+const TGT={"Pizza i płaskie":{P:8,F:3.5,fl:.3},"Chleby":{P:9,F:5,fl:.45},"Bułki":{P:8,F:3.5,fl:.3},"Nadziewane i słodkie":{P:7,F:3,fl:.2}};
+const tgt=b=>b.n.startsWith("Chleb gryczany")?{P:9.5,F:6,fl:.8}:TGT[b.g];
+let blendInfo=null;const cache={};
+function score(sub,w,b,T){let P=0,F=0,fl=0,st=0,pen=0;
+ for(let i=0;i<sub.length;i++){const f=sub[i],x=w[i];P+=x*f.P;F+=x*f.F;fl+=x*f.fl;if(f.t==="skrobia")st+=x;if(f.cap&&x>f.cap)pen+=(x-f.cap)*60}
+ const s=((P-T.P)/2)**2+((F-T.F)/1.5)**2+((st-b.s)/.1)**2+Math.max(0,fl-T.fl)*25+pen+.15*sub.length;
+ return {s,P,F,st,fl}}
+// Przeszukuje wszystkie kombinacje do 4 mąk z krokiem 5% i wybiera najlepszą
+function optimize(list,b){const T=tgt(b),key=b.n+list.map(f=>f.id).join();if(cache[key])return cache[key];
+ let best=null;const n=list.length,K=Math.min(4,n),N=20;
+ const comps=(k,left,acc,out)=>{if(k===1){out.push(acc.concat(left));return}for(let x=1;x<=left-k+1;x++)comps(k-1,left-x,acc.concat(x),out)};
+ const subsets=(start,k,acc)=>{if(acc.length===k){const ws=[];comps(k,N,[],ws);
+  for(const c of ws){const w=c.map(x=>x/N),r=score(acc,w,b,T);if(!best||r.s<best.s)best={...r,sub:acc.slice(),w}}return}
+  for(let i=start;i<n;i++)subsets(i+1,k,acc.concat(list[i]))};
+ for(let k=1;k<=K;k++)subsets(0,k,[]);
+ best.T=T;return cache[key]=best}
+
+function blend(b,warn){
+ const fl=all().filter(f=>sel.has(f.id));
+ const mixes=fl.filter(f=>f.t==="mix"&&!f.sweet), sweet=fl.filter(f=>f.sweet);
+ let st=fl.filter(f=>f.t==="skrobia"), wh=fl.filter(f=>f.t==="pelna");
+ const parts=[];let opt=null;
+ const spread=(list,share)=>list.forEach(f=>parts.push([f,share/list.length]));
+ const raw=st.concat(wh);
+ if(raw.length){opt=optimize(raw,b);const share=mixes.length?.3:1;opt.sub.forEach((f,i)=>parts.push([f,opt.w[i]*share]))}
+ if(mixes.length)spread(mixes,raw.length?.7:1);
+ if(!mixes.length&&raw.length&&!st.length)warn.push("Brak skrobi: ciasto będzie zbite i twarde. Dokup skrobię ziemniaczaną lub tapiokę.");
+ if(!mixes.length&&raw.length&&!wh.length)warn.push("Same skrobie bez mąki: ciasto będzie gumowate i bez smaku. Dodaj np. mąkę ryżową lub z sorgo.");
+ if(!parts.length&&sweet.length)spread(sweet,1);
+ if(opt){const un=raw.filter(f=>!opt.sub.includes(f));blendInfo=opt;blendInfo.unused=un}else blendInfo=null;
+ if(sweet.length)warn.push("Schär Mix C jest przeznaczony do ciast na proszku do pieczenia. Do ciasta drożdżowego lepszy będzie Mix B lub Mix It!.");
+ return {parts,onlyMix:mixes.length&&!st.length&&!wh.length,anyMix:mixes.length>0};
+}
+
+function calc(){
+ const b=BAKES[$("bake").value];const warn=[];
+ $("bakeInfo").textContent=`Domyślna sztuka: ${b.w} g · Pieczenie: ${b.p}`;
+ const {parts,onlyMix,anyMix}=blend(b,warn);
+ if(!parts.length){$("out").innerHTML=`<h3>${b.n}</h3><div class="warn">Zaznacz przynajmniej jedną mąkę lub mieszankę.</div>`;return}
+ let base=parts.reduce((s,[f,sh])=>s+sh*f.a,0);
+ let psy=b.psy/100;
+ if(onlyMix)psy=sel.has("psy")?.01:0; else if(anyMix)psy*=.4;
+ let xan=0;
+ if(!sel.has("psy")&&psy>0){if(sel.has("xan")){xan=.015;warn.push("Brak psyllium: liczę gumę ksantanową. Ciasto będzie mniej elastyczne, trudniej je formować.");}else warn.push("Brak psyllium i gumy ksantanowej: ciasto nie utrzyma gazu. Dokup łuskę babki jajowatej (psyllium).");psy=0}
+ const hyd=(base+psy*9+xan*5)*b.h;
+ const pct={flour:1,water:hyd,psy,xan,sol:b.sol/100,dr:b.dr/100,ol:b.ol/100,cu:b.cu/100,ja:b.ja/100};
+ const sum=1+hyd-b.ja/100*.75+psy+xan+pct.sol+pct.dr+pct.ol+pct.cu+pct.ja;
+ const D=mode==="pcs"?(+$("count").value||0)*(+$("portion").value||0):(+$("grams").value||0);
+ const F=D/sum, g=x=>Math.round(x), w=Math.max(0,hyd-pct.ja*.75);
+ const rows=[["Mąki razem",F,1]].concat(parts.map(([f,sh])=>["sub",f.n,F*sh,sh]));
+ const line=(n,v,p,sub)=>v>0.4?`<tr${sub?' class="sub"':""}><td>${n}</td><td class="p">${(p*100).toFixed(1)}%</td><td class="g">${g(v)} g</td></tr>`:"";
+ let t=line("Mąki razem",F,1);parts.forEach(([f,sh])=>t+=line(f.n,F*sh,sh,1));
+ t+=line("Woda (ciepła)",F*w,w)+line("Psyllium",F*psy,psy)+line("Guma ksantanowa",F*xan,xan)+line("Sól",F*pct.sol,pct.sol)
+  +line("Drożdże suche",F*pct.dr,pct.dr)+line("Oliwa / masło",F*pct.ol,pct.ol)+line("Cukier",F*pct.cu,pct.cu)+line("Jajka",F*pct.ja,pct.ja);
+ $("out").innerHTML=`<h3>${b.n}</h3>
+ <div class="hyd"><div><b>${Math.round(hyd*100)}%</b><span>hydratacja</span></div><div><b>${g(D)} g</b><span>ciasta</span></div>${mode==="pcs"?`<div><b>${$("count").value}×${$("portion").value} g</b><span>${b.u}</span></div>`:""}</div>
+ <table>${t}</table>
+ <div class="note">Drożdże świeże zamiast suchych: ${g(F*pct.dr*3)} g. Procenty liczone od masy mąki.${pct.ja?" Jajka wliczone w płyny.":""}</div>
+ ${blendInfo?`<div class="note"><b>Dlaczego taka mieszanka:</b> białko ${blendInfo.P.toFixed(1)}% (cel ${blendInfo.T.P}%), błonnik ${blendInfo.F.toFixed(1)}% (cel ${blendInfo.T.F}%), skrobie ${Math.round(blendInfo.st*100)}% (cel ${Math.round(b.s*100)}%), smak ${blendInfo.fl<.25?"łagodny":blendInfo.fl<.5?"wyraźny":"mocny"}.${blendInfo.unused.length?` Pominięte, bo nie poprawiają wyniku: ${blendInfo.unused.map(f=>f.n).join(", ")}.`:""}</div>`:""}
+ ${warn.map(x=>`<div class="warn">${x}</div>`).join("")}
+ <div class="note"><b>Wykonanie:</b> psyllium wymieszaj z wodą i odstaw na 5 min do zżelowania, dodaj resztę składników, wyrabiaj 3–4 min. Wyrastanie około 60 min w cieple. ${b.p}.</div>`;
+}
+
+// Dodawanie własnej mąki
+function updEst(){$("nEst").textContent=`Szacowana chłonność wody: ${est($("nType").value,+$("nProt").value||0,+$("nFib").value||0)} g wody na 1 g mąki`}
+["nType","nProt","nFib"].forEach(i=>$(i).oninput=updEst);updEst();
+$("addBtn").onclick=()=>{const n=$("nName").value.trim();if(!n){$("nEst").textContent="Podaj nazwę mąki.";return}
+ const t=$("nType").value,f={id:"own"+Date.now(),n,t,a:est(t,+$("nProt").value||0,+$("nFib").value||0),P:+$("nProt").value||0,F:+$("nFib").value||0,fl:t==="skrobia"?0:.4,b:t==="mix"?1:0,own:1};
+ custom.push(f);sel.add(f.id);try{localStorage.setItem("bg_custom",JSON.stringify(custom))}catch(e){}
+ $("nName").value="";renderFlours();calc();$("nEst").textContent=`Dodano: ${n}`};
+$("searchBtn").onclick=async()=>{const q=$("q").value.trim();if(!q){$("searchMsg").textContent="Wpisz nazwę lub kod kreskowy.";return}
+ $("searchMsg").textContent="Szukam w Open Food Facts…";
+ try{const isCode=/^\d{8,14}$/.test(q);const url=isCode?`https://world.openfoodfacts.org/api/v2/product/${q}.json`:`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&json=1&page_size=1`;
+  const r=await fetch(url);const j=await r.json();const p=isCode?j.product:(j.products||[])[0];if(!p)throw 0;
+  const nu=p.nutriments||{};$("nName").value=p.product_name||q;$("nProt").value=nu.proteins_100g??"";$("nFib").value=nu.fiber_100g??"";updEst();
+  $("searchMsg").textContent="Znaleziono. Sprawdź dane i dodaj."}
+ catch(e){$("searchMsg").textContent="W tym demo internet jest zablokowany przez przeglądarkę. W docelowej aplikacji wyszukiwanie pójdzie przez Cloudflare Worker do Open Food Facts. Na razie wpisz dane z etykiety."}};
+
+renderSelect();renderFlours();calc();
+</script>
+</body>
+</html>
