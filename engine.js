@@ -174,6 +174,58 @@
     { id: "langosz",     name: "Langosz",               rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 2.0, yeastDry: 1.45, fat: 6, sugar: 2, eggs: 3, unitWeight: 120, defaultCount: 5, unit: "placek", bakeNote: "smażenie w 175°C" }
   ];
 
+  // ---------- Model pieczenia (temperatura i czas dla ciast bezglutenowych) ----------
+  // Bazowe parametry jak dla pieczywa pszennego: [°C, min od, min do, tryb]. Tryby: steam = z parą,
+  // twoStage = start gorący, potem niżej, stone = kamień/max, pan = patelnia, fry = smażenie, boil = gotowanie + piekarnik, filled = z nadzieniem.
+  const OVEN_BASE = {
+    focaccia: [230, 20, 25], pizza_blacha: [230, 18, 22], pizza_patelnia: [220, 13, 15], chleb_tostowy: [190, 40, 45],
+    ciabatta: [230, 25, 30, "steam"], chleb_jasny: [220, 45, 55, "twoStage"], chleb_gryczany: [220, 50, 60, "twoStage"], bagietka: [240, 22, 25, "steam"],
+    pizza_neapol: [300, 6, 8, "stone"], pita: [260, 4, 5, "stone"], naan: [0, 2, 2, "pan"],
+    hamburger: [200, 16, 18], subway: [200, 18, 20], kajzerki: [220, 18, 20, "steam"],
+    calzone: [240, 12, 15, "filled"], paszteciki: [200, 18, 20, "filled"], pierogi_drozdzowe: [190, 18, 20, "filled"],
+    bajgle: [210, 18, 20, "boil"], precle: [210, 13, 15, "boil"], grissini: [200, 13, 15],
+    chalka: [180, 30, 35], babka: [175, 45, 50], drozdzowki: [180, 18, 20], cynamonki: [180, 20, 22], buleczki_maslane: [190, 16, 18],
+    paczki: [170, 0, 0, "fry"], langosz: [175, 0, 0, "fry"]
+  };
+  const GF_TIME_FACTOR = 1.2;     // żel psyllium + skrobi potrzebuje dłużej, żeby się upiec w środku
+  const MIN_OVEN_TEMP = 160;
+  const round5 = x => Math.round(x / 5) * 5;
+
+  /** Ile stopni obniżyć, bo cukier, jajka i tłuszcz przyspieszają rumienienie (reakcja Maillarda, karmelizacja). @param {Bake} b */
+  function browningDrop(b) {
+    const score = b.sugar + 0.4 * b.eggs + 0.3 * b.fat;
+    return score < 5 ? 0 : score < 15 ? 10 : score < 25 ? 15 : 20;
+  }
+
+  /** Wylicza temperaturę, czas i sposób sprawdzenia dla wypieku bezglutenowego. @param {Bake} b */
+  function ovenPlan(b) {
+    const base = OVEN_BASE[b.id];
+    if (!base) return null;
+    const [t0, m0, m1, mode] = base;
+    if (mode === "fry") return { note: `smażenie w ${t0}°C, 2–3 min z każdej strony`, doneness: "Gotowe, gdy są złote z obu stron, a wbity patyczek wychodzi suchy. Jeśli z zewnątrz ciemnieją za szybko, obniż temperaturę oleju o 5–10°C." };
+    if (mode === "pan") return { note: "sucha, mocno rozgrzana patelnia, ok. 2 min na stronę", doneness: "Gotowe, gdy placek jest nadmuchany i ma brązowe plamki z obu stron." };
+    if (mode === "stone") return { note: `jak najwyższa temperatura piekarnika (${t0 >= 300 ? "250–300" : t0}°C), najlepiej na rozgrzanym kamieniu lub odwróconej blasze, ${m0}–${m1} min`, doneness: "Gotowe, gdy brzegi są wyrośnięte i lekko przypieczone, a spód twardy i rumiany." };
+    const drop = browningDrop(b) + (mode === "filled" ? 10 : 0);
+    const t = Math.max(MIN_OVEN_TEMP, round5(t0 - drop));
+    const realDrop = t0 - t;
+    const k = GF_TIME_FACTOR * (1 + 0.05 * (realDrop / 5)); // dłużej o ok. 5% na każde 5°C mniej
+    const a = Math.round(m0 * k), z = Math.round(m1 * k);
+    let note = `${t}°C, góra–dół bez termoobiegu, środkowa półka, ${a}–${z} min`;
+    if (mode === "twoStage") note = `${t}°C przez 15 min, potem ${t - 20}°C, razem ${a}–${z} min, z parą na początku`;
+    if (mode === "steam") note += ", z parą przez pierwsze 10 min (naczynie z wrzątkiem na dnie piekarnika)";
+    if (mode === "boil") note = `obgotuj 1 min z każdej strony, potem ${t}°C, ${a}–${z} min`;
+    const big = b.unitWeight >= 300;
+    const doneness = [
+      big ? "Gotowe, gdy w środku jest 96–98°C (termometr kuchenny) albo spód stukany palcem brzmi głucho."
+          : mode === "filled" ? "Gotowe, gdy spód jest złoty, a nie blady. Przełam jedną sztukę: ciasto przy nadzieniu ma być suche, nie kleiste."
+          : "Gotowe, gdy spód jest rumiany i stukany brzmi głucho. Przełam jedną sztukę: miąższ ma być sprężysty, nie kleisty.",
+      "Jeśli wierzch rumieni się za szybko, przykryj wypiek luźno folią aluminiową i piecz dalej.",
+      b.eggs || b.sugar >= 3 ? "Do smarowania lepiej mleko albo samo białko niż całe jajko z cukrem, bo mniej przypala." : ""
+    ].filter(Boolean).join(" ");
+    return { note, doneness, temp: t, minutes: [a, z] };
+  }
+  for (const b of BAKES) { const p = ovenPlan(b); if (p) { b.bakeNote = p.note; b.doneness = p.doneness; b.oven = p; } }
+
   // ---------- Stałe modelu ----------
   const WAC_REF = 0.96;
   const EGG_WATER = 0.75;

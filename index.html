@@ -231,7 +231,7 @@ function calc(){
  <div class="note"><b>Dlaczego tyle wody?</b> ${why.length?why.join(", ").replace(/^./,c=>c.toUpperCase())+".":"To typowa ilość wody dla tego wypieku."}</div>
  <div class="note"><b>Dlaczego te mąki?</b> ${whyTxt()}${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
  ${idealHtml(b.id)}
- <div class="note"><b>Jak zrobić:</b><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>${tip}
+ <div class="note"><b>Jak zrobić:</b><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>${tip}${b.doneness?`<div class="note"><b>Czy już upieczone?</b> ${b.doneness}</div>`:""}
  <details class="tech"><summary>Szczegóły techniczne</summary><div class="note">Hydratacja efektywna ${h.effective.toFixed(1)}% (baza klasy ${h.base.toFixed(1)}% ${sg(h.deltaWAC)} chłonność mieszanki, WAC ${p.wacMix.toFixed(2)}${h.deltaFat?`, ${sg(h.deltaFat)} tłuszcz`:""}${h.deltaSugar?`, ${sg(h.deltaSugar)} cukier`:""}). Profil mieszanki: białko ${p.protein.toFixed(1)}% (cel ${t.protein.join("–")}%), frakcja skrobiowa ${p.starch.toFixed(0)}% (cel ${t.starch.join("–")}%), błonnik ${p.fiber.toFixed(1)}% (cel ${t.fiber.join("–")}%). Klasa: ${CLS[b.rheologyClass].label}. Procenty w tabeli liczone od masy mąk.</div></details>`;
  $("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());
 }
