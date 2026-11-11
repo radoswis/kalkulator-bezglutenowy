@@ -56,6 +56,14 @@ details .inner{display:grid;gap:10px;margin-top:12px}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .msg{font-size:.85rem;color:var(--muted)}
 [hidden]{display:none!important}
+.combo{position:relative}
+.suggest{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:10px;max-height:320px;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px}
+.suggest button{display:grid;width:100%;text-align:left;font:inherit;color:var(--fg);background:transparent;border:0;border-radius:8px;padding:9px 10px;cursor:pointer}
+.suggest button:hover,.suggest button:focus{background:var(--accent-soft);outline:none}
+.suggest small{color:var(--muted);font-size:.78rem}
+.suggest .none{padding:10px;color:var(--muted)}
+.suggest .sep{padding:8px 10px 4px;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-top:1px solid var(--line);margin-top:4px}
+.srcbar{margin-top:-4px}
 .ideal{border:1px dashed var(--accent);border-radius:10px;padding:12px 14px;display:grid;gap:8px;font-size:.95rem}
 .ideal ul{margin:0;padding-left:0;list-style:none;display:grid;gap:4px}
 .ideal.ok{border-style:solid;background:var(--accent-soft)}
@@ -78,7 +86,8 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 <div class="grid">
 <div class="col">
 <section><h2><span>1</span>Co robisz?</h2>
-<input id="bakeSearch" type="search" placeholder="Szukaj przepisu, np. pierogi, pizza, gofry" autocomplete="off" aria-label="Szukaj przepisu">
+<div class="combo"><input id="bakeSearch" type="search" placeholder="Szukaj przepisu, np. pierogi, pizza, gofry" autocomplete="off" aria-label="Szukaj przepisu" aria-controls="bakeSuggest" aria-expanded="false">
+<div id="bakeSuggest" class="suggest" role="listbox" hidden></div></div>
 <select id="bake"></select>
 <div class="msg" id="bakeSearchMsg" hidden></div>
 <div class="note" id="bakeInfo"></div>
@@ -136,25 +145,46 @@ const fmt=g=>(Number.isInteger(g)?g:g.toFixed(1).replace(".",","));
 // Lista przepisów z wyszukiwarką (bez polskich znaków i wielkości liter)
 const norm=t=>t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ł/g,"l");
 let lastBake="pizza_neapol";
+// Dopasowanie do początku słowa w nazwie: „p” → pizza, pączki…; „pi” → pizza, pita, pierogi…
+const words=t=>norm(t).split(/[^a-z0-9]+/).filter(Boolean);
+const matches=(b,n)=>!n||words(b.name).some(w=>w.startsWith(n))||norm(b.name).startsWith(n);
+function showSuggest(q){const n=norm(q||""),box=$("bakeSuggest");
+ if(!n){box.hidden=true;$("bakeSearch").setAttribute("aria-expanded","false");return}
+ const first=BAKES.filter(b=>norm(b.name).startsWith(n)),other=BAKES.filter(b=>matches(b,n)&&!first.includes(b));
+ const l=first.concat(other);
+ const opt=b=>`<button type="button" role="option" data-pick="${b.id}">${b.name}<small>${b.category}</small></button>`;
+ box.innerHTML=l.length?first.map(opt).join("")+(other.length?`<div class="sep">Zawiera „${q}” w nazwie</div>`+other.map(opt).join(""):""):`<div class="none">Brak przepisów na „${q}”</div>`;
+ box.hidden=false;$("bakeSearch").setAttribute("aria-expanded","true")}
+function pickBake(id){$("bake").value=id;lastBake=id;$("bakeSearch").value="";renderBakeList("");$("bake").value=id;
+ $("bakeSuggest").hidden=true;$("bakeSearch").setAttribute("aria-expanded","false");src="ideal";setDefaults();calc()}
 function renderBakeList(q){const n=norm(q||""),cur=$("bake").value||lastBake;
- const byName=BAKES.some(b=>norm(b.name).includes(n));
- const hit=b=>!n||norm(byName?b.name:b.name+" "+b.category).includes(n);
+ const hit=b=>matches(b,n);
  $("bake").innerHTML=CATEGORIES.map(c=>{const l=BAKES.filter(b=>b.category===c&&hit(b));return l.length?`<optgroup label="${c}">`+l.map(b=>`<option value="${b.id}">${b.name}</option>`).join("")+"</optgroup>":""}).join("");
  const cnt=BAKES.filter(hit).length;$("bakeSearchMsg").hidden=!n;$("bakeSearchMsg").textContent=cnt?`Znaleziono: ${cnt}`:"Nie ma takiego przepisu. Spróbuj innego słowa.";
  if(cnt&&[...$("bake").options].some(o=>o.value===cur))$("bake").value=cur;return cnt}
 renderBakeList("");
-$("bakeSearch").oninput=()=>{const prev=lastBake,cnt=renderBakeList($("bakeSearch").value);if(cnt){lastBake=$("bake").value;if(lastBake!==prev){setDefaults();calc()}}};
+$("bakeSearch").oninput=()=>{renderBakeList($("bakeSearch").value);showSuggest($("bakeSearch").value)};
+$("bakeSearch").onkeydown=e=>{const f=$("bakeSuggest").querySelector("[data-pick]");
+ if(e.key==="Enter"&&f){e.preventDefault();pickBake(f.dataset.pick)}
+ if(e.key==="ArrowDown"&&f){e.preventDefault();f.focus()}
+ if(e.key==="Escape"){$("bakeSuggest").hidden=true}};
+$("bakeSuggest").onkeydown=e=>{const t=e.target;if(e.key==="ArrowDown"&&t.nextElementSibling){e.preventDefault();t.nextElementSibling.focus()}
+ if(e.key==="ArrowUp"){e.preventDefault();(t.previousElementSibling||$("bakeSearch")).focus()}};
+document.addEventListener("pointerdown",e=>{if(!e.target.closest(".combo"))$("bakeSuggest").hidden=true});
 $("bake").value="pizza_neapol";
 function chip(f){return `<button type="button" class="chip" data-id="${f.id}" aria-pressed="${sel.has(f.id)}"${f.composition?` title="Skład: ${f.composition}"`:""}>${f.name}${f.brands?` <small>${f.brands}</small>`:""}${f.wheatStarch?` <small>· skrobia pszenna</small>`:""}${f.custom?" <small>(własna)</small>":""}</button>`}
 function renderPantry(){const g=[["Mąki",f=>["wholegrain_structure","high_protein"].includes(f.role)],["Skrobie",f=>f.role==="pure_starch"],["Gotowe mieszanki",f=>f.role==="commercial_base"]];
  $("flours").innerHTML=g.map(([n,fn])=>`<div class="group">${n}</div><div class="chips">${all().filter(fn).map(chip).join("")}</div>`).join("");
  $("addons").innerHTML=all().filter(f=>f.role==="hydrocolloid").map(chip).join("")}
-document.addEventListener("click",e=>{const a=e.target.closest("[data-add]");if(a){a.dataset.add.split(",").forEach(id=>sel.add(id));save();renderPantry();calc();return}const c=e.target.closest(".chip");if(!c)return;const id=c.dataset.id;sel.has(id)?sel.delete(id):sel.add(id);c.setAttribute("aria-pressed",sel.has(id));save();calc()});
+document.addEventListener("click",e=>{const pk=e.target.closest("[data-pick]");if(pk){pickBake(pk.dataset.pick);return}
+ const sb=e.target.closest("[data-src]");if(sb){src=sb.dataset.src;calc();return}
+ const a=e.target.closest("[data-add]");if(a){a.dataset.add.split(",").forEach(id=>sel.add(id));save();renderPantry();calc();return}const c=e.target.closest(".chip");if(!c)return;src="pantry";const id=c.dataset.id;sel.has(id)?sel.delete(id):sel.add(id);c.setAttribute("aria-pressed",sel.has(id));save();calc()});
 
 function setDefaults(){const b=BAKES.find(x=>x.id===$("bake").value);$("count").value=b.defaultCount;$("portion").value=b.unitWeight;$("grams").value=defaultDough(b)}
 function setMode(m){mode=m;$("mPcs").setAttribute("aria-pressed",m==="pcs");$("mGr").setAttribute("aria-pressed",m==="gr");$("lblCount").hidden=$("lblPortion").hidden=m!=="pcs";$("lblGrams").hidden=m==="pcs";calc()}
 $("mPcs").onclick=()=>setMode("pcs");$("mGr").onclick=()=>setMode("gr");
-$("bake").onchange=()=>{lastBake=$("bake").value;setDefaults();calc()};
+let src="ideal"; // "ideal" = podgląd na najlepszym zestawie mąk, "pantry" = z mojej spiżarni
+$("bake").onchange=()=>{lastBake=$("bake").value;src="ideal";setDefaults();calc()};
 ["count","portion","grams"].forEach(i=>$(i).oninput=calc);
 
 function calc(){
@@ -162,9 +192,11 @@ function calc(){
  $("bakeInfo").textContent=`Rodzaj: ${CLS[b.rheologyClass].label} · Domyślnie ${b.defaultCount} × ${b.unitWeight} g (${b.unit}) · ${b.bakeNote}`;
  const D=mode==="pcs"?(+$("count").value||0)*(+$("portion").value||0):(+$("grams").value||0);
  if(D<50){$("out").innerHTML=`<h3>${b.name}</h3><div class="warn">Podaj ilość ciasta (min. 50 g).</div>`;return}
- const r=calculateRecipe({bakeId,pantryIds:[...sel],doughWeight:D,extraIngredients:custom});
- if(r.empty){$("out").innerHTML=`<h3>${b.name}</h3>${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}`;return}
- if(r.family==="pastry"){renderPastry(r,b,D);return}
+ const best=suggestIdealBlend(bakeId,[...sel]);
+ const ids=src==="ideal"&&best?best.ideal.map(x=>x.ingredient.id).concat(["psy"]):[...sel];
+ const r=calculateRecipe({bakeId,pantryIds:ids,doughWeight:D,extraIngredients:custom});
+ if(r.empty){$("out").innerHTML=`<h3>${b.name}</h3>${srcBar()}${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}`;return}
+ if(r.family==="pastry"){renderPastry(r,b,D);$("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());return}
  const h=r.hydration,p=r.profile,t=p.target,sg=x=>(x>=0?"+":"")+x.toFixed(1);
  const rows=r.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
  const water=r.lines.find(l=>l.key==="water").grams,hasEggs=b.eggs>0,hasPsy=r.lines.some(l=>l.key==="psy"),hasXan=r.lines.some(l=>l.key==="xan");
@@ -197,10 +229,11 @@ function calc(){
  <div class="note">Masz tylko drożdże suche (instant)? Weź ${fmt(r.yeast.dryGrams)} g zamiast świeżych i wsyp je razem z mąką.</div>
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
  <div class="note"><b>Dlaczego tyle wody?</b> ${why.length?why.join(", ").replace(/^./,c=>c.toUpperCase())+".":"To typowa ilość wody dla tego wypieku."}</div>
- <div class="note"><b>Dlaczego te mąki?</b> Z tego, co masz w domu, ta mieszanka da ciasto najbardziej podobne do zwykłego, pszennego.${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
+ <div class="note"><b>Dlaczego te mąki?</b> ${whyTxt()}${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
  ${idealHtml(b.id)}
  <div class="note"><b>Jak zrobić:</b><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>${tip}
  <details class="tech"><summary>Szczegóły techniczne</summary><div class="note">Hydratacja efektywna ${h.effective.toFixed(1)}% (baza klasy ${h.base.toFixed(1)}% ${sg(h.deltaWAC)} chłonność mieszanki, WAC ${p.wacMix.toFixed(2)}${h.deltaFat?`, ${sg(h.deltaFat)} tłuszcz`:""}${h.deltaSugar?`, ${sg(h.deltaSugar)} cukier`:""}). Profil mieszanki: białko ${p.protein.toFixed(1)}% (cel ${t.protein.join("–")}%), frakcja skrobiowa ${p.starch.toFixed(0)}% (cel ${t.starch.join("–")}%), błonnik ${p.fiber.toFixed(1)}% (cel ${t.fiber.join("–")}%). Klasa: ${CLS[b.rheologyClass].label}. Procenty w tabeli liczone od masy mąk.</div></details>`;
+ $("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());
 }
 
 function idealHtml(bakeId){
@@ -212,6 +245,9 @@ function idealHtml(bakeId){
  <button type="button" class="btn ghost" data-add="${s.missing.map(i=>i.id).join(",")}">Kupiłem, dodaj do spiżarni</button></div>`;
 }
 
+function srcBar(){return `<div class="seg srcbar" role="group" aria-label="Z jakich mąk liczyć"><button type="button" data-src="ideal" aria-pressed="${src==="ideal"}">Najlepszy zestaw mąk</button><button type="button" data-src="pantry" aria-pressed="${src==="pantry"}">Z mojej spiżarni</button></div>
+ <div class="note">${src==="ideal"?"Podgląd przepisu na najlepszych mąkach. Zaznacz w spiżarni, co masz, a przeliczę przepis na Twoje mąki.":"Przepis przeliczony na mąki z Twojej spiżarni."}</div>`}
+const whyTxt=()=>src==="ideal"?"To najlepszy zestaw z całej bazy mąk dla tego przepisu.":"Z tego, co masz w domu, ta mieszanka da wynik najbardziej podobny do tradycyjnego, pszennego.";
 function renderPastry(r,b,D){
  const p=r.profile,t=p.target;
  const rows=r.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
@@ -220,7 +256,7 @@ function renderPastry(r,b,D){
  <div class="hyd"><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div><div><b>${flour} g</b><span>mąk razem</span></div>${b.defaultCount>1||pcs>1?`<div><b>${pcs} × ${Math.round(D/pcs)} g</b><span>${b.unit}</span></div>`:""}</div>
  <table>${rows}</table>
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
- <div class="note"><b>Dlaczego te mąki?</b> Z tego, co masz w domu, ta mieszanka da wyrób najbardziej podobny do tradycyjnego, pszennego.${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
+ <div class="note"><b>Dlaczego te mąki?</b> ${whyTxt()}${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
  ${idealHtml(b.id)}
  <div class="note"><b>Jak zrobić:</b><ol class="steps">${r.steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>
  ${r.tip?`<div class="note">${r.tip}</div>`:""}
