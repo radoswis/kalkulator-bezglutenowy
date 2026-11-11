@@ -29,6 +29,15 @@
    * @property {number} [mixPriority] wyższy = preferowany jako baza drożdżowa
    * @property {number} [maxShare]    maks. udział w mieszance (0–1)
    * @property {boolean} [custom]     mąka dodana przez użytkownika
+   * @property {string} [brands]       przykładowe marki w sklepach
+   * @property {string} [composition]  skład z etykiety
+   * @property {boolean} [wheatStarch] zawiera skrobię pszenną bezglutenową
+   * @property {boolean} [leavened]    zawiera spulchniacz – nie do ciast drożdżowych
+   * @property {boolean} [batterOnly]  tylko do ciast lejących (naleśniki, pancakes)
+   * @property {boolean} [savoryOnly]  nie do słodkich
+   * @property {number} [saltPct]      sól zawarta w mieszance, g/100 g
+   * @property {boolean} [idealExclude] produkt niszowy – nie podpowiadany w „najlepszym zestawie”
+   * @property {number} [starchLike]   udział, w jakim mąka działa jak skrobia (0–1)
    */
 
   /** @param {number} protein @param {number} fiber @param {number} starch @param {number} fat @param {number} ash @returns {Macros} */
@@ -36,24 +45,48 @@
 
   /** @type {Ingredient[]} */
   const INGREDIENT_MATRIX = [
-    { id: "ryz",   name: "Ryżowa biała",          role: "wholegrain_structure", flavorProfile: "neutral",    macros: M(7, 2.4, 78, 1.4, 0.6), wac_cold: 0.78, wac_hot: 2.2 },
+    { id: "ryz", brands: "SamGo, Incola",   name: "Ryżowa biała",          role: "wholegrain_structure", flavorProfile: "neutral",    macros: M(7, 2.4, 78, 1.4, 0.6), wac_cold: 0.78, wac_hot: 2.2 },
     { id: "ryzb",  name: "Ryżowa brązowa",        role: "wholegrain_structure", flavorProfile: "mild_sweet", macros: M(7.5, 4.6, 72, 2.8, 1.3), wac_cold: 0.88, wac_hot: 2.4 },
-    { id: "gry",   name: "Gryczana jasna",        role: "wholegrain_structure", flavorProfile: "earthy",     macros: M(12, 6, 66, 3, 2),     wac_cold: 0.95, wac_hot: 2.8, maxShare: 0.4 },
-    { id: "kuk",   name: "Kukurydziana",          role: "wholegrain_structure", flavorProfile: "mild_sweet", macros: M(7, 7, 70, 3.9, 1.2),  wac_cold: 0.82, wac_hot: 2.5, maxShare: 0.3 },
-    { id: "jag",   name: "Jaglana",               role: "wholegrain_structure", flavorProfile: "mild_sweet", macros: M(11, 4, 68, 4, 2),     wac_cold: 0.90, wac_hot: 2.6, maxShare: 0.3 },
-    { id: "ows",   name: "Owsiana bezglutenowa",  role: "wholegrain_structure", flavorProfile: "mild_sweet", macros: M(13, 10, 58, 7, 1.8),  wac_cold: 0.98, wac_hot: 3.0, maxShare: 0.35 },
-    { id: "cie",   name: "Z ciecierzycy",         role: "high_protein",         flavorProfile: "savory",     macros: M(20, 11, 45, 6, 3),    wac_cold: 0.95, wac_hot: 2.6, maxShare: 0.25 },
+    { id: "gry", brands: "Bezgluten, NaturaVena",   name: "Gryczana jasna",        role: "wholegrain_structure", flavorProfile: "earthy",     macros: M(12, 6, 66, 3, 2),     wac_cold: 0.95, wac_hot: 2.8, maxShare: 0.4 },
+    { id: "kuk", brands: "Bezgluten",   name: "Kukurydziana",          role: "wholegrain_structure", flavorProfile: "mild_sweet", macros: M(7, 7, 70, 3.9, 1.2),  wac_cold: 0.82, wac_hot: 2.5, maxShare: 0.3 },
+    { id: "jag", brands: "NaturaVena",   name: "Jaglana",               role: "wholegrain_structure", flavorProfile: "mild_sweet", macros: M(11, 4, 68, 4, 2),     wac_cold: 0.90, wac_hot: 2.6, maxShare: 0.3 },
+    { id: "ows", brands: "Elovena",   name: "Owsiana bezglutenowa",  role: "wholegrain_structure", flavorProfile: "mild_sweet", macros: M(13, 10, 58, 7, 1.8),  wac_cold: 0.98, wac_hot: 3.0, maxShare: 0.35 },
+    { id: "cie", brands: "Incola",   name: "Z ciecierzycy",         role: "high_protein",         flavorProfile: "savory",     macros: M(20, 11, 45, 6, 3),    wac_cold: 0.95, wac_hot: 2.6, maxShare: 0.25 },
     { id: "ama",   name: "Amarantusowa",          role: "high_protein",         flavorProfile: "earthy",     macros: M(14, 7, 60, 6.5, 2.9), wac_cold: 0.92, wac_hot: 2.7, maxShare: 0.25 },
     { id: "sor",   name: "Z sorgo",               role: "wholegrain_structure", flavorProfile: "neutral",    macros: M(10, 6, 70, 3.5, 1.6), wac_cold: 0.92, wac_hot: 2.6 },
     { id: "tef",   name: "Z teff",                role: "wholegrain_structure", flavorProfile: "earthy",     macros: M(12, 8, 65, 2.4, 2.4), wac_cold: 0.92, wac_hot: 2.7, maxShare: 0.35 },
-    { id: "mig",   name: "Migdałowa",             role: "high_protein",         flavorProfile: "mild_sweet", macros: M(21, 11, 5, 50, 3),    wac_cold: 0.50, wac_hot: 0.8, maxShare: 0.1 },
+    { id: "mig", brands: "Auchan, Bio Planet",   name: "Migdałowa",             role: "high_protein",         flavorProfile: "mild_sweet", macros: M(21, 11, 5, 50, 3),    wac_cold: 0.50, wac_hot: 0.8, maxShare: 0.1 },
     { id: "kok",   name: "Kokosowa",              role: "wholegrain_structure", flavorProfile: "mild_sweet", macros: M(19, 39, 10, 14, 3),   wac_cold: 4.20, wac_hot: 5.0, maxShare: 0.08 },
     { id: "szi",   name: "Skrobia ziemniaczana",  role: "pure_starch",          flavorProfile: "neutral",    macros: M(0.3, 0, 85, 0.1, 0.3), wac_cold: 0.62, wac_hot: 10 },
-    { id: "skk",   name: "Skrobia kukurydziana",  role: "pure_starch",          flavorProfile: "neutral",    macros: M(0.3, 0, 86, 0.1, 0.1), wac_cold: 0.68, wac_hot: 7 },
+    { id: "skk", brands: "Amizea il Molino",   name: "Skrobia kukurydziana",  role: "pure_starch",          flavorProfile: "neutral",    macros: M(0.3, 0, 86, 0.1, 0.1), wac_cold: 0.68, wac_hot: 7 },
     { id: "tap",   name: "Tapioka",               role: "pure_starch",          flavorProfile: "neutral",    macros: M(0.2, 0, 87, 0.1, 0.1), wac_cold: 0.65, wac_hot: 9 },
     { id: "mixb",  name: "Schär Mix B",           role: "commercial_base",      flavorProfile: "neutral",    macros: M(3.7, 6, 70, 1.5, 1),  wac_cold: 1.02, wac_hot: 3.2, isCommercialMix: true, hasHPMC: true,  starchBase: 0.45, mixPriority: 3 },
-    { id: "mixit", name: "Schär Mix It! Universal", role: "commercial_base",    flavorProfile: "neutral",    macros: M(4.5, 4, 72, 1.5, 1),  wac_cold: 0.88, wac_hot: 3.0, isCommercialMix: true, hasHPMC: true,  starchBase: 0.50, mixPriority: 2 },
+    { id: "mixit", name: "Schär Mix It! Universal", role: "commercial_base",    flavorProfile: "neutral",    macros: M(1.5, 4.5, 78, 0.5, 0.5),  wac_cold: 0.88, wac_hot: 3.0, isCommercialMix: true, hasHPMC: true,  starchBase: 0.50, mixPriority: 2 },
     { id: "mixc",  name: "Schär Mix C",           role: "commercial_base",      flavorProfile: "neutral",    macros: M(3, 3, 75, 1, 0.8),    wac_cold: 0.82, wac_hot: 2.8, isCommercialMix: true, hasHPMC: false, starchBase: 0.55, mixPriority: 1 },
+    // --- Mieszanki ze sklepów (Auchan, Carrefour i in.) – skład z etykiet producentów ---
+    { id: "bzbread", name: "Bezgluten Bread Mix (chleb i pizza)", brands: "Bezgluten", role: "commercial_base", flavorProfile: "neutral", macros: M(1.9, 3.5, 78, 0.9, 1), wac_cold: 1.0, wac_hot: 3.2, isCommercialMix: true, hasHPMC: true, starchBase: 0.7, mixPriority: 2.5,
+      composition: "skrobia kukurydziana, pełnoziarnista mąka owsiana BG (6%), mąka ryżowa, guma ksantanowa, HPMC, błonnik z babki płesznik" },
+    { id: "bzmulti", name: "Bezgluten Multi Mix", brands: "Bezgluten", role: "commercial_base", flavorProfile: "neutral", macros: M(0.9, 1.4, 79, 3.4, 0.5), wac_cold: 0.85, wac_hot: 3.0, isCommercialMix: true, hasHPMC: false, starchBase: 0.85, mixPriority: 1.2,
+      composition: "skrobia kukurydziana, skrobia ziemniaczana, mąka kukurydziana, mąka jaglana, guma ksantanowa, guma guar" },
+    { id: "bzekstra", name: "Bezgluten Ekstra Uniwersalna", brands: "Bezgluten", role: "commercial_base", flavorProfile: "neutral", macros: M(0.6, 2, 84, 2.2, 0.5), wac_cold: 0.85, wac_hot: 3.0, isCommercialMix: true, hasHPMC: true, starchBase: 0.9, mixPriority: 1,
+      wheatStarch: true, leavened: true, composition: "skrobia pszenna bezglutenowa, skrobia kukurydziana, mąka kukurydziana, glukoza, guma guar, HPMC, błonnik ziemniaczany, regulator kwasowości, spulchniacz" },
+    { id: "bznalesn", name: "Bezgluten Naleśnikowo-pierogowa", brands: "Bezgluten", role: "commercial_base", flavorProfile: "neutral", macros: M(2.1, 2, 80, 0.6, 1.5), wac_cold: 0.9, wac_hot: 3.0, isCommercialMix: true, hasHPMC: true, starchBase: 0.8, mixPriority: 1,
+      wheatStarch: true, leavened: true, saltPct: 1.3, composition: "skrobia kukurydziana, skrobia ziemniaczana, mąka ryżowa, skrobia pszenna bezglutenowa, glukoza, guma guar, HPMC, błonnik ziemniaczany, regulator kwasowości, spulchniacz; sól 1,3 g/100 g" },
+    { id: "scharmehl", name: "Schär Mehl Farine (uniwersalna)", brands: "Schär", role: "commercial_base", flavorProfile: "neutral", macros: M(1, 4.7, 78, 0.5, 0.5), wac_cold: 0.88, wac_hot: 3.0, isCommercialMix: true, hasHPMC: false, starchBase: 0.7, mixPriority: 1.8,
+      composition: "skrobia kukurydziana, mąka ryżowa, mąka kukurydziana, guma guar, dekstroza" },
+    { id: "granouni", idealExclude: true, name: "Grano Mieszanka uniwersalna", brands: "Grano", role: "commercial_base", flavorProfile: "neutral", macros: M(4.8, 0.6, 79, 0.9, 1), wac_cold: 0.85, wac_hot: 3.0, isCommercialMix: true, hasHPMC: false, starchBase: 0.6, mixPriority: 1.3,
+      composition: "skład do uzupełnienia z etykiety (wartości odżywcze z bazy Fitatu)" },
+    { id: "ocelio", idealExclude: true, name: "Ocelio mieszanka do pizzy (z gryczaną)", brands: "Ocelio", role: "commercial_base", flavorProfile: "neutral", macros: M(4.1, 3.5, 77, 1, 1), wac_cold: 0.92, wac_hot: 3.0, isCommercialMix: true, hasHPMC: false, starchBase: 0.55, mixPriority: 1.5,
+      composition: "skład do uzupełnienia z etykiety (wartości odżywcze z Frisco)" },
+    { id: "fbaprot", idealExclude: true, name: "Foods by Ann naleśniki proteinowe", brands: "Foods by Ann", role: "commercial_base", flavorProfile: "mild_sweet", macros: M(16, 5.4, 55, 3, 2), wac_cold: 1.0, wac_hot: 3.0, isCommercialMix: true, hasHPMC: false, starchBase: 0.3, mixPriority: 1,
+      leavened: true, batterOnly: true, saltPct: 1.4, composition: "mąka ryżowa, tapioka, białko grochu, mąka z ciecierzycy, mąka kokosowa, maltitol, mąka lniana, soda, babka płesznik, aromat, sól" },
+    // --- Nowe mąki jednoskładnikowe ---
+    { id: "dynia", idealExclude: true, name: "Z pestek dyni", brands: "Grano", role: "high_protein", flavorProfile: "savory", macros: M(48, 8, 4, 14, 6), wac_cold: 1.2, wac_hot: 1.5, maxShare: 0.1, savoryOnly: true,
+      composition: "100% odtłuszczone pestki dyni; błonnik szacunkowy (brak w źródle)" },
+    { id: "kasztan", name: "Kasztanowa", brands: "Incola", role: "wholegrain_structure", flavorProfile: "mild_sweet", macros: M(6.4, 8, 60, 3.7, 2), wac_cold: 0.9, wac_hot: 2.6, maxShare: 0.3,
+      composition: "100% kasztany jadalne; błonnik szacunkowy (brak w źródle)" },
+    { id: "ryzklei", idealExclude: true, name: "Z ryżu kleistego (słodkiego)", brands: "Cook brand", role: "wholegrain_structure", flavorProfile: "neutral", macros: M(6, 1, 80, 1, 0.5), wac_cold: 0.85, wac_hot: 4.0, maxShare: 0.2, starchLike: 0.5,
+      composition: "100% ryż kleisty; wartości typowe dla tej mąki (do sprawdzenia z etykietą)" },
     { id: "psy",   name: "Psyllium (łuska babki jajowatej / płesznik)", role: "hydrocolloid", flavorProfile: "neutral", macros: M(2, 85, 0, 0.6, 3), wac_cold: 14.5, wac_hot: 16 },
     { id: "xan",   name: "Guma ksantanowa",       role: "hydrocolloid",         flavorProfile: "neutral",    macros: M(0, 0, 0, 0, 7),       wac_cold: 10, wac_hot: 10 }
   ];
@@ -148,7 +181,7 @@
   const STARCH_BLOCK_MIX_SHARE = 0.6;
   const TAPIOCA_EXCEPTION_CLASSES = new Set(["RHEO_TENSILE_SHAPED", "RHEO_LAMINATED_ROLLED_STUFFED", "RHEO_ENRICHED_BRIOCHE_FRIED"]);
   const TAPIOCA_EXCEPTION_SHARES = [0.05];  // siatka 5%; spec dopuszcza 5–8%
-  const SWEET_ALLOWED = new Set(["jag", "ows", "ryz", "ryzb", "mig", "sor"]);
+  const SWEET_ALLOWED = new Set(["jag", "ows", "ryz", "ryzb", "mig", "sor", "kasztan", "ryzklei"]);
   const STEP = 0.05;
   const MIN_FUNCTIONAL_G = 4.5;
 
@@ -161,7 +194,7 @@
   function starchFraction(i) {
     if (i.role === "pure_starch") return 1;
     if (i.isCommercialMix) return i.starchBase ?? 0.5;
-    return 0;
+    return i.starchLike ?? 0;
   }
 
   /** @typedef {[Ingredient, number][]} Blend  pary [składnik, udział 0–1] */
@@ -195,6 +228,8 @@
 
   /** Czy składnik może wejść do danego wypieku (filtr smaku). @param {Ingredient} i @param {Bake} b */
   function flavorAllowed(i, b) {
+    if (i.leavened || i.batterOnly) return false; // spulchniacz chemiczny nie pasuje do ciasta drożdżowego
+    if (i.savoryOnly && b.sweet) return false;
     if (!b.sweet || i.role === "pure_starch" || i.isCommercialMix) return true;
     if (i.custom) return i.flavorProfile === "neutral" || i.flavorProfile === "mild_sweet";
     return SWEET_ALLOWED.has(i.id);
@@ -207,7 +242,13 @@
    * B) brak mieszanki → wspinaczka po siatce 5% po wszystkich dozwolonych mąkach i skrobiach.
    * @param {Ingredient[]} pantryFlours  @param {Bake} bake  @returns {{blend:Blend, cost:number, mode:'commercial_base'|'free'}}
    */
+  const solveCache = new Map();
   function solveFlourBlend(pantryFlours, bake) {
+    const key = bake.id + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
+    if (!solveCache.has(key)) solveCache.set(key, solveFlourBlendRaw(pantryFlours, bake));
+    return solveCache.get(key);
+  }
+  function solveFlourBlendRaw(pantryFlours, bake) {
     const cls = RHEOLOGY_CLASSES[bake.rheologyClass];
     const cands = pantryFlours.filter(i => i.role !== "hydrocolloid" && flavorAllowed(i, bake));
     if (!cands.length) return { blend: [], cost: Infinity, mode: "free" };
@@ -319,7 +360,8 @@
     let wAddFrac = hEff / 100 - E * EGG_WATER;
     if (wAddFrac < 0) { warnings.push("Jajka wnoszą więcej wody niż potrzeba: zmniejsz ilość jajek."); wAddFrac = 0; }
     const FRESH_PER_DRY = 3;
-    const frac = { psy: psy / 100, xan: xan / 100, salt: bake.salt / 100, yeast: yeastEff * FRESH_PER_DRY / 100 /* drożdże świeże (priorytet) */, fat: bake.fat / 100, sugar: bake.sugar / 100 };
+    const mixSalt = sol.blend.reduce((t, [i, x]) => t + (i.saltPct || 0) * x, 0);
+    const frac = { psy: psy / 100, xan: xan / 100, salt: Math.max(0, bake.salt - mixSalt) / 100, yeast: yeastEff * FRESH_PER_DRY / 100 /* drożdże świeże (priorytet) */, fat: bake.fat / 100, sugar: bake.sugar / 100 };
     const sumFrac = 1 + wAddFrac + E + frac.psy + frac.xan + frac.salt + frac.yeast + frac.fat + frac.sugar;
     const flour = doughWeight / sumFrac;
 

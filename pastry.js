@@ -26,7 +26,7 @@
   /** @type {Record<string, PastryClass & {family:'pastry'}>} */
   const PASTRY_CLASSES = {
     RHEO_SCALDED_BOILED_DOUGH: { family: "pastry", label: "Zaparzane i gotowane, bez drożdży", solverMode: "YEAST_HYDROCOLLOID_MODE",
-      mixPriority: { mixb: 3, mixit: 1.5, mixc: -1 }, target: { starch: [38, 46], protein: [5.5, 7.5], fiber: [3, 5] } },
+      mixPriority: { mixb: 3, bznalesn: 2.5, bzbread: 2, mixit: 1.5, scharmehl: 1.5, mixc: -1, fbaprot: -2 }, target: { starch: [38, 46], protein: [5.5, 7.5], fiber: [3, 5] } },
     RHEO_CURD_POTATO_DUMPLINGS: { family: "pastry", label: "Twarogowe i ziemniaczane", solverMode: "PASTRY_STARCH_MODE",
       mixPriority: { mixb: 1.5, mixit: 1.2, mixc: 0.5 }, target: { starch: [40, 60], protein: [4, 7], fiber: [1, 3] } },
     RHEO_SHORTCRUST_COOKIE_CRISP: { family: "pastry", label: "Kruche, pierniczki, faworki", solverMode: "PASTRY_STARCH_MODE",
@@ -34,7 +34,7 @@
     RHEO_FOAM_EMULSION_CAKE: { family: "pastry", label: "Biszkopty, sernik, czekoladowe", solverMode: "PASTRY_STARCH_MODE",
       mixPriority: { mixc: 2, mixit: 1, mixb: 0.3 }, target: { starch: [45, 55], protein: [3, 6], fiber: [0, 2] } },
     RHEO_BATTER_COATING_SUSPENSION: { family: "pastry", label: "Ciasta lejące i panierki", solverMode: "PASTRY_STARCH_MODE",
-      mixPriority: { mixc: 1.5, mixit: 1.2, mixb: 0.5 }, target: { starch: [35, 45], protein: [4, 7], fiber: [1, 3] } },
+      mixPriority: { bznalesn: 2, mixc: 1.5, fbaprot: 1.5, mixit: 1.2, mixb: 0.5 }, target: { starch: [35, 45], protein: [4, 7], fiber: [1, 3] } },
     RHEO_CHEM_LEAVENED_MUFFIN_CHOUX: { family: "pastry", label: "Ucierane, muffinki, parzone", solverMode: "PASTRY_STARCH_MODE",
       mixPriority: { mixc: 2, mixit: 1.2, mixb: 0.6 }, target: { starch: [30, 40], protein: [5, 8], fiber: [2, 4] } }
   };
@@ -443,11 +443,13 @@
   // ---------- Solver trybu cukierniczego / zaparzanego ----------
   const STEP = 0.05;
   const mid = r => (r[0] + r[1]) / 2;
-  const SWEET_ALLOWED = new Set(["jag", "ows", "ryz", "ryzb", "mig", "sor"]);
-  const starchFraction = i => (i.role === "pure_starch" ? 1 : i.isCommercialMix ? (i.starchBase ?? 0.5) : 0);
+  const SWEET_ALLOWED = new Set(["jag", "ows", "ryz", "ryzb", "mig", "sor", "kasztan", "ryzklei"]);
+  const starchFraction = i => (i.role === "pure_starch" ? 1 : i.isCommercialMix ? (i.starchBase ?? 0.5) : (i.starchLike ?? 0));
   const maxShareOf = i => PASTRY_MAX_SHARE[i.id] ?? i.maxShare;
 
   function flavorAllowed(i, b) {
+    if (i.batterOnly && b.rheologyClass !== "RHEO_BATTER_COATING_SUSPENSION") return false;
+    if (i.savoryOnly && b.sweet) return false;
     if (!b.sweet || i.role === "pure_starch" || i.isCommercialMix) return true;
     if (i.custom) return i.flavorProfile === "neutral" || i.flavorProfile === "mild_sweet";
     return SWEET_ALLOWED.has(i.id);
@@ -479,7 +481,13 @@
   }
 
   /** Wspinaczka po siatce 5% (start z każdej mąki i każdej pary). Odporna na pustą lub jednoelementową spiżarnię. */
+  const pastryCache = new Map();
   function solvePastryBlend(pantryFlours, b) {
+    const key = b.id + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
+    if (!pastryCache.has(key)) pastryCache.set(key, solvePastryBlendRaw(pantryFlours, b));
+    return pastryCache.get(key);
+  }
+  function solvePastryBlendRaw(pantryFlours, b) {
     const cls = RHEOLOGY_CLASSES[b.rheologyClass];
     let cands = pantryFlours.filter(i => i.role !== "hydrocolloid" && flavorAllowed(i, b));
     // Tryb hydrokoloidowy (pierogi, tortilla, makaron): tylko jedna baza komercyjna, wg priorytetu (Mix B pierwszy)
@@ -543,6 +551,9 @@
       if (pantryIds.includes("xan")) { comps.push(["xan", psyPct * 0.6]); warnings.push("Brak psyllium: używam gumy ksantanowej."); }
       else warnings.push("Brak psyllium: ciasto będzie mniej elastyczne i może pękać przy lepieniu. Wałkuj grubiej.");
     }
+    const mixSalt = blend.reduce((s, [i, x]) => s + (i.saltPct || 0) * x, 0);
+    if (mixSalt > 0) comps = comps.map(([k, p]) => (k === "salt" ? [k, Math.max(0, p - mixSalt)] : [k, p]));
+    if (blend.some(([i]) => i.wheatStarch)) warnings.push("Wybrana mieszanka zawiera skrobię pszenną bezglutenową (do 20 ppm glutenu). Jeśli jej unikasz, odznacz ją w spiżarni.");
     const sum = comps.reduce((s, [, p]) => s + p, 0);
     const flour = doughWeight / (1 + sum / 100);
 
@@ -619,5 +630,24 @@
     return out;
   }
 
-  Object.assign(G, { PASTRY_BAKES, ALL_BAKES, CATEGORIES, COMPONENTS, calculateRecipe, calculatePastryFormulation, solvePastryBlend, validateAllRecipes });
+  /**
+   * Najlepszy zestaw mąk do przepisu z całej bazy (bez mieszanek ze skrobią pszenną),
+   * porównany ze spiżarnią użytkownika.
+   * @param {string} bakeId @param {string[]} pantryIds
+   * @returns {{ideal:{ingredient:any, share:number, inPantry:boolean}[], missing:any[], complete:boolean, profile:{protein:number, starch:number, fiber:number}} | null}
+   */
+  function suggestIdealBlend(bakeId, pantryIds) {
+    const bake = ALL_BAKES.find(b => b.id === bakeId);
+    if (!bake) return null;
+    const catalog = INGREDIENT_MATRIX.filter(i => i.role !== "hydrocolloid" && !i.wheatStarch && !i.idealExclude);
+    const blend = bake.family === "pastry" ? solvePastryBlend(catalog, bake) : G.solveFlourBlend(catalog, bake).blend;
+    if (!blend.length) return null;
+    const ideal = blend.map(([ingredient, share]) => ({ ingredient, share, inPantry: pantryIds.includes(ingredient.id) }));
+    const missing = ideal.filter(x => !x.inPantry).map(x => x.ingredient);
+    const profile = { protein: 0, starch: 0, fiber: 0 };
+    for (const [i, x] of blend) { profile.protein += x * i.macros.protein; profile.fiber += x * i.macros.fiber; profile.starch += x * starchFraction(i) * 100; }
+    return { ideal, missing, complete: missing.length === 0, profile };
+  }
+
+  Object.assign(G, { suggestIdealBlend, PASTRY_BAKES, ALL_BAKES, CATEGORIES, COMPONENTS, calculateRecipe, calculatePastryFormulation, solvePastryBlend, validateAllRecipes });
 })(typeof window !== "undefined" ? window : globalThis);

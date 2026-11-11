@@ -27,6 +27,9 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
   - Receptury w % od mąk (`basis: "flour"`) albo od masy ciasta (`basis: "total"` + `flourPct`, np. kopytka, sernik).
   - Każdy przepis ma własne `steps(ctx)` (gramatury wstawiane w tekst, jajka z liczbą sztuk). Bilans masy domyka największy składnik.
   - `calculateRecipe()` – jedno wejście dla wszystkich 55 przepisów; `validateAllRecipes(pantryIds)` – test całości.
+- Mąki i mieszanki ze sklepów (Auchan, Carrefour i in.): pole `brands` (marki), `composition` (skład z etykiety), flagi `wheatStarch` (skrobia pszenna BG – ostrzeżenie), `leavened` (spulchniacz – wykluczone z drożdżowych), `batterOnly`, `savoryOnly`, `saltPct` (sól w mieszance odejmowana od soli przepisu), `starchLike`, `idealExclude`.
+- `suggestIdealBlend(bakeId, pantryIds)` – najlepszy zestaw z całej bazy (bez skrobi pszennej i produktów niszowych/o nieznanym składzie), porównany ze spiżarnią; w UI sekcja „Najlepszy zestaw do tego przepisu” + przycisk dodania brakujących.
+- Solvery mają pamięć podręczną (przepis + spiżarnia).
 - Kategorie w UI: `CATEGORIES` (8 grup), wypieki drożdżowe mapowane w `YEAST_CATEGORY`.
 - `index.html` – interfejs; spiżarnia i własne mąki w `localStorage`.
 - Psyllium = łuska babki jajowatej (Plantago ovata) lub płesznik.
