@@ -56,6 +56,9 @@ details .inner{display:grid;gap:10px;margin-top:12px}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .msg{font-size:.85rem;color:var(--muted)}
 [hidden]{display:none!important}
+.fb{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px;font-size:.95rem}
+.linkbtn{font:inherit;background:none;border:0;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
+.offlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .combo{position:relative}
 .suggest{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:10px;max-height:320px;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px}
 .suggest button{display:grid;width:100%;text-align:left;font:inherit;color:var(--fg);background:transparent;border:0;border-radius:8px;padding:9px 10px;cursor:pointer}
@@ -94,6 +97,7 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 </section>
 
 <section><h2><span>2</span>Twoja spiżarnia</h2>
+<div class="msg" id="syncMsg">Wczytuję…</div>
 <div class="note">Zaznacz wszystko, co masz w domu. Aplikacja sama wybierze, których i ile użyć.</div>
 <div id="flours"></div>
 <div class="group">Dodatki wiążące</div>
@@ -135,11 +139,26 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 const {INGREDIENT_MATRIX:ING,RHEOLOGY_CLASSES:CLS,ALL_BAKES,CATEGORIES,calculateRecipe,suggestIdealBlend}=GFEngine;
 const BAKES=ALL_BAKES,defaultDough=b=>b.unitWeight*b.defaultCount;
 const $=id=>document.getElementById(id);
-let custom=[];try{custom=JSON.parse(localStorage.getItem("gf_custom_v1")||"[]")}catch(e){}
-let sel=new Set(["ryz","szi","tap","mixb","psy"]);try{const s=JSON.parse(localStorage.getItem("gf_pantry_v1")||"null");if(s)sel=new Set(s)}catch(e){}
+// Stan domu: spiżarnia, własne mąki, kalibracje. Lokalnie od razu, potem wspólnie przez serwer (/api/state).
+let custom=[],sel=new Set(["ryz","szi","tap","mixb","psy"]),calib={},syncMode="local";
+try{const st=JSON.parse(localStorage.getItem("gf_state_v2")||"null");
+ if(st){custom=st.custom||[];sel=new Set(st.pantry||[]);calib=st.calib||{}}
+ else{custom=JSON.parse(localStorage.getItem("gf_custom_v1")||"[]");const s=JSON.parse(localStorage.getItem("gf_pantry_v1")||"null");if(s)sel=new Set(s)}}catch(e){}
 let mode="pcs";
 const all=()=>ING.concat(custom);
-const save=()=>{try{localStorage.setItem("gf_pantry_v1",JSON.stringify([...sel]));localStorage.setItem("gf_custom_v1",JSON.stringify(custom))}catch(e){}};
+const stateObj=()=>({pantry:[...sel],custom,calib});
+let saveTimer=null;
+function setSync(t){const el=$("syncMsg");if(el)el.textContent=t}
+function save(){try{localStorage.setItem("gf_state_v2",JSON.stringify(stateObj()))}catch(e){}
+ if(syncMode!=="cloud")return;
+ setSync("Zapisuję…");clearTimeout(saveTimer);
+ saveTimer=setTimeout(async()=>{try{const r=await fetch("/api/state",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify(stateObj())});
+  const j=await r.json();setSync(r.ok?"Wspólne dla domu · zapisano":"Nie zapisano wspólnie: "+(j.error||r.status)+". Zmiany są na tym urządzeniu.")}
+  catch(e){setSync("Brak połączenia: zmiany zapisane tylko na tym urządzeniu.")}},1500)}
+async function loadShared(){try{const r=await fetch("/api/state",{cache:"no-store"});if(!r.ok)throw 0;const st=await r.json();syncMode="cloud";
+  if(st&&st.pantry){custom=st.custom||[];sel=new Set(st.pantry);calib=st.calib||{};try{localStorage.setItem("gf_state_v2",JSON.stringify(stateObj()))}catch(e){}renderPantry();calc();setSync("Wspólne dla domu · wczytano")}
+  else{setSync("Wspólne dla domu");save()}}
+ catch(e){syncMode="local";setSync("Spiżarnia zapisana tylko na tym urządzeniu.")}}
 const fmt=g=>(Number.isInteger(g)?g:g.toFixed(1).replace(".",","));
 
 // Lista przepisów z wyszukiwarką (bez polskich znaków i wielkości liter)
@@ -176,7 +195,9 @@ function chip(f){return `<button type="button" class="chip" data-id="${f.id}" ar
 function renderPantry(){const g=[["Mąki",f=>["wholegrain_structure","high_protein"].includes(f.role)],["Skrobie",f=>f.role==="pure_starch"],["Gotowe mieszanki",f=>f.role==="commercial_base"]];
  $("flours").innerHTML=g.map(([n,fn])=>`<div class="group">${n}</div><div class="chips">${all().filter(fn).map(chip).join("")}</div>`).join("");
  $("addons").innerHTML=all().filter(f=>f.role==="hydrocolloid").map(chip).join("")}
-document.addEventListener("click",e=>{const pk=e.target.closest("[data-pick]");if(pk){pickBake(pk.dataset.pick);return}
+document.addEventListener("click",e=>{const fbb=e.target.closest("[data-fb]");if(fbb){applyFeedback($("bake").value,fbb.dataset.fb);return}
+ const rs=e.target.closest("[data-fbreset]");if(rs){delete calib[$("bake").value];save();calc();return}
+ const pk=e.target.closest("[data-pick]");if(pk){pickBake(pk.dataset.pick);return}
  const sb=e.target.closest("[data-src]");if(sb){src=sb.dataset.src;calc();return}
  const a=e.target.closest("[data-add]");if(a){a.dataset.add.split(",").forEach(id=>sel.add(id));save();renderPantry();calc();return}const c=e.target.closest(".chip");if(!c)return;src="pantry";const id=c.dataset.id;sel.has(id)?sel.delete(id):sel.add(id);c.setAttribute("aria-pressed",sel.has(id));save();calc()});
 
@@ -189,12 +210,13 @@ $("bake").onchange=()=>{lastBake=$("bake").value;src="ideal";setDefaults();calc(
 
 function calc(){
  const bakeId=$("bake").value,b=BAKES.find(x=>x.id===bakeId);
+ const cb=calib[b.id]||{};const op=GFEngine.ovenPlan&&b.family==="yeast"?GFEngine.ovenPlan(b,cb):null;if(op)b.bakeNote=op.note;
  $("bakeInfo").textContent=`Rodzaj: ${CLS[b.rheologyClass].label} · Domyślnie ${b.defaultCount} × ${b.unitWeight} g (${b.unit}) · ${b.bakeNote}`;
  const D=mode==="pcs"?(+$("count").value||0)*(+$("portion").value||0):(+$("grams").value||0);
  if(D<50){$("out").innerHTML=`<h3>${b.name}</h3><div class="warn">Podaj ilość ciasta (min. 50 g).</div>`;return}
  const best=suggestIdealBlend(bakeId,[...sel]);
  const ids=src==="ideal"&&best?best.ideal.map(x=>x.ingredient.id).concat(["psy"]):[...sel];
- const r=calculateRecipe({bakeId,pantryIds:ids,doughWeight:D,extraIngredients:custom});
+ const r=calculateRecipe({bakeId,pantryIds:ids,doughWeight:D,extraIngredients:custom,calib:cb});
  if(r.empty){$("out").innerHTML=`<h3>${b.name}</h3>${srcBar()}${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}`;return}
  if(r.family==="pastry"){renderPastry(r,b,D);$("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());return}
  const h=r.hydration,p=r.profile,t=p.target,sg=x=>(x>=0?"+":"")+x.toFixed(1);
@@ -231,7 +253,7 @@ function calc(){
  <div class="note"><b>Dlaczego tyle wody?</b> ${why.length?why.join(", ").replace(/^./,c=>c.toUpperCase())+".":"To typowa ilość wody dla tego wypieku."}</div>
  <div class="note"><b>Dlaczego te mąki?</b> ${whyTxt()}${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
  ${idealHtml(b.id)}
- <div class="note"><b>Jak zrobić:</b><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>${tip}${b.doneness?`<div class="note"><b>Czy już upieczone?</b> ${b.doneness}</div>`:""}
+ <div class="note"><b>Jak zrobić:</b><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>${tip}${b.doneness?`<div class="note"><b>Czy już upieczone?</b> ${b.doneness}</div>`:""}${fbHtml(b)}
  <details class="tech"><summary>Szczegóły techniczne</summary><div class="note">Hydratacja efektywna ${h.effective.toFixed(1)}% (baza klasy ${h.base.toFixed(1)}% ${sg(h.deltaWAC)} chłonność mieszanki, WAC ${p.wacMix.toFixed(2)}${h.deltaFat?`, ${sg(h.deltaFat)} tłuszcz`:""}${h.deltaSugar?`, ${sg(h.deltaSugar)} cukier`:""}). Profil mieszanki: białko ${p.protein.toFixed(1)}% (cel ${t.protein.join("–")}%), frakcja skrobiowa ${p.starch.toFixed(0)}% (cel ${t.starch.join("–")}%), błonnik ${p.fiber.toFixed(1)}% (cel ${t.fiber.join("–")}%). Klasa: ${CLS[b.rheologyClass].label}. Procenty w tabeli liczone od masy mąk.</div></details>`;
  $("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());
 }
@@ -244,6 +266,23 @@ function idealHtml(bakeId){
  <div>Brakuje w spiżarni: ${s.missing.map(i=>i.name.toLowerCase()).join(", ")}. Z tym zestawem ciasto będzie najbliższe tradycyjnemu.</div>
  <button type="button" class="btn ghost" data-add="${s.missing.map(i=>i.id).join(",")}">Kupiłem, dodaj do spiżarni</button></div>`;
 }
+
+const FB=[["suche","Za suche, kruszy się"],["kleiste","Kleiste, za mokre"],["plaskie","Płaskie, nie wyrosło"],["przypieczone","Za mocno przypieczone z wierzchu"],["niedopieczone","Niedopieczone w środku"],["idealne","Wyszło idealnie"]];
+const FB_RULE={suche:{water:3},kleiste:{water:-2,time:8},plaskie:{water:-2,yeast:10},przypieczone:{temp:-10,time:10},niedopieczone:{time:10},idealne:{}};
+const CAP={water:10,yeast:30,temp:30,time:40};
+function applyFeedback(id,v){const c=calib[id]||{water:0,yeast:0,temp:0,time:0,log:[]};const r=FB_RULE[v];
+ for(const k of ["water","yeast","temp","time"])if(r[k])c[k]=Math.max(-CAP[k],Math.min(CAP[k],(c[k]||0)+r[k]));
+ c.log=(c.log||[]).concat({d:new Date().toISOString().slice(0,10),v}).slice(-20);calib[id]=c;save();calc()}
+function fbHtml(b){const c=calib[b.id],parts=[];
+ if(c){if(c.water)parts.push(`${c.water>0?"więcej":"mniej"} płynu (${c.water>0?"+":""}${c.water} pkt %)`);if(c.yeast)parts.push(`drożdży ${c.yeast>0?"+":""}${c.yeast}%`);
+  if(c.temp)parts.push(`temperatura ${c.temp>0?"+":""}${c.temp}°C`);if(c.time)parts.push(`czas ${c.time>0?"+":""}${c.time}%`)}
+ const last=c&&c.log&&c.log.length?c.log[c.log.length-1]:null;
+ const autoOven=b.family==="yeast"&&GFEngine.ovenPlan(b)?.temp;
+ const pastryOven=!autoOven&&c&&(c.temp||c.time)?`<div>Przy pieczeniu lub smażeniu: ${c.temp?`temperatura o ${Math.abs(c.temp)}°C ${c.temp<0?"niższa (albo mniejszy ogień)":"wyższa"}`:""}${c.temp&&c.time?" i ":""}${c.time?`piecz o ${Math.abs(c.time)}% ${c.time>0?"dłużej":"krócej"}`:""} niż w krokach.</div>`:"";
+ return `<div class="fb"><b>Jak wyszło?</b> Zaznacz po upieczeniu, a przy następnym razie przepis sam się poprawi.
+ <div class="chips">${FB.map(([v,t])=>`<button type="button" class="chip" data-fb="${v}">${t}</button>`).join("")}</div>
+ ${parts.length?`<div>Twoje korekty w tym przepisie: ${parts.join(", ")}. <button type="button" class="linkbtn" data-fbreset="1">Wyzeruj</button></div>`:""}
+ ${pastryOven}${last?`<div class="msg">Ostatnia ocena: ${FB.find(f=>f[0]===last.v)[1].toLowerCase()} (${last.d}).</div>`:""}</div>`}
 
 function srcBar(){return `<div class="seg srcbar" role="group" aria-label="Z jakich mąk liczyć"><button type="button" data-src="ideal" aria-pressed="${src==="ideal"}">Najlepszy zestaw mąk</button><button type="button" data-src="pantry" aria-pressed="${src==="pantry"}">Z mojej spiżarni</button></div>
  <div class="note">${src==="ideal"?"Podgląd przepisu na najlepszych mąkach. Zaznacz w spiżarni, co masz, a przeliczę przepis na Twoje mąki.":"Przepis przeliczony na mąki z Twojej spiżarni."}</div>`}
@@ -260,10 +299,12 @@ function renderPastry(r,b,D){
  ${idealHtml(b.id)}
  <div class="note"><b>Jak zrobić:</b><ol class="steps">${r.steps.map(x=>`<li>${x}</li>`).join("")}</ol></div>
  ${r.tip?`<div class="note">${r.tip}</div>`:""}
+ ${fbHtml(b)}
  <details class="tech"><summary>Szczegóły techniczne</summary><div class="note">Rodzaj: ${r.cls.label}. Profil mieszanki: białko ${p.protein.toFixed(1)}% (cel ${t.protein.join("–")}%), frakcja skrobiowa ${p.starch.toFixed(0)}% (cel ${t.starch.join("–")}%), błonnik ${p.fiber.toFixed(1)}% (cel ${t.fiber.join("–")}%). Procenty w tabeli liczone od masy mąk.</div></details>`;
 }
 
 // Własna mąka
+let offComposition="";
 const est=(t,p,f)=>Math.round((t==="skrobia"?.65:(.6+p*.01+f*.03+(t==="mix"?.1:0)))*100)/100;
 function updEst(){$("nEst").textContent=`Szacowana chłonność wody: ${est($("nType").value,+$("nProt").value||0,+$("nFib").value||0)} g wody na 1 g`}
 ["nType","nProt","nFib"].forEach(i=>$(i).oninput=updEst);updEst();
@@ -272,16 +313,18 @@ $("addBtn").onclick=()=>{const n=$("nName").value.trim();if(!n){$("nEst").textCo
  const f={id:"own"+Date.now(),name:n,custom:true,flavorProfile:"neutral",role:t==="skrobia"?"pure_starch":t==="mix"?"commercial_base":"wholegrain_structure",
   macros:{protein:P,fiber:F,starch:t==="skrobia"?85:65,fat:2,ash:1},wac_cold:est(t,P,F),wac_hot:t==="skrobia"?9:2.6,
   ...(t==="mix"?{isCommercialMix:true,hasHPMC:true,starchBase:.5,mixPriority:1.5}:{maxShare:.35})};
- custom.push(f);sel.add(f.id);save();$("nName").value="";renderPantry();calc();$("nEst").textContent=`Dodano: ${n}`};
-$("searchBtn").onclick=async()=>{const q=$("q").value.trim();if(!q){$("searchMsg").textContent="Wpisz nazwę lub kod kreskowy.";return}
+ if(offComposition){f.composition=offComposition;offComposition=""}custom.push(f);sel.add(f.id);save();$("nName").value="";renderPantry();calc();$("nEst").textContent=`Dodano: ${n}`};
+$("searchBtn").onclick=async()=>{const q=$("q").value.trim();if(!q){$("searchMsg").textContent="Wpisz nazwę mąki lub kod kreskowy z opakowania.";return}
  $("searchMsg").textContent="Szukam w Open Food Facts…";
- try{const isCode=/^\d{8,14}$/.test(q);const url=isCode?`https://world.openfoodfacts.org/api/v2/product/${q}.json`:`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&json=1&page_size=1`;
-  const j=await (await fetch(url)).json();const p=isCode?j.product:(j.products||[])[0];if(!p)throw 0;
-  const nu=p.nutriments||{};$("nName").value=p.product_name||q;$("nProt").value=nu.proteins_100g??"";$("nFib").value=nu.fiber_100g??"";updEst();
-  $("searchMsg").textContent="Znaleziono. Sprawdź dane i dodaj."}
- catch(e){$("searchMsg").textContent="Nie udało się pobrać danych z internetu. Wpisz dane z etykiety ręcznie."}};
+ try{const r=await fetch("/api/off?q="+encodeURIComponent(q));const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
+  if(!j.results.length){$("searchMsg").textContent="Nic nie znaleziono. Spróbuj innej nazwy albo wpisz dane z etykiety ręcznie.";return}
+  $("searchMsg").innerHTML="Wybierz produkt:<div class=\"offlist\">"+j.results.map((p,i)=>`<button type="button" class="chip" data-off="${i}">${p.name}${p.brands?` <small>${p.brands}</small>`:""}</button>`).join("")+"</div>";
+  $("searchMsg").querySelectorAll("[data-off]").forEach(btn=>btn.onclick=()=>{const p=j.results[+btn.dataset.off];
+   $("nName").value=p.name+(p.brands?` (${p.brands.split(",")[0]})`:"");$("nProt").value=p.protein??"";$("nFib").value=p.fiber??"";offComposition=p.composition||"";updEst();
+   $("searchMsg").textContent="Dane wpisane. Sprawdź je z etykietą"+(p.fiber==null?" (brak błonnika w bazie, wpisz z opakowania)":"")+" i kliknij „Dodaj do moich mąk”."})}
+ catch(e){$("searchMsg").textContent="Wyszukiwanie nie działa w tym podglądzie albo serwer nie odpowiada ("+e.message+"). Wpisz dane z etykiety ręcznie."}};
 
-renderPantry();setDefaults();calc();
+renderPantry();setDefaults();calc();loadShared();
 </script>
 </body>
 </html>

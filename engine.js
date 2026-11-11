@@ -198,17 +198,19 @@
   }
 
   /** Wylicza temperaturę, czas i sposób sprawdzenia dla wypieku bezglutenowego. @param {Bake} b */
-  function ovenPlan(b) {
+  /** @param {Bake} b @param {{temp?:number, time?:number}} [calib] korekty użytkownika: °C i % czasu */
+  function ovenPlan(b, calib = {}) {
     const base = OVEN_BASE[b.id];
     if (!base) return null;
     const [t0, m0, m1, mode] = base;
+    const cT = calib.temp || 0, cK = 1 + (calib.time || 0) / 100;
     if (mode === "fry") return { note: `smażenie w ${t0}°C, 2–3 min z każdej strony`, doneness: "Gotowe, gdy są złote z obu stron, a wbity patyczek wychodzi suchy. Jeśli z zewnątrz ciemnieją za szybko, obniż temperaturę oleju o 5–10°C." };
     if (mode === "pan") return { note: "sucha, mocno rozgrzana patelnia, ok. 2 min na stronę", doneness: "Gotowe, gdy placek jest nadmuchany i ma brązowe plamki z obu stron." };
     if (mode === "stone") return { note: `jak najwyższa temperatura piekarnika (${t0 >= 300 ? "250–300" : t0}°C), najlepiej na rozgrzanym kamieniu lub odwróconej blasze, ${m0}–${m1} min`, doneness: "Gotowe, gdy brzegi są wyrośnięte i lekko przypieczone, a spód twardy i rumiany." };
     const drop = browningDrop(b) + (mode === "filled" ? 10 : 0);
-    const t = Math.max(MIN_OVEN_TEMP, round5(t0 - drop));
-    const realDrop = t0 - t;
-    const k = GF_TIME_FACTOR * (1 + 0.05 * (realDrop / 5)); // dłużej o ok. 5% na każde 5°C mniej
+    const t = Math.max(MIN_OVEN_TEMP - 10, round5(t0 - drop + cT));
+    const realDrop = Math.max(0, t0 - t - cT);
+    const k = GF_TIME_FACTOR * (1 + 0.05 * (realDrop / 5)) * cK; // dłużej o ok. 5% na każde 5°C mniej, plus korekta użytkownika
     const a = Math.round(m0 * k), z = Math.round(m1 * k);
     let note = `${t}°C, góra–dół bez termoobiegu, środkowa półka, ${a}–${z} min`;
     if (mode === "twoStage") note = `${t}°C przez 15 min, potem ${t - 20}°C, razem ${a}–${z} min, z parą na początku`;
@@ -371,7 +373,7 @@
    * Pełny przepis laboratoryjny.
    * @param {{bakeId:string, pantryIds:string[], doughWeight:number, extraIngredients?:Ingredient[]}} input
    */
-  function calculateLaboratoryFormulation({ bakeId, pantryIds, doughWeight, extraIngredients = [] }) {
+  function calculateLaboratoryFormulation({ bakeId, pantryIds, doughWeight, extraIngredients = [], calib = {} }) {
     const bake = BAKES.find(b => b.id === bakeId);
     if (!bake) throw new Error("Nieznany wypiek: " + bakeId);
     const cls = RHEOLOGY_CLASSES[bake.rheologyClass];
@@ -395,8 +397,9 @@
     // C. Cukier: hydratacja i drożdże
     const dSugar = -Math.max(0, bake.sugar - 6) * 0.25;
     const hBase = bake.hydration ?? mid(cls.hydration);
-    const hEff = hBase + dWAC + dFat + dSugar;
-    const yeastEff = bake.yeastDry * (1 + Math.max(0, bake.sugar - 6) * 0.035 + Math.max(0, bake.fat - 8) * 0.015);
+    const dUser = calib.water || 0; // korekta z ocen „Jak wyszło?”
+    const hEff = hBase + dWAC + dFat + dSugar + dUser;
+    const yeastEff = bake.yeastDry * (1 + Math.max(0, bake.sugar - 6) * 0.035 + Math.max(0, bake.fat - 8) * 0.015) * (1 + (calib.yeast || 0) / 100);
 
     // Hydrokoloid
     let psy = bake.psyllium ?? mid(cls.psyllium); // zakresy klas już zakładają obecność HPMC w bazach komercyjnych
@@ -446,7 +449,7 @@
       bake, cls, empty: false, mode: sol.mode,
       blend: sol.blend.map(([ingredient, share]) => ({ ingredient, share })),
       profile: { protein: prof.protein, fiber: prof.fiber, starch: prof.starch, wacMix: prof.wac, target: cls.target },
-      hydration: { base: hBase, deltaWAC: dWAC, deltaFat: dFat, deltaSugar: dSugar, effective: hEff },
+      hydration: { base: hBase, deltaWAC: dWAC, deltaFat: dFat, deltaSugar: dSugar, deltaUser: dUser, effective: hEff },
       yeast: { dryEffective: yeastEff, freshPct: yeastEff * FRESH_PER_DRY, dryGrams: rg(flour * yeastEff / 100) },
       mixShare, flourExact: flour, lines,
       total: lines.filter(l => !l.sub).reduce((s, l) => s + l.grams, 0),
@@ -474,7 +477,7 @@
     return out;
   }
 
-  const GFEngine = { INGREDIENT_MATRIX, RHEOLOGY_CLASSES, BAKES, solveFlourBlend, calculateLaboratoryFormulation, validateDefaultBatches, defaultDough, profileOf };
+  const GFEngine = { ovenPlan, INGREDIENT_MATRIX, RHEOLOGY_CLASSES, BAKES, solveFlourBlend, calculateLaboratoryFormulation, validateDefaultBatches, defaultDough, profileOf };
   if (typeof module !== "undefined" && module.exports) module.exports = GFEngine;
   global.GFEngine = GFEngine;
 })(typeof window !== "undefined" ? window : globalThis);

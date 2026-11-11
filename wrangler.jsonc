@@ -1,0 +1,15 @@
+{
+  // Cloudflare Worker: pliki statyczne (aplikacja) + małe API dla wspólnych danych domu
+  "name": "kalkulator-bezglutenowy",
+  "main": "worker.js",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "kv_namespaces": [
+    { "binding": "DATA", "id": "99f7470fa33844b5873a554820150ab6" }
+  ],
+  "observability": { "enabled": true }
+}

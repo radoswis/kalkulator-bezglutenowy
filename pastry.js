@@ -530,7 +530,8 @@
   const round05 = x => Math.round(x * 2) / 2;
 
   /** Receptura bezdrożdżowa. */
-  function calculatePastryFormulation({ bake, pantryIds, doughWeight, extraIngredients = [] }) {
+  const LIQUIDS = ["hotWater", "water", "coldWater", "iceWater", "milkWater", "milk", "milkOrWater", "milkOrYogurt", "buttermilk", "kefir", "lemonMilk", "sourCream"];
+  function calculatePastryFormulation({ bake, pantryIds, doughWeight, extraIngredients = [], calib = {} }) {
     const cls = RHEOLOGY_CLASSES[bake.rheologyClass];
     const all = INGREDIENT_MATRIX.concat(extraIngredients);
     const pantry = all.filter(i => pantryIds.includes(i.id));
@@ -550,6 +551,11 @@
       comps = comps.filter(([k]) => k !== "psy");
       if (pantryIds.includes("xan")) { comps.push(["xan", psyPct * 0.6]); warnings.push("Brak psyllium: używam gumy ksantanowej."); }
       else warnings.push("Brak psyllium: ciasto będzie mniej elastyczne i może pękać przy lepieniu. Wałkuj grubiej.");
+    }
+    // Korekta płynu z ocen „Jak wyszło?” (punkty procentowe od masy mąk) – na głównym płynie przepisu
+    if (calib.water) {
+      const liq = comps.filter(([k]) => LIQUIDS.includes(k)).sort((a, z) => z[1] - a[1])[0];
+      if (liq) comps = comps.map(([k, p]) => (k === liq[0] ? [k, Math.max(0, p + calib.water)] : [k, p]));
     }
     const mixSalt = blend.reduce((s, [i, x]) => s + (i.saltPct || 0) * x, 0);
     if (mixSalt > 0) comps = comps.map(([k, p]) => (k === "salt" ? [k, Math.max(0, p - mixSalt)] : [k, p]));

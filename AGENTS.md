@@ -31,6 +31,10 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - `suggestIdealBlend(bakeId, pantryIds)` – najlepszy zestaw z całej bazy (bez skrobi pszennej i produktów niszowych/o nieznanym składzie), porównany ze spiżarnią; w UI sekcja „Najlepszy zestaw do tego przepisu” + przycisk dodania brakujących.
 - Solvery mają pamięć podręczną (przepis + spiżarnia).
 - Model pieczenia (`OVEN_BASE`, `ovenPlan()` w engine.js): temperatura bazowa jak dla pszennego, obniżana o 10–20°C przy cukrze/jajkach/tłuszczu (`browningDrop`) i o dodatkowe 10°C dla wypieków z nadzieniem, min. 160°C; czas ×1,2 dla ciast bezglutenowych + 5% na każde 5°C mniej; góra–dół bez termoobiegu; `doneness` = jak sprawdzić upieczenie (96–98°C w środku dla dużych). Kalibracja: paszteciki 11.11 – przy 200°C wyjęte po 16 min, wierzch gotowy, środek mógł chwilę dłużej → ustawione 180°C, 20–24 min (OVEN_BASE paszteciki).
+- `worker.js` + `wrangler.jsonc`: Worker serwuje pliki (`.assetsignore` ukrywa pliki techniczne) i API:
+  - `GET/PUT /api/state` – wspólny stan domu w KV `DATA` (klucz `state:v1`): `{pantry, custom, calib}`; bez logowania; UI zapisuje grupowo co 1,5 s (limit darmowy KV: 1000 zapisów/dzień).
+  - `GET /api/off?q=` – pośrednik do Open Food Facts (nazwa lub kod kreskowy), zwraca do 6 produktów.
+- Kalibracja „Jak wyszło?” (index.html: `FB_RULE`, `applyFeedback`): oceny zmieniają per przepis `calib[bakeId] = {water (pkt %), yeast (%), temp (°C), time (%)}` z limitami `CAP`. Silniki przyjmują `calib`; `ovenPlan(b, calib)` przelicza temperaturę i czas; w przepisach bezdrożdżowych i smażonych korekta temp./czasu jest pokazywana jako notka.
 - Kategorie w UI: `CATEGORIES` (8 grup), wypieki drożdżowe mapowane w `YEAST_CATEGORY`.
 - `index.html` – interfejs; spiżarnia i własne mąki w `localStorage`.
 - Psyllium = łuska babki jajowatej (Plantago ovata) lub płesznik.

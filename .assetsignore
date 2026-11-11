@@ -1,0 +1,11 @@
+worker.js
+wrangler.jsonc
+AGENTS.md
+README.md
+.assetsignore
+.git
+.git/**
+.wrangler
+.wrangler/**
+node_modules
+node_modules/**
