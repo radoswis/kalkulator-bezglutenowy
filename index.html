@@ -356,7 +356,7 @@ $("searchBtn").onclick=async()=>{const q=$("q").value.trim();if(!q){$("searchMsg
   $("searchMsg").querySelectorAll("[data-off]").forEach(btn=>btn.onclick=()=>{const p=j.results[+btn.dataset.off];
    $("nName").value=p.name+(p.brands?` (${p.brands.split(",")[0]})`:"");$("nProt").value=p.protein??"";$("nFib").value=p.fiber??"";offComposition=p.composition||"";updEst();
    $("searchMsg").textContent="Dane wpisane. Sprawdź je z etykietą"+(p.fiber==null?" (brak błonnika w bazie, wpisz z opakowania)":"")+" i kliknij „Dodaj do moich mąk”."})}
- catch(e){$("searchMsg").textContent="Wyszukiwanie nie działa w tym podglądzie albo serwer nie odpowiada ("+e.message+"). Wpisz dane z etykiety ręcznie."}};
+ catch(e){$("searchMsg").textContent=(/przeciążona|Open Food Facts/.test(e.message)?e.message:"Wyszukiwanie nie działa w tym podglądzie albo nie ma internetu.")+" Możesz też wpisać dane z etykiety ręcznie."}};
 
 
 // ===== Tryb gotowania: kroki na cały ekran, minutniki, ekran nie gaśnie =====

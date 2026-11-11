@@ -32,10 +32,19 @@ async function handleState(req, env) {
 const FLOUR_RE = /m[aą]k|mieszank|skrobi|mix|flour|farin|mehl|starch|amido|tapiok|psyllium|babk|otr[eę]b|kasza manna/i;
 const NOT_FLOUR_RE = /chleb (krojony|tostowy)|bu[lł]k|pain |bread slice|ciastk|herbatnik|makaron|pieczywo|wafl/i;
 
-async function offSearch(params) {
-  const headers = { "User-Agent": "KalkulatorBezglutenowy/2.1 (prywatna aplikacja domowa)" };
-  const r = await fetch("https://pl.openfoodfacts.org/cgi/search.pl?" + new URLSearchParams(params), { headers, cf: { cacheTtl: 3600 } });
-  if (!r.ok) throw new Error(`Open Food Facts nie odpowiada (kod ${r.status}). Spróbuj za chwilę.`);
+const UA = { "User-Agent": "KalkulatorBezglutenowy/2.2 (prywatna aplikacja domowa)" };
+
+// Nowa wyszukiwarka OFF (Search-a-licious) – szybsza i rzadziej przeciążona
+async function salSearch(q, filter, fields) {
+  const url = "https://search.openfoodfacts.org/search?" + new URLSearchParams({ q: filter ? `${q} ${filter}` : q, page_size: "24", langs: "pl", fields });
+  const r = await fetch(url, { headers: UA, cf: { cacheTtl: 3600 } });
+  if (!r.ok) throw new Error(`kod ${r.status}`);
+  return (await r.json()).hits || [];
+}
+// Stara wyszukiwarka OFF – zapasowa
+async function cgiSearch(params) {
+  const r = await fetch("https://world.openfoodfacts.org/cgi/search.pl?" + new URLSearchParams(params), { headers: UA, cf: { cacheTtl: 3600 } });
+  if (!r.ok) throw new Error(`kod ${r.status}`);
   return (await r.json()).products || [];
 }
 
@@ -50,28 +59,35 @@ async function handleOff(url) {
     const d = r.ok ? await r.json() : {};
     products = d.product ? [d.product] : [];
   } else {
-    // 1) Polska + kategoria mąki, 2) Polska + dowolna kategoria (filtr po nazwie), 3) cały świat, kategoria mąki
-    const base = { search_terms: q, json: "1", page_size: "24", fields, lc: "pl", sort_by: "unique_scans_n" };
-    const pl = { tagtype_0: "countries", tag_contains_0: "contains", tag_0: "poland" };
-    const flour = { tagtype_1: "categories", tag_contains_1: "contains", tag_1: "flours" };
-    const steps = [{ ...base, ...pl, ...flour }, { ...base, ...pl }, { ...base, tagtype_0: "categories", tag_contains_0: "contains", tag_0: "flours" }];
-    const seen = new Set();
-    for (const params of steps) {
-      for (const p of await offSearch(params)) {
+    // Kolejne próby: Polska + mąki, Polska, świat (stara wyszukiwarka). Błąd jednej próby nie przerywa wyszukiwania.
+    const base = { search_terms: q, json: "1", page_size: "24", fields, sort_by: "unique_scans_n" };
+    const tries = [
+      () => salSearch(q, 'countries_tags:"en:poland" categories_tags:"en:flours"', fields),
+      () => salSearch(q, 'countries_tags:"en:poland"', fields),
+      () => cgiSearch({ ...base, tagtype_0: "countries", tag_contains_0: "contains", tag_0: "poland" }),
+      () => cgiSearch({ ...base, tagtype_0: "categories", tag_contains_0: "contains", tag_0: "flours" })
+    ];
+    const seen = new Set(), errors = [];
+    for (const run of tries) {
+      let found = [];
+      try { found = await run(); } catch (e) { errors.push(e.message); continue; }
+      for (const p of found) {
         const name = p.product_name_pl || p.product_name || "";
-        const cats = (p.categories_tags || []).join(" ");
+        const cats = [].concat(p.categories_tags || []).join(" ");
         if (!name || seen.has(p.code)) continue;
         if (!(FLOUR_RE.test(name) || /flour|starch/.test(cats)) || NOT_FLOUR_RE.test(name)) continue;
         seen.add(p.code); products.push(p);
       }
       if (products.length >= 8) break;
     }
+    if (!products.length && errors.length === tries.length)
+      return json({ error: "Baza Open Food Facts jest chwilowo przeciążona. Spróbuj za kilka minut albo wpisz dane z etykiety." }, 502);
   }
   const list = products.slice(0, 8).map(p => ({
     code: p.code,
     name: p.product_name_pl || p.product_name || "",
     brands: p.brands || "",
-    poland: (p.countries_tags || []).includes("en:poland"),
+    poland: [].concat(p.countries_tags || []).includes("en:poland"),
     protein: p.nutriments?.proteins_100g ?? null,
     fiber: p.nutriments?.fiber_100g ?? null,
     carbs: p.nutriments?.carbohydrates_100g ?? null,
