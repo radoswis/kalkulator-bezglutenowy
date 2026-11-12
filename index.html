@@ -170,13 +170,13 @@ const {INGREDIENT_MATRIX:ING,RHEOLOGY_CLASSES:CLS,ALL_BAKES,CATEGORIES,calculate
 const BAKES=ALL_BAKES,defaultDough=b=>b.unitWeight*b.defaultCount;
 const $=id=>document.getElementById(id);
 // Stan domu: spiżarnia, własne mąki, kalibracje. Lokalnie od razu, potem wspólnie przez serwer (/api/state).
-let custom=[],sel=new Set(["ryz","szi","tap","mixb","psy"]),calib={},syncMode="local";
+let custom=[],sel=new Set(["ryz","szi","tap","mixb","psy"]),calib={},prefs={taste:"wheat",proof:"warm"},syncMode="local";
 try{const st=JSON.parse(localStorage.getItem("gf_state_v2")||"null");
- if(st){custom=st.custom||[];sel=new Set(st.pantry||[]);calib=st.calib||{}}
+ if(st){custom=st.custom||[];sel=new Set(st.pantry||[]);calib=st.calib||{};prefs=Object.assign(prefs,st.prefs||{})}
  else{custom=JSON.parse(localStorage.getItem("gf_custom_v1")||"[]");const s=JSON.parse(localStorage.getItem("gf_pantry_v1")||"null");if(s)sel=new Set(s)}}catch(e){}
 let mode="pcs";
 const all=()=>ING.concat(custom);
-const stateObj=()=>({pantry:[...sel],custom,calib});
+const stateObj=()=>({pantry:[...sel],custom,calib,prefs});
 let saveTimer=null;
 function setSync(t){const el=$("syncMsg");if(el)el.textContent=t}
 function save(){try{localStorage.setItem("gf_state_v2",JSON.stringify(stateObj()))}catch(e){}
@@ -186,7 +186,7 @@ function save(){try{localStorage.setItem("gf_state_v2",JSON.stringify(stateObj()
   const j=await r.json();setSync(r.ok?"Wspólne dla domu · zapisano":"Nie zapisano wspólnie: "+(j.error||r.status)+". Zmiany są na tym urządzeniu.")}
   catch(e){setSync("Brak połączenia: zmiany zapisane tylko na tym urządzeniu.")}},1500)}
 async function loadShared(){try{const r=await fetch("/api/state",{cache:"no-store"});if(!r.ok)throw 0;const st=await r.json();syncMode="cloud";
-  if(st&&st.pantry){custom=st.custom||[];sel=new Set(st.pantry);calib=st.calib||{};try{localStorage.setItem("gf_state_v2",JSON.stringify(stateObj()))}catch(e){}renderPantry();calc();setSync("Wspólne dla domu · wczytano")}
+  if(st&&st.pantry){custom=st.custom||[];sel=new Set(st.pantry);calib=st.calib||{};prefs=Object.assign(prefs,st.prefs||{});try{localStorage.setItem("gf_state_v2",JSON.stringify(stateObj()))}catch(e){}renderPantry();calc();setSync("Wspólne dla domu · wczytano")}
   else{setSync("Wspólne dla domu");save()}}
  catch(e){syncMode="local";setSync("Spiżarnia zapisana tylko na tym urządzeniu.")}}
 const fmt=g=>(Number.isInteger(g)?g:g.toFixed(1).replace(".",","));
@@ -229,6 +229,8 @@ document.addEventListener("click",e=>{const fbb=e.target.closest("[data-fb]");if
  const rs=e.target.closest("[data-fbreset]");if(rs){delete calib[$("bake").value];save();calc();return}
  const pk=e.target.closest("[data-pick]");if(pk){pickBake(pk.dataset.pick);return}
  const sb=e.target.closest("[data-src]");if(sb){src=sb.dataset.src;calc();return}
+ const tb=e.target.closest("[data-taste]");if(tb){prefs.taste=tb.dataset.taste;save();calc();return}
+ const pb=e.target.closest("[data-proof]");if(pb){prefs.proof=pb.dataset.proof;save();calc();return}
  const a=e.target.closest("[data-add]");if(a){a.dataset.add.split(",").forEach(id=>sel.add(id));save();renderPantry();calc();return}const c=e.target.closest(".chip");if(!c)return;src="pantry";const id=c.dataset.id;sel.has(id)?sel.delete(id):sel.add(id);c.setAttribute("aria-pressed",sel.has(id));save();calc()});
 
 function setDefaults(){const b=BAKES.find(x=>x.id===$("bake").value);$("count").value=b.defaultCount;$("portion").value=b.unitWeight;$("grams").value=defaultDough(b)}
@@ -244,9 +246,9 @@ function calc(){
  $("bakeInfo").textContent=`Rodzaj: ${CLS[b.rheologyClass].label} · Domyślnie ${b.defaultCount} × ${b.unitWeight} g (${b.unit}) · ${b.bakeNote}`;
  const D=mode==="pcs"?(+$("count").value||0)*(+$("portion").value||0):(+$("grams").value||0);
  if(D<50){$("out").innerHTML=`<h3>${b.name}</h3><div class="warn">Podaj ilość ciasta (min. 50 g).</div>`;return}
- const best=suggestIdealBlend(bakeId,[...sel]);
+ const best=suggestIdealBlend(bakeId,[...sel],prefs.taste);
  const ids=src==="ideal"&&best?best.ideal.map(x=>x.ingredient.id).concat(["psy"]):[...sel];
- const r=calculateRecipe({bakeId,pantryIds:ids,doughWeight:D,extraIngredients:custom,calib:cb});
+ const r=calculateRecipe({bakeId,pantryIds:ids,doughWeight:D,extraIngredients:custom,calib:cb,taste:prefs.taste,coldProof:b.family==="yeast"&&prefs.proof==="cold"});
  if(r.empty){$("out").innerHTML=`<h3>${b.name}</h3>${srcBar()}${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}`;return}
  if(r.family==="pastry"){renderPastry(r,b,D);$("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());return}
  const h=r.hydration,p=r.profile,t=p.target,sg=x=>(x>=0?"+":"")+x.toFixed(1);
@@ -260,7 +262,8 @@ function calc(){
  if(hasEggs)why.push("jajka też są płynem i już odjęliśmy je od wody");
  const cl=b.rheologyClass,pour=cl==="RHEO_POURABLE_HIGH_HYDRATION";
  const pcs=mode==="pcs"?+$("count").value:Math.max(1,Math.round(D/b.unitWeight)),pw=mode==="pcs"?+$("portion").value:Math.round(D/pcs);
- const s1=hasPsy?`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej). Rozkrusz w niej drożdże i wymieszaj, aż się rozpuszczą. Wsyp psyllium i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${water} g ciepłej wody (ciepłej jak do kąpieli, nie gorącej) i rozkrusz w niej drożdże${hasXan?", potem wmieszaj gumę ksantanową":""}.`;
+ const cold=prefs.proof==="cold",wTxt=cold?"letniej wody (w temperaturze pokojowej)":"ciepłej wody (ciepłej jak do kąpieli, nie gorącej)";
+ const s1=hasPsy?`Do dużej miski wlej ${water} g ${wTxt}. Rozkrusz w niej drożdże i wymieszaj, aż się rozpuszczą. Wsyp psyllium i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${water} g ${wTxt} i rozkrusz w niej drożdże${hasXan?", potem wmieszaj gumę ksantanową":""}.`;
  const s2=`Dodaj mąki, sól${b.sugar?", cukier":""}${b.fat?(b.sweet?", roztopione masło":", oliwę"):""}${hasEggs?" i roztrzepane jajka":""}. Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż zwykłe i tak ma być.`
   +((cl==="RHEO_LAMINATED_ROLLED_STUFFED"||cl==="RHEO_ENRICHED_BRIOCHE_FRIED")?" Potem odstaw ciasto na 10–15 minut, żeby dobrze związało wodę. Wtedy łatwiej się wałkuje.":"");
  const shape={RHEO_FREE_STANDING_LOAF:`uformuj ${pcs>1?`${pcs} szt. po około ${pw} g`:"bochenek"}`,RHEO_TENSILE_SHAPED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
@@ -268,11 +271,11 @@ function calc(){
   RHEO_ENRICHED_BRIOCHE_FRIED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`}[cl];
  const steps=pour?[s1,s2,
   "Od razu przełóż ciasto do naoliwionej formy lub na blachę i rozprowadź mokrymi dłońmi.",
-  "Przykryj ściereczką i zostaw w formie w ciepłym miejscu na 45–60 minut, aż wyraźnie urośnie.",
+  cold?"Przykryj formę szczelnie folią i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie urośnie.":"Przykryj ściereczką i zostaw w formie w ciepłym miejscu na 45–60 minut, aż wyraźnie urośnie.",
   `Na koniec: ${b.bakeNote}.`]
  :[s1,s2,
   `Od razu, bez wyrastania w misce, ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
-  "Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na 45–60 minut, aż wyraźnie się napuszą.",
+  cold?"Przykryj szczelnie folią, żeby nie obeschły, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie się napuszą.":"Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na 45–60 minut, aż wyraźnie się napuszą.",
   `Na koniec: ${b.bakeNote}.`];
  cur={title:b.name,steps,lines:r.lines};
  const tip=pour?"":`<div class="note">Ciasto bezglutenowe rośnie tylko raz. Jeśli wyrośnie w misce, a potem je ugnieciesz, już się nie podniesie, dlatego formujemy od razu.</div>`;
@@ -282,6 +285,7 @@ function calc(){
  <div class="note">Masz tylko drożdże suche (instant)? Weź ${fmt(r.yeast.dryGrams)} g zamiast świeżych i wsyp je razem z mąką.</div>
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
  <div class="note"><b>Dlaczego tyle wody?</b> ${why.length?why.join(", ").replace(/^./,c=>c.toUpperCase())+".":"To typowa ilość wody dla tego wypieku."}</div>
+ <div class="note"><b>Smak:</b> ${r.taste.text}.${r.taste.level>=2&&prefs.taste==="wheat"?" Jeśli chcesz smak bliższy pszennemu, zobacz najlepszy zestaw poniżej.":""}</div>
  <div class="note"><b>Dlaczego te mąki?</b> ${whyTxt()}${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
  ${idealHtml(b.id)}
  <button type="button" class="btn cookbtn" data-cook="1">Gotuj krok po kroku (z minutnikami)</button>
@@ -291,7 +295,7 @@ function calc(){
 }
 
 function idealHtml(bakeId){
- const s=suggestIdealBlend(bakeId,[...sel]);if(!s)return "";
+ const s=suggestIdealBlend(bakeId,[...sel],prefs.taste);if(!s)return "";
  const list=s.ideal.map(x=>`<li>${x.inPantry?"✓":"✗"} ${Math.round(x.share*100)}% ${x.ingredient.name}${x.ingredient.brands?` <small>(${x.ingredient.brands})</small>`:""}</li>`).join("");
  if(s.complete)return `<div class="ideal ok"><b>Najlepszy zestaw do tego przepisu:</b> masz wszystko, czego potrzeba.<ul>${list}</ul></div>`;
  return `<div class="ideal"><b>Najlepszy zestaw do tego przepisu:</b><ul>${list}</ul>
@@ -299,14 +303,15 @@ function idealHtml(bakeId){
  <button type="button" class="btn ghost" data-add="${s.missing.map(i=>i.id).join(",")}">Kupiłem, dodaj do spiżarni</button></div>`;
 }
 
-const FB=[["suche","Za suche, kruszy się"],["kleiste","Kleiste, za mokre"],["plaskie","Płaskie, nie wyrosło"],["przypieczone","Za mocno przypieczone z wierzchu"],["niedopieczone","Niedopieczone w środku"],["idealne","Wyszło idealnie"]];
-const FB_RULE={suche:{water:3},kleiste:{water:-2,time:8},plaskie:{water:-2,yeast:10},przypieczone:{temp:-10,time:10},niedopieczone:{time:10},idealne:{}};
-const CAP={water:10,yeast:30,temp:30,time:40};
+const FB=[["suche","Za suche, kruszy się"],["kleiste","Kleiste, za mokre"],["plaskie","Płaskie, nie wyrosło"],["przypieczone","Za mocno przypieczone z wierzchu"],["niedopieczone","Niedopieczone w środku"],["smak","Smak nie jak pszenny"],["idealne","Wyszło idealnie"]];
+const FB_RULE={suche:{water:3},kleiste:{water:-2,time:8},plaskie:{water:-2,yeast:10},przypieczone:{temp:-10,time:10},niedopieczone:{time:10},smak:{taste:1},idealne:{}};
+const CAP={water:10,yeast:30,temp:30,time:40,taste:3};
 function applyFeedback(id,v){const c=calib[id]||{water:0,yeast:0,temp:0,time:0,log:[]};const r=FB_RULE[v];
- for(const k of ["water","yeast","temp","time"])if(r[k])c[k]=Math.max(-CAP[k],Math.min(CAP[k],(c[k]||0)+r[k]));
+ if(v==="smak"&&prefs.taste!=="wheat")prefs.taste="wheat";
+ for(const k of ["water","yeast","temp","time","taste"])if(r[k])c[k]=Math.max(-CAP[k],Math.min(CAP[k],(c[k]||0)+r[k]));
  c.log=(c.log||[]).concat({d:new Date().toISOString().slice(0,10),v}).slice(-20);calib[id]=c;save();calc()}
 function fbHtml(b){const c=calib[b.id],parts=[];
- if(c){if(c.water)parts.push(`${c.water>0?"więcej":"mniej"} płynu (${c.water>0?"+":""}${c.water} pkt %)`);if(c.yeast)parts.push(`drożdży ${c.yeast>0?"+":""}${c.yeast}%`);
+ if(c){if(c.taste)parts.push(`mąki o bardziej neutralnym smaku (poziom ${c.taste} z 3)`);if(c.water)parts.push(`${c.water>0?"więcej":"mniej"} płynu (${c.water>0?"+":""}${c.water} pkt %)`);if(c.yeast)parts.push(`drożdży ${c.yeast>0?"+":""}${c.yeast}%`);
   if(c.temp)parts.push(`temperatura ${c.temp>0?"+":""}${c.temp}°C`);if(c.time)parts.push(`czas ${c.time>0?"+":""}${c.time}%`)}
  const last=c&&c.log&&c.log.length?c.log[c.log.length-1]:null;
  const autoOven=b.family==="yeast"&&GFEngine.ovenPlan(b)?.temp;
@@ -314,9 +319,13 @@ function fbHtml(b){const c=calib[b.id],parts=[];
  return `<div class="fb"><b>Jak wyszło?</b> Zaznacz po upieczeniu, a przy następnym razie przepis sam się poprawi.
  <div class="chips">${FB.map(([v,t])=>`<button type="button" class="chip" data-fb="${v}">${t}</button>`).join("")}</div>
  ${parts.length?`<div>Twoje korekty w tym przepisie: ${parts.join(", ")}. <button type="button" class="linkbtn" data-fbreset="1">Wyzeruj</button></div>`:""}
- ${pastryOven}${last?`<div class="msg">Ostatnia ocena: ${FB.find(f=>f[0]===last.v)[1].toLowerCase()} (${last.d}).</div>`:""}</div>`}
+ ${c&&c.taste&&b.family==="yeast"&&prefs.proof!=="cold"?`<div>Spróbuj też wyrastania w lodówce przez noc: to najmocniej poprawia smak.</div>`:""}${pastryOven}${last?`<div class="msg">Ostatnia ocena: ${FB.find(f=>f[0]===last.v)[1].toLowerCase()} (${last.d}).</div>`:""}</div>`}
 
+function prefBar(){const b=BAKES.find(x=>x.id===$("bake").value),y=b&&b.family==="yeast";
+ return `<div class="seg" role="group" aria-label="Smak"><button type="button" data-taste="wheat" aria-pressed="${prefs.taste==="wheat"}">Smak jak pszenny</button><button type="button" data-taste="bold" aria-pressed="${prefs.taste==="bold"}">Wyrazisty, pełnoziarnisty</button></div>
+ ${y?`<div class="seg" role="group" aria-label="Wyrastanie"><button type="button" data-proof="warm" aria-pressed="${prefs.proof==="warm"}">Wyrastanie w cieple, ok. 1 h</button><button type="button" data-proof="cold" aria-pressed="${prefs.proof==="cold"}">W lodówce przez noc, lepszy smak</button></div>`:""}`}
 function srcBar(){return `<div class="seg srcbar" role="group" aria-label="Z jakich mąk liczyć"><button type="button" data-src="ideal" aria-pressed="${src==="ideal"}">Najlepszy zestaw mąk</button><button type="button" data-src="pantry" aria-pressed="${src==="pantry"}">Z mojej spiżarni</button></div>
+ ${prefBar()}
  <div class="note">${src==="ideal"?"Podgląd przepisu na najlepszych mąkach. Zaznacz w spiżarni, co masz, a przeliczę przepis na Twoje mąki.":"Przepis przeliczony na mąki z Twojej spiżarni."}</div>`}
 const whyTxt=()=>src==="ideal"?"To najlepszy zestaw z całej bazy mąk dla tego przepisu.":"Z tego, co masz w domu, ta mieszanka da wynik najbardziej podobny do tradycyjnego, pszennego.";
 function renderPastry(r,b,D){
@@ -328,6 +337,7 @@ function renderPastry(r,b,D){
  <div class="hyd"><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div><div><b>${flour} g</b><span>mąk razem</span></div>${b.defaultCount>1||pcs>1?`<div><b>${pcs} × ${Math.round(D/pcs)} g</b><span>${b.unit}</span></div>`:""}</div>
  <table>${rows}</table>
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
+ <div class="note"><b>Smak:</b> ${r.taste.text}.${r.taste.level>=2&&prefs.taste==="wheat"?" Jeśli chcesz smak bliższy pszennemu, zobacz najlepszy zestaw poniżej.":""}</div>
  <div class="note"><b>Dlaczego te mąki?</b> ${whyTxt()}${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>
  ${idealHtml(b.id)}
  <button type="button" class="btn cookbtn" data-cook="1">Gotuj krok po kroku (z minutnikami)</button>
@@ -363,12 +373,13 @@ $("searchBtn").onclick=async()=>{const q=$("q").value.trim();if(!q){$("searchMsg
 let cur=null,ci=0,wake=null,audio=null;const timers=[];
 const fmtT=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
 function findTimes(t){const out=[];let m;const re=/(\d+)(?:\s*[–-]\s*(\d+))?\s*(minut|min\b)/g;
- while((m=re.exec(t)))out.push(+m[1]);if(/godzin[ęy]|1\s*h\b/.test(t)&&!out.includes(60))out.push(60);return [...new Set(out)].filter(x=>x>0&&x<=240)}
+ while((m=re.exec(t)))out.push(+m[1]);const hr=/(\d+)(?:\s*[–-]\s*(\d+))?\s*godzin/g;let hh=false;while((m=hr.exec(t))){out.push(+m[1]*60);hh=true}
+ if(!hh&&/godzin[ęy]|1\s*h\b/.test(t)&&!out.includes(60))out.push(60);return [...new Set(out)].filter(x=>x>0&&x<=900)}
 async function keepAwake(){try{if("wakeLock" in navigator&&!$("cook").hidden)wake=await navigator.wakeLock.request("screen")}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")keepAwake()});
 function showStep(){const n=cur.steps.length;ci=Math.max(0,Math.min(n-1,ci));
  $("cookNum").textContent=`Krok ${ci+1} z ${n}`;$("cookText").textContent=cur.steps[ci];
- $("cookTimerBtns").innerHTML=findTimes(cur.steps[ci]).map(m=>`<button type="button" class="chip" data-timer="${m}">Minutnik ${m} min</button>`).join("");
+ $("cookTimerBtns").innerHTML=findTimes(cur.steps[ci]).map(m=>`<button type="button" class="chip" data-timer="${m}">Minutnik ${m>=120?Math.round(m/60)+" godz.":m+" min"}</button>`).join("");
  document.querySelector("[data-cookprev]").disabled=ci===0;const nx=document.querySelector("[data-cooknext]");nx.textContent=ci===n-1?"Koniec":"Dalej →"}
 function openCook(){if(!cur)return;ci=0;$("cookTitle").textContent=cur.title;
  $("cookIng").innerHTML="<table>"+cur.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("")+"</table>";
@@ -377,7 +388,7 @@ function closeCook(){$("cook").hidden=true;document.body.style.overflow="";try{w
 function beep(){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();for(let i=0;i<3;i++){const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=880;o.connect(g);g.connect(audio.destination);const t=audio.currentTime+i*0.45;g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);o.start(t);o.stop(t+0.36)}}catch(e){}
  try{navigator.vibrate&&navigator.vibrate([400,200,400,200,400])}catch(e){}}
 function startTimer(min){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
- timers.push({label:`${cur?cur.title+": ":""}${min} min`,end:Date.now()+min*60000,done:false});renderTimers()}
+ timers.push({label:`${cur?cur.title+": ":""}${min>=120?Math.round(min/60)+" godz.":min+" min"}`,end:Date.now()+min*60000,done:false});renderTimers()}
 function renderTimers(){const now=Date.now();
  for(const t of timers)if(!t.done&&t.end<=now){t.done=true;beep()}
  const html=timers.map((t,i)=>`<div class="timer${t.done?" done":""}"><span>${t.label}</span><b>${t.done?"Gotowe!":fmtT(Math.ceil((t.end-now)/1000))}</b><button type="button" class="linkbtn" data-timerdel="${i}">${t.done?"OK":"Anuluj"}</button></div>`).join("");

@@ -147,7 +147,7 @@
     { id: "ciabatta",    name: "Ciabatta",              rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 2.0, yeastDry: 1.45, fat: 3, sugar: 0, eggs: 0, unitWeight: 350, defaultCount: 2, unit: "bochenek", bakeNote: "230°C, 30 min z parą" },
     // RHEO_FREE_STANDING_LOAF
     { id: "chleb_jasny", name: "Chleb jasny",           rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 2, sugar: 1, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 40 min" },
-    { id: "chleb_gryczany", name: "Chleb gryczany / ciemny", rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 2, sugar: 1, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 45 min" },
+    { id: "chleb_gryczany", boldByDesign: true, preferFlour: { gry: 0.3 }, name: "Chleb gryczany / ciemny", rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 2, sugar: 1, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 45 min" },
     { id: "bagietka",    name: "Bagietka",              rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 2, sugar: 0, eggs: 0, unitWeight: 300, defaultCount: 2, unit: "bagietka", bakeNote: "240°C, 25 min z parą" },
     // RHEO_TENSILE_SHAPED
     { id: "pizza_neapol", name: "Pizza neapolitańska",  rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.2, yeastDry: 1.45, fat: 4, sugar: 0, eggs: 0, unitWeight: 220, defaultCount: 3, unit: "pizza", bakeNote: "250–300°C, 6–8 min, najlepiej na kamieniu" },
@@ -265,17 +265,67 @@
     return { protein, fiber, starch, wac };
   }
 
+  // ---------- Smak mąk (0 = neutralna jak pszenna, 1 = bardzo wyrazista) ----------
+  // Źródło: literatura sensoryczna mąk bezglutenowych i doświadczenie piekarzy; do kalibracji ocenami „Jak wyszło?”.
+  const FLAVOR = {
+    szi: [0, ""], skk: [0, ""], tap: [0, ""], ryzklei: [0.05, ""],
+    mixb: [0.05, ""], mixit: [0.05, ""], mixc: [0.05, ""], bzbread: [0.1, "zbożowa"], bzmulti: [0.05, ""], bzekstra: [0.05, ""],
+    bznalesn: [0.05, ""], scharmehl: [0.05, ""], granouni: [0.15, ""],
+    ryz: [0.1, ""], sor: [0.1, "łagodna, zbożowa"], ows: [0.2, "zbożowa, owsiana"], ryzb: [0.3, "orzechowa"],
+    kuk: [0.45, "kukurydziana, słodkawa"], mig: [0.5, "migdałowa, orzechowa"], jag: [0.6, "jaglana, lekko gorzkawa"],
+    tef: [0.6, "słodowa"], kasztan: [0.6, "kasztanowa, słodka"], ama: [0.65, "trawiasta"], ocelio: [0.4, "gryczana"],
+    fbaprot: [0.6, "grochowa"], cie: [0.8, "fasolowa (z ciecierzycy)"], kok: [0.8, "kokosowa"], gry: [0.9, "gryczana, ziemista"],
+    dynia: [1, "z pestek dyni, mocna"]
+  };
+  const PROFILE_FLAVOR = { neutral: 0.1, mild_sweet: 0.35, savory: 0.7, earthy: 0.8 };
+  /** Intensywność smaku składnika (0–1); w słodkich wypiekach nuty słodkie/orzechowe przeszkadzają mniej. */
+  function flavorOf(i, bake) {
+    const f = FLAVOR[i.id] ? FLAVOR[i.id][0] : (i.flavor ?? PROFILE_FLAVOR[i.flavorProfile] ?? 0.4);
+    return bake && bake.sweet && i.flavorProfile === "mild_sweet" ? f * 0.5 : f;
+  }
+  /** Opis smaku mieszanki dla użytkownika. @param {Blend} blend */
+  function tasteOf(blend, bake) {
+    let score = 0, top = null, topV = 0;
+    for (const [i, x] of blend) {
+      const f = flavorOf(i, bake); score += x * f;
+      if (x * f > topV) { topV = x * f; top = i; }
+    }
+    const note = top && (FLAVOR[top.id] ? FLAVOR[top.id][1] : top.name.toLowerCase());
+    const text = score < 0.12 ? "neutralny, zbliżony do pszennego"
+      : score < 0.25 ? `łagodny${note ? `, lekka nuta: ${note}` : ""}`
+      : score < 0.4 ? `wyczuwalny${note ? `, nuta: ${note}` : ""}`
+      : `wyrazisty${note ? `, dominuje nuta: ${note}` : ""}`;
+    return { score, text, level: score < 0.12 ? 0 : score < 0.25 ? 1 : score < 0.4 ? 2 : 3 };
+  }
+
   /** Funkcja kosztu solvera. @param {Blend} blend @param {RheologyClass} cls */
-  function blendCost(blend, cls) {
+  function blendCost(blend, cls, tasteW = 0, bake = null) {
     const p = profileOf(blend), t = cls.target;
-    const pDiv = cls.proteinPriority ? 0.5 / cls.proteinPriority : 0.5;
-    let c = ((p.protein - mid(t.protein)) / pDiv) ** 2
-          + ((p.starch - mid(t.starch)) / 2) ** 2
-          + ((p.fiber - mid(t.fiber)) / 0.5) ** 2;
+    let c;
+    if (tasteW) {
+      // Tryb „jak pszenny”: białko i błonnik liczone do zakresu z luzem (strukturę trzyma psyllium), smak ważniejszy
+      const d = (x, lo, hi) => (x < lo ? lo - x : x > hi ? x - hi : 0);
+      c = (d(p.protein, t.protein[0] - 2.5, t.protein[1]) / 1.1) ** 2
+        + ((p.starch - mid(t.starch)) / 2) ** 2
+        + (d(p.fiber, t.fiber[0] - 1.5, t.fiber[1] + 1) / 0.9) ** 2
+        + 0.05 * ((p.protein - mid(t.protein)) / 1.1) ** 2;
+    } else {
+      const pDiv = cls.proteinPriority ? 0.5 / cls.proteinPriority : 0.5;
+      c = ((p.protein - mid(t.protein)) / pDiv) ** 2
+        + ((p.starch - mid(t.starch)) / 2) ** 2
+        + ((p.fiber - mid(t.fiber)) / 0.5) ** 2;
+    }
     for (const [ing, x] of blend) {
       if (x <= 1e-9) continue;
       c += 0.15; // prostota: każda kolejna mąka kosztuje
       if (ing.maxShare && x > ing.maxShare + 1e-9) c += (x - ing.maxShare) * 200;
+      if (tasteW) c += tasteW * x * flavorOf(ing, bake); // kara za wyrazisty smak (tryb „jak pszenny”)
+    }
+    // Wypiek, którego smak wynika z konkretnej mąki (np. chleb gryczany) – preferowany jej udział
+    for (const [id, want] of Object.entries((bake && bake.preferFlour) || {})) {
+      if (!blend.some(([i]) => i.id === id) && !(bake._avail || new Set()).has(id)) continue;
+      const hit = blend.find(([i]) => i.id === id);
+      c += (((hit ? hit[1] : 0) - want) / 0.05) ** 2 * 0.5;
     }
     return c;
   }
@@ -297,15 +347,16 @@
    * @param {Ingredient[]} pantryFlours  @param {Bake} bake  @returns {{blend:Blend, cost:number, mode:'commercial_base'|'free'}}
    */
   const solveCache = new Map();
-  function solveFlourBlend(pantryFlours, bake) {
-    const key = bake.id + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
-    if (!solveCache.has(key)) solveCache.set(key, solveFlourBlendRaw(pantryFlours, bake));
+  function solveFlourBlend(pantryFlours, bake, tasteW = 0) {
+    const key = bake.id + "|" + tasteW + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
+    if (!solveCache.has(key)) solveCache.set(key, solveFlourBlendRaw(pantryFlours, bake, tasteW));
     return solveCache.get(key);
   }
-  function solveFlourBlendRaw(pantryFlours, bake) {
+  function solveFlourBlendRaw(pantryFlours, bake, tasteW = 0) {
     const cls = RHEOLOGY_CLASSES[bake.rheologyClass];
     const cands = pantryFlours.filter(i => i.role !== "hydrocolloid" && flavorAllowed(i, bake));
     if (!cands.length) return { blend: [], cost: Infinity, mode: "free" };
+    bake._avail = new Set(cands.map(i => i.id));
 
     const mixes = cands.filter(i => i.isCommercialMix).sort((a, b) => (b.mixPriority ?? 1.5) - (a.mixPriority ?? 1.5));
     if (mixes.length) {
@@ -313,8 +364,8 @@
       const comp = cands.filter(i => !i.isCommercialMix && i.role !== "pure_starch");
       const tapioca = TAPIOCA_EXCEPTION_CLASSES.has(bake.rheologyClass) ? cands.find(i => i.id === "tap") : undefined;
       /** @type {Blend} */ let best = [[base, 1]];
-      let bestCost = blendCost(best, cls);
-      const consider = (/** @type {Blend} */ bl) => { const c = blendCost(bl, cls); if (c < bestCost - 1e-9) { bestCost = c; best = bl; } };
+      let bestCost = blendCost(best, cls, tasteW, bake);
+      const consider = (/** @type {Blend} */ bl) => { const c = blendCost(bl, cls, tasteW, bake); if (c < bestCost - 1e-9) { bestCost = c; best = bl; } };
       for (const ms of [0.8, 0.75, 0.7, 0.65]) {
         const rest = +(1 - ms).toFixed(2);
         for (const tap of tapioca ? [0, ...TAPIOCA_EXCEPTION_SHARES] : [0]) {
@@ -340,7 +391,7 @@
     const toBlend = (/** @type {number[]} */ w) => /** @type {Blend} */ (cands.map((c, i) => [c, w[i]]).filter(p => p[1] > 1e-9));
     let bestW = starts[0], bestCost = Infinity;
     for (const w of starts) {
-      let cur = blendCost(toBlend(w), cls);
+      let cur = blendCost(toBlend(w), cls, tasteW, bake);
       for (let it = 0; it < 60; it++) {
         let move = null, mc = cur;
         for (let i = 0; i < n; i++) {
@@ -348,7 +399,7 @@
           for (let j = 0; j < n; j++) {
             if (i === j) continue;
             w[i] -= STEP; w[j] += STEP;
-            const c = blendCost(toBlend(w), cls);
+            const c = blendCost(toBlend(w), cls, tasteW, bake);
             if (c < mc - 1e-9) { mc = c; move = [i, j]; }
             w[i] += STEP; w[j] -= STEP;
           }
@@ -373,7 +424,13 @@
    * Pełny przepis laboratoryjny.
    * @param {{bakeId:string, pantryIds:string[], doughWeight:number, extraIngredients?:Ingredient[]}} input
    */
-  function calculateLaboratoryFormulation({ bakeId, pantryIds, doughWeight, extraIngredients = [], calib = {} }) {
+  /** Waga kary za smak: tryb „jak pszenny” (domyślny) albo „wyrazisty”; ocena „smak nie jak pszenny” wzmacnia. */
+  const TASTE_W = 50;
+  function tasteWeight(bake, taste = "wheat", calib = {}) {
+    if (taste === "bold" || bake.boldByDesign) return 0;
+    return TASTE_W * (bake.masked ? 0.3 : 1) * (1 + 0.5 * (calib.taste || 0));
+  }
+  function calculateLaboratoryFormulation({ bakeId, pantryIds, doughWeight, extraIngredients = [], calib = {}, taste = "wheat", coldProof = false }) {
     const bake = BAKES.find(b => b.id === bakeId);
     if (!bake) throw new Error("Nieznany wypiek: " + bakeId);
     const cls = RHEOLOGY_CLASSES[bake.rheologyClass];
@@ -382,7 +439,7 @@
     const pantryFlours = pantry.filter(i => i.role !== "hydrocolloid");
     /** @type {string[]} */ const warnings = [];
 
-    const sol = solveFlourBlend(pantryFlours, bake);
+    const sol = solveFlourBlend(pantryFlours, bake, tasteWeight(bake, taste, calib));
     if (!sol.blend.length) {
       return { bake, cls, empty: true, warnings: ["Zaznacz w spiżarni przynajmniej jedną mąkę lub mieszankę, pasującą do tego wypieku."] };
     }
@@ -399,7 +456,8 @@
     const hBase = bake.hydration ?? mid(cls.hydration);
     const dUser = calib.water || 0; // korekta z ocen „Jak wyszło?”
     const hEff = hBase + dWAC + dFat + dSugar + dUser;
-    const yeastEff = bake.yeastDry * (1 + Math.max(0, bake.sugar - 6) * 0.035 + Math.max(0, bake.fat - 8) * 0.015) * (1 + (calib.yeast || 0) / 100);
+    const COLD_YEAST = 0.6; // wyrastanie w lodówce przez noc: mniej drożdży, więcej smaku
+    const yeastEff = bake.yeastDry * (1 + Math.max(0, bake.sugar - 6) * 0.035 + Math.max(0, bake.fat - 8) * 0.015) * (1 + (calib.yeast || 0) / 100) * (coldProof ? COLD_YEAST : 1);
 
     // Hydrokoloid
     let psy = bake.psyllium ?? mid(cls.psyllium); // zakresy klas już zakładają obecność HPMC w bazach komercyjnych
@@ -446,7 +504,7 @@
 
     const used = new Set(sol.blend.map(([i]) => i.id));
     return {
-      bake, cls, empty: false, mode: sol.mode,
+      bake, cls, empty: false, mode: sol.mode, taste: tasteOf(sol.blend, bake), coldProof,
       blend: sol.blend.map(([ingredient, share]) => ({ ingredient, share })),
       profile: { protein: prof.protein, fiber: prof.fiber, starch: prof.starch, wacMix: prof.wac, target: cls.target },
       hydration: { base: hBase, deltaWAC: dWAC, deltaFat: dFat, deltaSugar: dSugar, deltaUser: dUser, effective: hEff },
@@ -477,7 +535,7 @@
     return out;
   }
 
-  const GFEngine = { ovenPlan, INGREDIENT_MATRIX, RHEOLOGY_CLASSES, BAKES, solveFlourBlend, calculateLaboratoryFormulation, validateDefaultBatches, defaultDough, profileOf };
+  const GFEngine = { flavorOf, tasteOf, tasteWeight, ovenPlan, INGREDIENT_MATRIX, RHEOLOGY_CLASSES, BAKES, solveFlourBlend, calculateLaboratoryFormulation, validateDefaultBatches, defaultDough, profileOf };
   if (typeof module !== "undefined" && module.exports) module.exports = GFEngine;
   global.GFEngine = GFEngine;
 })(typeof window !== "undefined" ? window : globalThis);

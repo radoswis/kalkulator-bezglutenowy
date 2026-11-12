@@ -198,7 +198,7 @@
       ] },
 
     // ===== KLASA 9: kruche =====
-    { id: "pierniczki", name: "Pierniczki świąteczne", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+    { id: "pierniczki", masked: true, name: "Pierniczki świąteczne", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
       basis: "flour", components: [["butter", 25], ["honey", 30], ["powderedSugar", 22], ["eggs", 15], ["milk", 5], ["bakingSoda", 1.5], ["spice", 4], ["cocoa", 3]],
       unitWeight: 18, defaultCount: 40, unit: "pierniczek", bakeNote: "180°C, 8–10 min", sweet: true,
       steps: c => [
@@ -220,7 +220,7 @@
         `Rozwałkuj na 4 mm i wykrawaj foremkami (ok. ${c.pcs} sztuk). Piecz w 180°C 10–12 minut, aż brzegi lekko się zezłocą.`,
         "Studź na blasze, ciepłe łatwo się łamią."
       ] },
-    { id: "cookies", name: "Ciastka American Cookies (z czekoladą)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+    { id: "cookies", masked: true, name: "Ciastka American Cookies (z czekoladą)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
       basis: "flour", components: [["softButter", 45], ["brownSugar", 55], ["eggs", 20], ["chocolateChips", 55], ["bakingSoda", 1.0], ["salt", 1.0]],
       unitWeight: 60, defaultCount: 12, unit: "ciastko", bakeNote: "180°C, 10–12 min", sweet: true,
       steps: c => [
@@ -277,7 +277,7 @@
         "Przelej do tortownicy 24 cm wyłożonej papierem tylko na dnie. Piecz w 170°C 30–35 minut. Przez pierwsze 20 minut nie otwieraj piekarnika.",
         "Po wyjęciu upuść formę z wysokości ok. 30 cm na blat, wtedy biszkopt mniej opadnie. Studź w formie."
       ] },
-    { id: "lava_cake", name: "Lava cake (fondant czekoladowy)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
+    { id: "lava_cake", masked: true, name: "Lava cake (fondant czekoladowy)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
       basis: "flour", components: [["darkChocolate", 240], ["butter", 210], ["eggs", 240], ["sugar", 110], ["salt", 0.8]], target: { starch: [0, 40] },
       unitWeight: 150, defaultCount: 4, unit: "kokilka", bakeNote: "220°C, 8–10 min", sweet: true,
       steps: c => [
@@ -288,7 +288,7 @@
         `Rozlej do ${c.pcs} kokilek (po ok. ${c.pw} g). Piecz w 220°C 8–10 minut: brzegi mają być ścięte, a środek ma drżeć.`,
         "Odczekaj 1 minutę, odwróć kokilkę na talerz i podawaj od razu, dopóki środek jest płynny."
       ] },
-    { id: "brownie", name: "Brownie czekoladowe", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
+    { id: "brownie", masked: true, name: "Brownie czekoladowe", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
       basis: "flour", components: [["darkChocolate", 180], ["butter", 150], ["eggs", 160], ["sugar", 140], ["cocoa", 20], ["salt", 1.0]], target: { starch: [0, 45] },
       unitWeight: 850, defaultCount: 1, unit: "forma 20 × 20 cm", bakeNote: "175°C, 25–30 min", sweet: true,
       steps: c => [
@@ -387,7 +387,7 @@
         `Mąki (${c.flour}) przesiej z proszkiem. Dodawaj na zmianę z mlekiem lub sokiem z cytryny. Możesz dodać startą skórkę z cytryny.`,
         "Piecz 45–55 minut, aż patyczek będzie suchy. Gdy wierzch za mocno się rumieni, przykryj folią."
       ] },
-    { id: "banana_bread", name: "Chlebek bananowy (banana bread)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
+    { id: "banana_bread", masked: true, name: "Chlebek bananowy (banana bread)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
       basis: "flour", components: [["banana", 115], ["meltedButter", 32], ["eggs", 35], ["sugar", 35], ["bakingSoda", 1.2], ["bakingPowder", 1.5], ["cinnamon", 1.5]],
       unitWeight: 850, defaultCount: 1, unit: "keksówka", bakeNote: "175°C, 55–65 min", sweet: true,
       steps: c => [
@@ -398,7 +398,7 @@
         "Piecz 55–65 minut. Po 30 minutach przykryj wierzch folią.",
         "Studź 15 minut w formie, potem wyjmij na kratkę."
       ] },
-    { id: "marchewkowe", name: "Ciasto marchewkowe (carrot cake)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
+    { id: "marchewkowe", masked: true, name: "Ciasto marchewkowe (carrot cake)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
       basis: "flour", components: [["carrot", 110], ["oil", 50], ["eggs", 55], ["sugar", 55], ["bakingSoda", 1.2], ["bakingPowder", 1.8], ["spice", 2.5]],
       unitWeight: 900, defaultCount: 1, unit: "forma 24 cm", bakeNote: "175°C, 40–50 min", sweet: true, prefer: { mig: 0.15 },
       steps: c => [
@@ -455,13 +455,14 @@
     return SWEET_ALLOWED.has(i.id);
   }
 
-  function pastryCost(blend, b, cls, candIds) {
+  function pastryCost(blend, b, cls, candIds, tasteW = 0) {
     const t = Object.assign({}, cls.target, b.target || {});
     let P = 0, F = 0, S = 0, c = 0;
     for (const [ing, x] of blend) {
       if (x <= 1e-9) continue;
       P += x * ing.macros.protein; F += x * ing.macros.fiber; S += x * starchFraction(ing) * 100;
       c += 0.15;
+      if (tasteW) c += tasteW * x * G.flavorOf(ing, b);
       const cap = maxShareOf(ing);
       if (cap && x > cap + 1e-9) c += (x - cap) * 200;
       if (ing.isCommercialMix && !(b.target && b.target.starch && b.target.starch[0] >= 90)) c -= (cls.mixPriority[ing.id] ?? 1) * x;
@@ -482,12 +483,12 @@
 
   /** Wspinaczka po siatce 5% (start z każdej mąki i każdej pary). Odporna na pustą lub jednoelementową spiżarnię. */
   const pastryCache = new Map();
-  function solvePastryBlend(pantryFlours, b) {
-    const key = b.id + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
-    if (!pastryCache.has(key)) pastryCache.set(key, solvePastryBlendRaw(pantryFlours, b));
+  function solvePastryBlend(pantryFlours, b, tasteW = 0) {
+    const key = b.id + "|" + tasteW + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
+    if (!pastryCache.has(key)) pastryCache.set(key, solvePastryBlendRaw(pantryFlours, b, tasteW));
     return pastryCache.get(key);
   }
-  function solvePastryBlendRaw(pantryFlours, b) {
+  function solvePastryBlendRaw(pantryFlours, b, tasteW = 0) {
     const cls = RHEOLOGY_CLASSES[b.rheologyClass];
     let cands = pantryFlours.filter(i => i.role !== "hydrocolloid" && flavorAllowed(i, b));
     // Tryb hydrokoloidowy (pierogi, tortilla, makaron): tylko jedna baza komercyjna, wg priorytetu (Mix B pierwszy)
@@ -506,7 +507,7 @@
     }
     let bestW = starts[0], bestCost = Infinity;
     for (const w of starts) {
-      let cur = pastryCost(toBlend(w), b, cls, candIds);
+      let cur = pastryCost(toBlend(w), b, cls, candIds, tasteW);
       for (let it = 0; it < 60; it++) {
         let move = null, mc = cur;
         for (let i = 0; i < n; i++) {
@@ -514,7 +515,7 @@
           for (let j = 0; j < n; j++) {
             if (i === j) continue;
             w[i] -= STEP; w[j] += STEP;
-            const c = pastryCost(toBlend(w), b, cls, candIds);
+            const c = pastryCost(toBlend(w), b, cls, candIds, tasteW);
             if (c < mc - 1e-9) { mc = c; move = [i, j]; }
             w[i] += STEP; w[j] -= STEP;
           }
@@ -531,13 +532,13 @@
 
   /** Receptura bezdrożdżowa. */
   const LIQUIDS = ["hotWater", "water", "coldWater", "iceWater", "milkWater", "milk", "milkOrWater", "milkOrYogurt", "buttermilk", "kefir", "lemonMilk", "sourCream"];
-  function calculatePastryFormulation({ bake, pantryIds, doughWeight, extraIngredients = [], calib = {} }) {
+  function calculatePastryFormulation({ bake, pantryIds, doughWeight, extraIngredients = [], calib = {}, taste = "wheat" }) {
     const cls = RHEOLOGY_CLASSES[bake.rheologyClass];
     const all = INGREDIENT_MATRIX.concat(extraIngredients);
     const pantry = all.filter(i => pantryIds.includes(i.id));
     const pantryFlours = pantry.filter(i => i.role !== "hydrocolloid");
     const warnings = [];
-    const blend = solvePastryBlend(pantryFlours, bake);
+    const blend = solvePastryBlend(pantryFlours, bake, G.tasteWeight(bake, taste, calib));
     if (!blend.length) return { bake, cls, empty: true, family: "pastry", warnings: ["Zaznacz w spiżarni przynajmniej jedną mąkę, skrobię lub mieszankę pasującą do tego przepisu."] };
 
     // Procenty od masy mąk
@@ -604,7 +605,7 @@
     const P = blend.reduce((s, [i, x]) => s + x * i.macros.protein, 0), F = blend.reduce((s, [i, x]) => s + x * i.macros.fiber, 0);
     const used = new Set(blend.map(([i]) => i.id));
     return {
-      bake, cls, empty: false, family: "pastry",
+      bake, cls, empty: false, family: "pastry", taste: G.tasteOf(blend, bake),
       blend: blend.map(([ingredient, share]) => ({ ingredient, share })),
       profile: { protein: P, fiber: F, starch: st, target: t },
       lines, total, steps, tip: bake.tip,
@@ -642,11 +643,12 @@
    * @param {string} bakeId @param {string[]} pantryIds
    * @returns {{ideal:{ingredient:any, share:number, inPantry:boolean}[], missing:any[], complete:boolean, profile:{protein:number, starch:number, fiber:number}} | null}
    */
-  function suggestIdealBlend(bakeId, pantryIds) {
+  function suggestIdealBlend(bakeId, pantryIds, taste = "wheat") {
     const bake = ALL_BAKES.find(b => b.id === bakeId);
     if (!bake) return null;
     const catalog = INGREDIENT_MATRIX.filter(i => i.role !== "hydrocolloid" && !i.wheatStarch && !i.idealExclude);
-    const blend = bake.family === "pastry" ? solvePastryBlend(catalog, bake) : G.solveFlourBlend(catalog, bake).blend;
+    const w = G.tasteWeight(bake, taste);
+    const blend = bake.family === "pastry" ? solvePastryBlend(catalog, bake, w) : G.solveFlourBlend(catalog, bake, w).blend;
     if (!blend.length) return null;
     const ideal = blend.map(([ingredient, share]) => ({ ingredient, share, inPantry: pantryIds.includes(ingredient.id) }));
     const missing = ideal.filter(x => !x.inPantry).map(x => x.ingredient);
