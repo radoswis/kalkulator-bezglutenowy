@@ -59,6 +59,11 @@ details .inner{display:grid;gap:10px;margin-top:12px}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .msg{font-size:.85rem;color:var(--muted)}
 [hidden]{display:none!important}
+.nutr{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--surface)}
+.nutr summary{cursor:pointer;font-weight:600}
+.nutr .tablewrap{overflow-x:auto;margin-top:8px}
+.nutr th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;font-weight:500;padding-bottom:4px}
+.nutr th:first-child{text-align:left}
 .cookbtn{justify-self:start}
 .cook{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;gap:14px;padding-block:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow:auto}
 .cookbar{display:flex;align-items:center;gap:10px;justify-content:space-between}
@@ -165,6 +170,7 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 
 <script src="engine.js"></script>
 <script src="pastry.js"></script>
+<script src="nutrition.js"></script>
 <script>
 const {INGREDIENT_MATRIX:ING,RHEOLOGY_CLASSES:CLS,ALL_BAKES,CATEGORIES,calculateRecipe,suggestIdealBlend}=GFEngine;
 const BAKES=ALL_BAKES,defaultDough=b=>b.unitWeight*b.defaultCount;
@@ -282,6 +288,7 @@ function calc(){
  $("out").innerHTML=`<h3>${b.name}</h3>
  <div class="hyd"><div><b>${water} g</b><span>wody wlej</span></div><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div></div>
  <table>${rows}</table>
+ ${nutrHtml(r,b,D)}
  <div class="note">Masz tylko drożdże suche (instant)? Weź ${fmt(r.yeast.dryGrams)} g zamiast świeżych i wsyp je razem z mąką.</div>
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
  <div class="note"><b>Dlaczego tyle wody?</b> ${why.length?why.join(", ").replace(/^./,c=>c.toUpperCase())+".":"To typowa ilość wody dla tego wypieku."}</div>
@@ -321,6 +328,19 @@ function fbHtml(b){const c=calib[b.id],parts=[];
  ${parts.length?`<div>Twoje korekty w tym przepisie: ${parts.join(", ")}. <button type="button" class="linkbtn" data-fbreset="1">Wyzeruj</button></div>`:""}
  ${c&&c.taste&&b.family==="yeast"&&prefs.proof!=="cold"?`<div>Spróbuj też wyrastania w lodówce przez noc: to najmocniej poprawia smak.</div>`:""}${pastryOven}${last?`<div class="msg">Ostatnia ocena: ${FB.find(f=>f[0]===last.v)[1].toLowerCase()} (${last.d}).</div>`:""}</div>`}
 
+// Wartości odżywcze samego ciasta (bez nadzienia)
+function nutrHtml(r,b,D){if(!GFEngine.nutritionOf)return "";
+ const pcs=mode==="pcs"?Math.max(1,+$("count").value||1):Math.max(1,Math.round(D/b.unitWeight));
+ const n=GFEngine.nutritionOf(r,pcs),one=pcs>1;
+ const f1=v=>v<10?v.toFixed(1).replace(".",","):String(Math.round(v)),fs=v=>v.toFixed(2).replace(".",",");
+ const rows=[["Energia",x=>`${Math.round(x.kcal)} kcal`],["Tłuszcz",x=>`${f1(x.fat)} g`],["Węglowodany",x=>`${f1(x.carbs)} g`],["w tym cukry",x=>`${f1(x.sugar)} g`,1],
+  ["Błonnik",x=>`${f1(x.fiber)} g`],["Białko",x=>`${f1(x.protein)} g`],["Sól",x=>`${fs(x.salt)} g`]];
+ return `<details class="nutr"><summary>Wartości odżywcze: ${Math.round(n.per100.kcal)} kcal w 100 g${one?`, ${Math.round(n.piece.kcal)} kcal w 1 szt.`:""}</summary>
+ <div class="tablewrap"><table><thead><tr><th></th><th>100 g</th>${one?"<th>1 szt.</th>":""}<th>Całość</th></tr></thead><tbody>
+ ${rows.map(([t,fn,sub])=>`<tr${sub?' class="sub"':""}><td>${t}</td><td class="g">${fn(n.per100)}</td>${one?`<td class="g">${fn(n.piece)}</td>`:""}<td class="g">${fn(n.total)}</td></tr>`).join("")}
+ </tbody></table></div>
+ <div class="msg">Samo ciasto, bez nadzienia i dodatków. 100 g gotowego wyrobu: uwzględnione odparowanie wody${n.oil?` i ok. ${Math.round(n.oil)} g wchłoniętego tłuszczu przy smażeniu`:""}. Dane z etykiet producentów i tabel składu żywności, dokładność ok. ±10%.</div></details>`}
+
 function prefBar(){const b=BAKES.find(x=>x.id===$("bake").value),y=b&&b.family==="yeast";
  return `<div class="seg" role="group" aria-label="Smak"><button type="button" data-taste="wheat" aria-pressed="${prefs.taste==="wheat"}">Smak jak pszenny</button><button type="button" data-taste="bold" aria-pressed="${prefs.taste==="bold"}">Wyrazisty, pełnoziarnisty</button></div>
  ${y?`<div class="seg" role="group" aria-label="Wyrastanie"><button type="button" data-proof="warm" aria-pressed="${prefs.proof==="warm"}">Wyrastanie w cieple, ok. 1 h</button><button type="button" data-proof="cold" aria-pressed="${prefs.proof==="cold"}">W lodówce przez noc, lepszy smak</button></div>`:""}`}
@@ -336,6 +356,7 @@ function renderPastry(r,b,D){
  $("out").innerHTML=`<h3>${b.name}</h3>
  <div class="hyd"><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div><div><b>${flour} g</b><span>mąk razem</span></div>${b.defaultCount>1||pcs>1?`<div><b>${pcs} × ${Math.round(D/pcs)} g</b><span>${b.unit}</span></div>`:""}</div>
  <table>${rows}</table>
+ ${nutrHtml(r,b,D)}
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
  <div class="note"><b>Smak:</b> ${r.taste.text}.${r.taste.level>=2&&prefs.taste==="wheat"?" Jeśli chcesz smak bliższy pszennemu, zobacz najlepszy zestaw poniżej.":""}</div>
  <div class="note"><b>Dlaczego te mąki?</b> ${whyTxt()}${r.unused.length?` Tym razem nie są potrzebne: ${r.unused.map(f=>f.name.toLowerCase()).join(", ")}.`:""}</div>

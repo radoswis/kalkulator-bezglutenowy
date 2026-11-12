@@ -1,6 +1,6 @@
 /* Service worker: aplikacja działa bez internetu. Pliki z pamięci, w tle pobierana nowa wersja. API zawsze z sieci. */
-const CACHE = "bezglutenowo-v2";
-const FILES = ["/", "/index.html", "/engine.js", "/pastry.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
+const CACHE = "bezglutenowo-v3";
+const FILES = ["/", "/index.html", "/engine.js", "/pastry.js", "/nutrition.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
