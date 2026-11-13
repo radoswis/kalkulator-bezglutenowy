@@ -82,6 +82,10 @@ details .inner{display:grid;gap:10px;margin-top:12px}
 .timerbadge{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--bg);border-top:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-left,0px)) max(10px,env(safe-area-inset-bottom,0px));max-width:none}
 #installBtn{margin-top:10px}
 .fb{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px;font-size:.95rem}
+.appfoot{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:28px 0 12px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
+.appfoot details{flex-basis:100%}.appfoot ul{margin:4px 0 10px;padding-left:20px}.appfoot h3{font-size:.95rem;margin:10px 0 2px;color:var(--fg)}
+.newver{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:60;background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between;box-shadow:0 6px 24px #0004}
+.insthelp{display:flex;align-items:center;justify-content:center}.insthelp[hidden]{display:none}.instbox{background:var(--surface);border-radius:12px;padding:20px;max-width:440px;display:grid;gap:10px;margin:16px}.instbox p{margin:0}
 .linkbtn{font:inherit;background:none;border:0;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
 .offlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .combo{position:relative}
@@ -109,7 +113,7 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 <div class="wrap">
 <header>
 <h1>Kalkulator ciast bezglutenowych</h1>
-<button type="button" class="btn" id="installBtn" hidden>Zainstaluj na telefonie</button>
+<button type="button" class="btn" id="installBtn">Zainstaluj na telefonie</button>
 <p>Wybierz, co chcesz zrobić, zaznacz, co masz w spiżarni, i podaj ilość. Aplikacja sama dobierze mąki i policzy składniki co do grama.</p>
 </header>
 <div class="grid">
@@ -157,7 +161,23 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 
 <aside class="card" aria-live="polite" id="out"></aside>
 </div>
+<footer class="appfoot">
+<span id="appVer"></span>
+<button type="button" class="linkbtn" id="chgBtn">Co nowego</button>
+<button type="button" class="btn" id="updBtn">Sprawdź aktualizację</button>
+<span id="updMsg" role="status"></span>
+<details id="chgList" hidden><summary>Lista zmian</summary><div id="chgBody"></div></details>
+</footer>
 </div>
+<div id="newVer" class="newver" hidden role="status">Jest nowa wersja aplikacji. <button type="button" class="btn" id="newVerBtn">Odśwież teraz</button></div>
+<div id="instHelp" class="cook insthelp" hidden role="dialog" aria-modal="true" aria-labelledby="instTitle"><div class="instbox">
+<h2 id="instTitle">Jak zainstalować na telefonie</h2>
+<p><b>Chrome:</b> stuknij <b>⋮</b> (trzy kropki w prawym górnym rogu) → <b>Dodaj do ekranu głównego</b> albo <b>Zainstaluj aplikację</b> → <b>Zainstaluj</b>.</p>
+<p><b>Samsung Internet:</b> stuknij <b>≡</b> (trzy kreski na dole) → <b>Dodaj stronę do</b> → <b>Ekran startowy</b>.</p>
+<p id="instSamsung"><button type="button" class="btn" id="openSamsung">Otwórz w Samsung Internet</button></p>
+<p style="color:var(--muted)">Ikona „Bezglutenowo” pojawi się na ekranie telefonu. Aplikacja działa też bez internetu.</p>
+<button type="button" class="btn" id="instClose">Zamknij</button>
+</div></div>
 
 <div id="cook" class="cook" hidden role="dialog" aria-modal="true" aria-labelledby="cookTitle">
  <div class="cookbar"><button type="button" class="btn ghost" data-cookclose="1">Zamknij</button><b id="cookTitle"></b><button type="button" class="btn ghost" data-cooking="1">Składniki</button></div>
@@ -168,6 +188,7 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 </div>
 <div id="timerBadge" class="timerbadge" hidden></div>
 
+<script src="version.js"></script>
 <script src="engine.js"></script>
 <script src="pastry.js"></script>
 <script src="nutrition.js"></script>
@@ -429,9 +450,38 @@ $("cook").addEventListener("touchend",e=>{if(tx==null)return;const dx=e.changedT
 
 // ===== Aplikacja na telefonie: instalacja i praca bez internetu =====
 let installEv=null;
+const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+if(isStandalone())$("installBtn").hidden=true;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEv=e;$("installBtn").hidden=false});
-$("installBtn").onclick=async()=>{if(!installEv)return;installEv.prompt();try{await installEv.userChoice}catch(e){}installEv=null;$("installBtn").hidden=true};
-if("serviceWorker" in navigator&&location.protocol==="https:"&&!/claude|anthropic/.test(location.hostname)){navigator.serviceWorker.register("/sw.js").catch(()=>{})}
+window.addEventListener("appinstalled",()=>{installEv=null;$("installBtn").hidden=true;$("instHelp").hidden=true});
+// Gdy przeglądarka nie dała okienka instalacji (Samsung Internet, Chrome bez zaproszenia) – pokazujemy instrukcję
+$("installBtn").onclick=async()=>{if(installEv){installEv.prompt();let ok=false;try{ok=(await installEv.userChoice).outcome==="accepted"}catch(e){}installEv=null;if(ok){$("installBtn").hidden=true;return}}
+ $("instSamsung").hidden=/SamsungBrowser/i.test(navigator.userAgent)||!/Android/i.test(navigator.userAgent);$("instHelp").hidden=false};
+$("instClose").onclick=()=>{$("instHelp").hidden=true};
+$("openSamsung").onclick=()=>{const t=location.origin+"/";location.href="intent://"+t.replace(/^https?:\/\//,"")+"#Intent;scheme=https;package=com.sec.android.app.sbrowser;S.browser_fallback_url="+encodeURIComponent(t)+";end"};
+
+// ===== Wersja, lista zmian, aktualizacja =====
+$("appVer").textContent=`Wersja ${self.APP_VERSION} (${self.APP_CHANGELOG[0].d})`;
+$("chgBody").innerHTML=self.APP_CHANGELOG.map(c=>`<h3>${c.v} · ${c.d}</h3><ul>${c.t.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("");
+$("chgBtn").onclick=()=>{const d=$("chgList");d.hidden=false;d.open=!d.open;if(d.open)d.scrollIntoView({behavior:"smooth",block:"start"})};
+let swReg=null,reloading=false;
+const applyUpdate=()=>{const w=swReg&&swReg.waiting;if(w){w.postMessage("skipWaiting")}else{saveUI();location.reload()}};
+function watchReg(reg){swReg=reg;const show=()=>{if(reg.waiting&&navigator.serviceWorker.controller)$("newVer").hidden=false};show();
+ reg.addEventListener("updatefound",()=>{const n=reg.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed")show()})})}
+$("newVerBtn").onclick=applyUpdate;
+$("updBtn").onclick=async()=>{const m=$("updMsg");m.textContent="Sprawdzam…";
+ if(!swReg){saveUI();location.reload();return}
+ try{await swReg.update()}catch(e){m.textContent="Brak internetu – nie da się sprawdzić.";return}
+ const n=swReg.installing||swReg.waiting;
+ if(!n){m.textContent="Masz najnowszą wersję.";return}
+ m.textContent="Pobieram nową wersję…";
+ const go=()=>{if(swReg.waiting)applyUpdate()};
+ if(swReg.waiting)go();else n.addEventListener("statechange",()=>{if(n.state==="installed")go()})};
+if("serviceWorker" in navigator&&location.protocol==="https:"&&!/claude|anthropic/.test(location.hostname)){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(watchReg).catch(()=>{});
+ const hadCtl=!!navigator.serviceWorker.controller;
+ navigator.serviceWorker.addEventListener("controllerchange",()=>{if(reloading||!hadCtl)return;reloading=true;saveUI();location.reload()});
+ // sprawdzanie nowej wersji przy powrocie do aplikacji
+ document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&swReg)swReg.update().catch(()=>{})})}
 
 // ===== Pamięć ekranu: po zminimalizowaniu starszy telefon (np. Redmi 10) zamyka kartę w tle,
 // więc zapisujemy, gdzie użytkownik był (przepis, ilości, przewinięcie, tryb gotowania, minutniki) i odtwarzamy przy powrocie.
