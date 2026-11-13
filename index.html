@@ -86,6 +86,7 @@ details .inner{display:grid;gap:10px;margin-top:12px}
 .appfoot details{flex-basis:100%}.appfoot ul{margin:4px 0 10px;padding-left:20px}.appfoot h3{font-size:.95rem;margin:10px 0 2px;color:var(--fg)}
 .newver{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:60;background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between;box-shadow:0 6px 24px #0004}
 .insthelp{display:flex;align-items:center;justify-content:center}.insthelp[hidden]{display:none}.instbox{background:var(--surface);border-radius:12px;padding:20px;max-width:440px;display:grid;gap:10px;margin:16px}.instbox p{margin:0}
+.sim{display:grid;gap:4px;font-size:.9rem;color:var(--muted)}.sim b{color:var(--fg)}.simbar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}.simbar i{display:block;height:100%;background:var(--accent)}
 .linkbtn{font:inherit;background:none;border:0;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
 .offlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .combo{position:relative}
@@ -124,6 +125,7 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 <select id="bake"></select>
 <div class="msg" id="bakeSearchMsg" hidden></div>
 <div class="note" id="bakeInfo"></div>
+<div class="sim" id="simInfo"></div>
 </section>
 
 <section><h2><span>2</span>Twoja spiżarnia</h2>
@@ -267,9 +269,25 @@ let src="ideal"; // "ideal" = podgląd na najlepszym zestawie mąk, "pantry" = z
 $("bake").onchange=()=>{lastBake=$("bake").value;src="ideal";setDefaults();calc()};
 ["count","portion","grams"].forEach(i=>$(i).oninput=calc);
 
+// Podobieństwo do wersji pszennej (smak, konsystencja, odczucie w ustach) – SZACUNEK eksperta z 13.11.2026,
+// dla świeżego wypieku w dniu pieczenia (mieszanki Schär + psyllium). Do poprawy po ocenach „Jak wyszło?”.
+const SIMILAR={focaccia:[85],pizza_blacha:[85],pizza_patelnia:[85],langosz:[85],naan:[80],pita:[75,"kieszeń w środku tworzy się słabiej"],
+ pizza_neapol:[65,"brzeg nie będzie tak sprężysty i dziurawy jak pszenny"],chleb_tostowy:[85],chleb_gryczany:[80],chleb_jasny:[75,"miąższ drobniejszy, mniej sprężysty"],
+ ciabatta:[65,"mniejsze dziury, skórka mniej chrupiąca"],bagietka:[60,"skórka i duże dziury wymagają glutenu – będzie bliżej bułki niż bagietki"],
+ grissini:[85],hamburger:[82],subway:[78],kajzerki:[65,"nacięcia się rozlewają, skórka mniej chrupiąca"],precle:[62,"mniej „gryzu”; kąpiel w sodzie pomaga"],bajgle:[60,"brak gumowatego „gryzu” pszennego bajgla"],
+ babka:[85],buleczki_maslane:[82],paszteciki:[82],paczki:[82],drozdzowki:[80],cynamonki:[80],pierogi_drozdzowe:[80],calzone:[75,"brzeg mniej elastyczny, łatwiej pęka przy zawijaniu"],chalka:[72,"plecionka pęka, miąższ nie jest włóknisty"],
+ kluski_slaskie:[97],kopytka:[92],leniwe:[92],gnocchi:[90],oponki:[88],pierogi:[75,"ciasto mniej elastyczne – zlepiaj od razu, nie przesuszaj"],tortilla:[75,"mniej giętka na zimno – zawijaj na ciepło"],makaron:[70,"mniej sprężysty, gotuj krócej"],
+ cookies:[95],pierniczki:[92],kruche_ciastka:[92],tarta:[92],szarlotka:[92],faworki:[78,"trudniej o cienkie płaty z pęcherzykami"],
+ sernik:[98],lava_cake:[97],brownie:[97],babka_piaskowa:[95],marchewkowe:[95],muffinki:[93],banana_bread:[93],biszkopt:[92],parzone:[82,"ptysie rosną trochę słabiej"],
+ tempura:[95,"często chrupie lepiej niż pszenna"],pancakes:[93],gofry:[93],nalesniki:[90],racuchy:[85]};
+function simHtml(id,fam){const v=SIMILAR[id];if(!v)return"";const [p,n]=v;
+ const lvl=p>=90?"prawie jak pszenne":p>=80?"bardzo podobne":p>=70?"podobne, z różnicami":"wyraźnie inne";
+ return `<div>Podobieństwo do pszennego: <b>${p}%</b> – ${lvl}${n?`. ${n[0].toUpperCase()+n.slice(1)}.`:""}</div><div class="simbar"><i style="width:${p}%"></i></div>`+
+  (fam==="yeast"?`<div>Najlepsze w dniu pieczenia; następnego dnia odśwież w piekarniku (bezglutenowe szybciej czerstwieje).</div>`:"")}
 function calc(){
  const bakeId=$("bake").value,b=BAKES.find(x=>x.id===bakeId);
  const cb=calib[b.id]||{};const op=GFEngine.ovenPlan&&b.family==="yeast"?GFEngine.ovenPlan(b,cb):null;if(op)b.bakeNote=op.note;
+ $("simInfo").innerHTML=simHtml(b.id,b.family);
  $("bakeInfo").textContent=`Rodzaj: ${CLS[b.rheologyClass].label} · Domyślnie ${b.defaultCount} × ${b.unitWeight} g (${b.unit}) · ${b.bakeNote}`;
  const D=mode==="pcs"?(+$("count").value||0)*(+$("portion").value||0):(+$("grams").value||0);
  if(D<50){$("out").innerHTML=`<h3>${b.name}</h3><div class="warn">Podaj ilość ciasta (min. 50 g).</div>`;return}

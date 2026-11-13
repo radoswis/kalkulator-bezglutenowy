@@ -1,6 +1,7 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.5.0", d: "13.11.2026", t: ["Przy każdym przepisie: szacunkowe podobieństwo do wersji pszennej (smak, konsystencja) z krótką uwagą, czego się spodziewać."] },
   { v: "2.4.0", d: "13.11.2026", t: ["Numer wersji, lista zmian i przycisk „Sprawdź aktualizację” na dole strony.",
     "Instalacja na telefonie działa też, gdy przeglądarka nie pokazuje sama okienka (instrukcja dla Chrome i Samsung Internet)."] },
   { v: "2.3.0", d: "13.11.2026", t: ["Po zminimalizowaniu i powrocie aplikacja wraca do tego samego miejsca: przepis, ilości, przewinięcie, tryb gotowania, minutniki."] },
