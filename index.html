@@ -433,7 +433,28 @@ window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEv=e
 $("installBtn").onclick=async()=>{if(!installEv)return;installEv.prompt();try{await installEv.userChoice}catch(e){}installEv=null;$("installBtn").hidden=true};
 if("serviceWorker" in navigator&&location.protocol==="https:"&&!/claude|anthropic/.test(location.hostname)){navigator.serviceWorker.register("/sw.js").catch(()=>{})}
 
-renderPantry();setDefaults();calc();loadShared();
+// ===== Pamięć ekranu: po zminimalizowaniu starszy telefon (np. Redmi 10) zamyka kartę w tle,
+// więc zapisujemy, gdzie użytkownik był (przepis, ilości, przewinięcie, tryb gotowania, minutniki) i odtwarzamy przy powrocie.
+const UI_KEY="gf_ui_v1";
+function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({t:Date.now(),bake:$("bake").value,mode,src,
+ count:$("count").value,portion:$("portion").value,grams:$("grams").value,y:window.scrollY,
+ cook:!$("cook").hidden,ci,ing:!$("cookIng").hidden,timers}))}catch(e){}}
+function restoreUI(){let u;try{u=JSON.parse(localStorage.getItem(UI_KEY)||"null")}catch(e){}
+ if(!u||Date.now()-u.t>2*864e5||!BAKES.some(b=>b.id===u.bake))return false;
+ $("bake").value=u.bake;lastBake=u.bake;src=u.src||"ideal";
+ $("count").value=u.count;$("portion").value=u.portion;$("grams").value=u.grams;
+ mode=u.mode||"pcs";$("mPcs").setAttribute("aria-pressed",mode==="pcs");$("mGr").setAttribute("aria-pressed",mode==="gr");
+ $("lblCount").hidden=$("lblPortion").hidden=mode!=="pcs";$("lblGrams").hidden=mode==="pcs";
+ (u.timers||[]).forEach(t=>timers.push(t));calc();
+ if(u.cook&&cur){openCook();ci=u.ci||0;showStep();$("cookIng").hidden=!u.ing}
+ renderTimers();const y=u.y||0;window.scrollTo(0,y);setTimeout(()=>window.scrollTo(0,y),300);return y}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveUI()});
+window.addEventListener("pagehide",saveUI);
+let uiT=null;const saveSoon=()=>{clearTimeout(uiT);uiT=setTimeout(saveUI,500)};
+document.addEventListener("click",saveSoon);document.addEventListener("input",saveSoon);window.addEventListener("scroll",saveSoon,{passive:true});
+
+renderPantry();setDefaults();const ry=restoreUI();if(ry===false)calc();
+loadShared().then(()=>{if(ry)window.scrollTo(0,ry)});
 </script>
 </body>
 </html>
