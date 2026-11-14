@@ -533,7 +533,7 @@
   /** Wspinaczka po siatce 5% (start z każdej mąki i każdej pary). Odporna na pustą lub jednoelementową spiżarnię. */
   const pastryCache = new Map();
   function solvePastryBlend(pantryFlours, b, tasteW = 0) {
-    const key = b.id + "|" + tasteW + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
+    const key = b.id + "|" + tasteW + "|" + JSON.stringify(G.texAdjOf ? G.texAdjOf(b.id) : 0) + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
     if (!pastryCache.has(key)) pastryCache.set(key, solvePastryBlendRaw(pantryFlours, b, tasteW));
     return pastryCache.get(key);
   }
@@ -602,6 +602,9 @@
       if (pantryIds.includes("xan")) { comps.push(["xan", psyPct * 0.6]); warnings.push("Brak psyllium: używam gumy ksantanowej."); }
       else warnings.push("Brak psyllium: ciasto będzie mniej elastyczne i może pękać przy lepieniu. Wałkuj grubiej.");
     }
+    // Psyllium i sól z ocen „Jak wyszło?” (procent zmiany)
+    if (calib.psy) comps = comps.map(([k, p]) => (k === "psy" ? [k, p * (1 + calib.psy / 100)] : [k, p]));
+    if (calib.salt) comps = comps.map(([k, p]) => (k === "salt" ? [k, p * (1 + calib.salt / 100)] : [k, p]));
     // Korekta płynu z ocen „Jak wyszło?” (punkty procentowe od masy mąk) – na głównym płynie przepisu
     if (calib.water) {
       const liq = comps.filter(([k]) => LIQUIDS.includes(k)).sort((a, z) => z[1] - a[1])[0];

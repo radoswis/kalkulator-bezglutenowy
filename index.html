@@ -91,6 +91,11 @@ tr[data-ing]{cursor:pointer}tr[data-ing] td:first-child::before{content:"○ ";c
 .inghint{font-size:.85rem;color:var(--muted);margin:4px 0 8px}
 .fry{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--accent-soft);border:2px solid var(--accent);border-radius:10px;padding:12px 14px}
 .fry>div:first-child{display:grid;gap:2px}.fry b{font-size:1.5rem}.fry small{color:var(--muted)}.fry.done{background:var(--warn-soft);border-color:var(--warn)}.frybtns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fbqs{display:grid;gap:10px;margin:10px 0}.fbq{display:grid;gap:4px}.fbq>span{font-size:.9rem;color:var(--muted)}
+.fbq .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}.fbq .seg button{min-height:44px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:.92rem}
+.fbq .seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
+.stars{display:flex;gap:4px}.stars button{font-size:1.8rem;line-height:1;background:none;border:0;color:var(--accent);min-width:44px;min-height:44px;cursor:pointer}
+.fbact{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:8px 0}
 .linkbtn{font:inherit;background:none;border:0;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
 .offlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .combo{position:relative}
@@ -258,8 +263,12 @@ function chip(f){return `<button type="button" class="chip" data-id="${f.id}" ar
 function renderPantry(){const g=[["Mąki",f=>["wholegrain_structure","high_protein"].includes(f.role)],["Skrobie",f=>f.role==="pure_starch"],["Gotowe mieszanki",f=>f.role==="commercial_base"]];
  $("flours").innerHTML=g.map(([n,fn])=>`<div class="group">${n}</div><div class="chips">${all().filter(fn).map(chip).join("")}</div>`).join("");
  $("addons").innerHTML=all().filter(f=>f.role==="hydrocolloid").map(chip).join("")}
-document.addEventListener("click",e=>{const fbb=e.target.closest("[data-fb]");if(fbb){applyFeedback($("bake").value,fbb.dataset.fb);return}
- const rs=e.target.closest("[data-fbreset]");if(rs){delete calib[$("bake").value];save();calc();return}
+document.addEventListener("click",e=>{const fq=e.target.closest("[data-fbq]");
+ if(fq){const k=fq.dataset.fbq,v=fq.dataset.fba;if(v&&fbSel[k]!==v)fbSel[k]=v;else delete fbSel[k];refreshFb();return}
+ const fs=e.target.closest("[data-fbstar]");if(fs){const v=+fs.dataset.fbstar;fbStars=fbStars===v?0:v;refreshFb();return}
+ if(e.target.closest("[data-fbclear]")){fbSel={};fbStars=0;refreshFb();return}
+ if(e.target.closest("[data-fbsave]")){applyFeedback($("bake").value,fbSel,fbStars);return}
+ const rs=e.target.closest("[data-fbreset]");if(rs){delete calib[$("bake").value];syncTex();save();calc();return}
  const pk=e.target.closest("[data-pick]");if(pk){pickBake(pk.dataset.pick);return}
  const sb=e.target.closest("[data-src]");if(sb){src=sb.dataset.src;calc();return}
  const tb=e.target.closest("[data-taste]");if(tb){prefs.taste=tb.dataset.taste;save();calc();return}
@@ -288,7 +297,7 @@ function simHtml(id,fam){const v=SIMILAR[id];if(!v)return"";const [p,n]=v;
  const lvl=p>=90?"prawie jak pszenne":p>=80?"bardzo podobne":p>=70?"podobne, z różnicami":"wyraźnie inne";
  return `<div>Podobieństwo do pszennego: <b>${p}%</b> – ${lvl}${n?`. ${n[0].toUpperCase()+n.slice(1)}.`:""}</div><div class="simbar"><i style="width:${p}%"></i></div>`+
   (fam==="yeast"?`<div>Najlepsze w dniu pieczenia; następnego dnia odśwież w piekarniku (bezglutenowe szybciej czerstwieje).</div>`:"")}
-function calc(){
+function calc(){syncTex();
  const bakeId=$("bake").value,b=BAKES.find(x=>x.id===bakeId);
  const cb=calib[b.id]||{};const op=GFEngine.ovenPlan&&b.family==="yeast"?GFEngine.ovenPlan(b,cb):null;if(op)b.bakeNote=op.note;
  $("simInfo").innerHTML=simHtml(b.id,b.family);
@@ -325,13 +334,14 @@ function calc(){
  const shape={RHEO_FREE_STANDING_LOAF:`uformuj ${pcs>1?`${pcs} szt. po około ${pw} g`:"bochenek"}`,RHEO_TENSILE_SHAPED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
   RHEO_LAMINATED_ROLLED_STUFFED:`podziel na ${pcs} kawałków po około ${pw} g, rozwałkuj, nałóż farsz i zlep lub zwiń`,RHEO_STIFF_EXTRUDED_BOILED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
   RHEO_ENRICHED_BRIOCHE_FRIED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`}[cl];
+ const pr=1+((calib[b.id]&&calib[b.id].proof)||0)/100,rise=`${Math.round(45*pr)}–${Math.round(60*pr)} minut`;
  const steps=pour?[...(s0?[s0]:[]),s1,s2,
   "Od razu przełóż ciasto do naoliwionej formy lub na blachę i rozprowadź mokrymi dłońmi.",
-  cold?"Przykryj formę szczelnie folią i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie urośnie.":"Przykryj ściereczką i zostaw w formie w ciepłym miejscu na 45–60 minut, aż wyraźnie urośnie. Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać.",
+  cold?"Przykryj formę szczelnie folią i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie urośnie.":`Przykryj ściereczką i zostaw w formie w ciepłym miejscu na ${rise}, aż wyraźnie urośnie. Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać.`,
   `Na koniec: ${b.bakeNote}.`]
  :[...(s0?[s0]:[]),s1,s2,
   b.shapeStep?b.shapeStep({pcs,pw}):`Bez wyrastania w misce ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
-  cold?"Przykryj szczelnie folią, żeby nie obeschły, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie się napuszą.":"Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na 45–60 minut, aż wyraźnie się napuszą."+(/smaż|patelni/i.test(b.bakeNote)?" W tym czasie przygotuj olej lub patelnię.":" Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać."),
+  cold?"Przykryj szczelnie folią, żeby nie obeschły, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie się napuszą.":`Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na ${rise}, aż wyraźnie się napuszą.`+(/smaż|patelni/i.test(b.bakeNote)?" W tym czasie przygotuj olej lub patelnię.":" Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać."),
   ...(b.preBake?[b.preBake]:[]),
   `Na koniec: ${b.bakeNote}.`];
  cur={id:b.id,title:b.name,steps,lines:r.lines,pcs};
@@ -361,23 +371,51 @@ function idealHtml(bakeId){
  <button type="button" class="btn ghost" data-add="${s.missing.map(i=>i.id).join(",")}">Kupiłem, dodaj do spiżarni</button></div>`;
 }
 
-const FB=[["suche","Za suche, kruszy się"],["kleiste","Kleiste, za mokre"],["plaskie","Płaskie, nie wyrosło"],["przypieczone","Za mocno przypieczone z wierzchu"],["niedopieczone","Niedopieczone w środku"],["smak","Smak nie jak pszenny"],["idealne","Wyszło idealnie"]];
-const FB_RULE={suche:{water:3},kleiste:{water:-2,time:8},plaskie:{water:-2,yeast:10},przypieczone:{temp:-10,time:10},niedopieczone:{time:10},smak:{taste:1},idealne:{}};
-const CAP={water:10,yeast:30,temp:30,time:40,taste:3};
-function applyFeedback(id,v){const c=calib[id]||{water:0,yeast:0,temp:0,time:0,log:[]};const r=FB_RULE[v];
- if(v==="smak"&&prefs.taste!=="wheat")prefs.taste="wheat";
- for(const k of ["water","yeast","temp","time","taste"])if(r[k])c[k]=Math.max(-CAP[k],Math.min(CAP[k],(c[k]||0)+r[k]));
- c.log=(c.log||[]).concat({d:new Date().toISOString().slice(0,10),v}).slice(-20);calib[id]=c;save();calc()}
+// ===== „Jak wyszło?” – ankieta: każde pytanie 3 odpowiedzi (za mało / dobrze / za dużo), wypełniasz tylko to, co nie wyszło =====
+// Efekty: water (pkt % płynu), psy/salt/yeast/proof/time (% zmiany), temp (°C), taste (poziom), tex.{chew,soft,short,grit} (przesunięcie wzorca tekstury)
+const FBQ=[
+ {q:"mid",t:"Miąższ, środek",o:[["dry","Suchy, kruszy się",{water:3}],["wet","Kleisty, mokry",{water:-2,time:8}]]},
+ {q:"tex",t:"Konsystencja",o:[["gum","Gumowata, ciągnie się",{tex:{chew:-0.1,soft:0.05}}],["crumb","Rozsypuje się",{tex:{chew:0.1,short:-0.1},psy:10}]]},
+ {q:"hard",t:"Twardość",o:[["hard","Za twarde, zbite",{water:2,tex:{soft:0.1}}],["soft","Za miękkie, rozpływa się",{water:-2,tex:{soft:-0.05}}]]},
+ {q:"rise",t:"Wyrośnięcie",y:1,o:[["flat","Płaskie, za mało",{yeast:10,proof:15,water:-1}],["over","Przerosło, opadło",{yeast:-10,proof:-15}]]},
+ {q:"shape",t:"Formowanie",o:[["sticky","Kleiło się do rąk",{water:-1.5}],["crack","Pękało, rwało się",{water:2,psy:10}]]},
+ {q:"crust",t:"Kolor wierzchu",o:[["pale","Blady",{temp:10}],["dark","Za ciemny, przypalony",{temp:-10,time:10}]]},
+ {q:"bake",t:"Upieczenie środka",o:[["raw","Niedopieczony",{time:10}],["over","Przesuszony",{time:-10}]]},
+ {q:"salt",t:"Słoność",o:[["bland","Mdłe",{salt:15}],["salty","Za słone",{salt:-15}]]},
+ {q:"taste",t:"Smak mąk",o:[["flour","Czuć posmak mąki",{taste:1}],["grit","Piasek w zębach",{tex:{grit:1}}]]},
+ {q:"day2",t:"Następnego dnia",o:[["stale","Czerstwe, twarde",{water:1.5,tex:{soft:0.05}}]]}];
+const CAP={water:10,yeast:30,temp:30,time:40,taste:3,psy:30,salt:30,proof:40},TEX_CAP={chew:0.3,soft:0.3,short:0.3,grit:3};
+let fbSel={},fbStars=0;
+const FB_OLD={suche:"Za suche",kleiste:"Kleiste",plaskie:"Płaskie",przypieczone:"Za mocno przypieczone",niedopieczone:"Niedopieczone",smak:"Smak nie jak pszenny",idealne:"Wyszło idealnie"};
+function fbQs(b){return FBQ.filter(x=>!x.y||b.family==="yeast")}
+function applyFeedback(id,sel,stars){const c=calib[id]||{water:0,yeast:0,temp:0,time:0,log:[]};const picked=[];
+ for(const [q,v] of Object.entries(sel)){const Q=FBQ.find(x=>x.q===q),o=Q&&Q.o.find(x=>x[0]===v);if(!o)continue;picked.push(o[1]);const r=o[2];
+  if(r.taste&&prefs.taste!=="wheat")prefs.taste="wheat";
+  for(const k in CAP)if(r[k])c[k]=Math.round(Math.max(-CAP[k],Math.min(CAP[k],(c[k]||0)+r[k]))*10)/10;
+  if(r.tex){c.tex=c.tex||{};for(const k in r.tex)c.tex[k]=Math.round(Math.max(-TEX_CAP[k],Math.min(TEX_CAP[k],(c.tex[k]||0)+r.tex[k]))*100)/100}}
+ c.log=(c.log||[]).concat({d:new Date().toISOString().slice(0,10),v:picked.length?picked.join(", "):"Wyszło idealnie",s:stars||0}).slice(-20);
+ calib[id]=c;fbSel={};fbStars=0;syncTex();save();calc()}
+function refreshFb(){const box=document.querySelector("#out .fb"),b=BAKES.find(x=>x.id===$("bake").value);if(box&&b)box.outerHTML=fbHtml(b)}
+function syncTex(){const m={};for(const id in calib)if(calib[id].tex)m[id]=calib[id].tex;GFEngine.setTexAdj(m)}
 function fbHtml(b){const c=calib[b.id],parts=[];
- if(c){if(c.taste)parts.push(`mąki o bardziej neutralnym smaku (poziom ${c.taste} z 3)`);if(c.water)parts.push(`${c.water>0?"więcej":"mniej"} płynu (${c.water>0?"+":""}${c.water} pkt %)`);if(c.yeast)parts.push(`drożdży ${c.yeast>0?"+":""}${c.yeast}%`);
-  if(c.temp)parts.push(`temperatura ${c.temp>0?"+":""}${c.temp}°C`);if(c.time)parts.push(`czas ${c.time>0?"+":""}${c.time}%`)}
- const last=c&&c.log&&c.log.length?c.log[c.log.length-1]:null;
+ if(c){if(c.taste)parts.push(`mąki o bardziej neutralnym smaku (poziom ${c.taste} z 3)`);if(c.water)parts.push(`${c.water>0?"więcej":"mniej"} płynu (${c.water>0?"+":""}${c.water} pkt %)`);
+  if(c.yeast)parts.push(`drożdży ${c.yeast>0?"+":""}${c.yeast}%`);if(c.proof)parts.push(`wyrastanie ${c.proof>0?"dłużej":"krócej"} o ${Math.abs(c.proof)}%`);
+  if(c.psy)parts.push(`psyllium ${c.psy>0?"+":""}${c.psy}%`);if(c.salt)parts.push(`sól ${c.salt>0?"+":""}${c.salt}%`);
+  if(c.temp)parts.push(`temperatura ${c.temp>0?"+":""}${c.temp}°C`);if(c.time)parts.push(`czas ${c.time>0?"+":""}${c.time}%`);
+  const t=c.tex||{};if(t.chew)parts.push(t.chew>0?"mieszanka bardziej ciągliwa":"mieszanka mniej gumowata");if(t.soft)parts.push(t.soft>0?"mieszanka bardziej miękka":"mieszanka bardziej zwarta");
+  if(t.short)parts.push(t.short>0?"mieszanka bardziej krucha":"mieszanka mniej krucha");if(t.grit)parts.push("mniej mąk dających piasek")}
+ const logs=c&&c.log?c.log:[],last=logs.length?logs[logs.length-1]:null,st=logs.filter(l=>l.s),avg=st.length?st.reduce((a,l)=>a+l.s,0)/st.length:0;
  const autoOven=b.family==="yeast"&&GFEngine.ovenPlan(b)?.temp;
  const pastryOven=!autoOven&&c&&(c.temp||c.time)?`<div>Przy pieczeniu lub smażeniu: ${c.temp?`temperatura o ${Math.abs(c.temp)}°C ${c.temp<0?"niższa (albo mniejszy ogień)":"wyższa"}`:""}${c.temp&&c.time?" i ":""}${c.time?`piecz o ${Math.abs(c.time)}% ${c.time>0?"dłużej":"krócej"}`:""} niż w krokach.</div>`:"";
- return `<div class="fb"><b>Jak wyszło?</b> Zaznacz po upieczeniu, a przy następnym razie przepis sam się poprawi.
- <div class="chips">${FB.map(([v,t])=>`<button type="button" class="chip" data-fb="${v}">${t}</button>`).join("")}</div>
+ const qs=fbQs(b).map(Q=>`<div class="fbq"><span>${Q.t}</span><div class="seg" role="group" aria-label="${Q.t}">${Q.o.length===1?"":`<button type="button" data-fbq="${Q.q}" data-fba="${Q.o[0][0]}" aria-pressed="${fbSel[Q.q]===Q.o[0][0]}">${Q.o[0][1]}</button>`}<button type="button" data-fbq="${Q.q}" data-fba="" aria-pressed="${!fbSel[Q.q]}">Dobrze</button>${Q.o.slice(Q.o.length===1?0:1).map(o=>`<button type="button" data-fbq="${Q.q}" data-fba="${o[0]}" aria-pressed="${fbSel[Q.q]===o[0]}">${o[1]}</button>`).join("")}</div></div>`).join("");
+ const n=Object.keys(fbSel).length;
+ return `<div class="fb"><b>Jak wyszło?</b> Zaznacz tylko to, co nie wyszło, i zapisz. Przy następnym razie przepis sam się poprawi.
+ <div class="fbqs">${qs}</div>
+ <div class="fbq"><span>Ogólnie</span><div class="stars" role="group" aria-label="Ocena ogólna">${[1,2,3,4,5].map(i=>`<button type="button" data-fbstar="${i}" aria-label="${i} z 5" aria-pressed="${fbStars===i}">${i<=fbStars?"★":"☆"}</button>`).join("")}</div></div>
+ <div class="fbact"><button type="button" class="btn" data-fbsave>${n?`Zapisz ocenę (${n})`:"Wyszło idealnie – zapisz"}</button>${n?`<button type="button" class="linkbtn" data-fbclear>Wyczyść zaznaczenia</button>`:""}</div>
  ${parts.length?`<div>Twoje korekty w tym przepisie: ${parts.join(", ")}. <button type="button" class="linkbtn" data-fbreset="1">Wyzeruj</button></div>`:""}
- ${c&&c.taste&&b.family==="yeast"&&prefs.proof!=="cold"?`<div>Spróbuj też wyrastania w lodówce przez noc: to najmocniej poprawia smak.</div>`:""}${pastryOven}${last?`<div class="msg">Ostatnia ocena: ${FB.find(f=>f[0]===last.v)[1].toLowerCase()} (${last.d}).</div>`:""}</div>`}
+ ${c&&c.taste&&b.family==="yeast"&&prefs.proof!=="cold"?`<div>Spróbuj też wyrastania w lodówce przez noc: to najmocniej poprawia smak.</div>`:""}${pastryOven}
+ ${last?`<div class="msg">Ostatnia ocena (${last.d}): ${FB_OLD[last.v]||last.v}${last.s?` · ${"★".repeat(last.s)}`:""}${st.length>1?` · średnia ${avg.toFixed(1).replace(".",",")} ★ z ${st.length} ocen`:""}.</div>`:""}</div>`}
 
 // Wartości odżywcze samego ciasta (bez nadzienia)
 function nutrHtml(r,b,D){if(!GFEngine.nutritionOf)return "";
@@ -481,7 +519,7 @@ const FRY={tortilla:[50,50,1,"Placek"],nalesniki:[75,30,1,"Naleśnik"],pancakes:
 const FRY_STEP=/smaż|patelni|obgotuj|wrzątk|gotuj partiami/i;
 let fry=null;
 const frN=()=>{const f=FRY[cur.id];return Math.max(1,Math.ceil((cur.pcs||1)/f[2]))};
-function fryStart(){const f=FRY[cur.id];fry={title:cur.title,a:f[0],b:f[1],word:f[3],float:!!f[4],n:frN(),i:1,phase:f[4]?0:1,end:f[4]?0:Date.now()+f[0]*1000,left:0};renderTimers()}
+function fryStart(){const f=FRY[cur.id],k=1+((calib[cur.id]&&calib[cur.id].time)||0)/100;fry={title:cur.title,a:Math.round(f[0]*k),b:Math.round(f[1]*k),word:f[3],float:!!f[4],n:frN(),i:1,phase:f[4]?0:1,end:f[4]?0:Date.now()+f[0]*1000,left:0};renderTimers()}
 function fryTick(now){if(!fry||fry.left||!fry.end||now<fry.end)return;
  if(fry.phase===1&&fry.b){fry.phase=2;fry.end=now+fry.b*1000;beep()}else{fry.phase=3;fry.end=0;beep()}}
 function fryHtml(now){if(!fry)return"";const f=fry,rem=f.left||Math.max(0,Math.ceil((f.end-now)/1000));

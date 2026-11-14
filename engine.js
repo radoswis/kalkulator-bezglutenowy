@@ -333,6 +333,17 @@
     RHEO_SCALDED_BOILED_DOUGH: [0.7, 0.5, 0.2], RHEO_CURD_POTATO_DUMPLINGS: [0.4, 0.8, 0.3], RHEO_SHORTCRUST_COOKIE_CRISP: [0.15, 0.45, 0.75],
     RHEO_FOAM_EMULSION_CAKE: [0.15, 0.9, 0.5], RHEO_BATTER_COATING_SUSPENSION: [0.35, 0.6, 0.5], RHEO_CHEM_LEAVENED_MUFFIN_CHOUX: [0.2, 0.85, 0.5]
   };
+  // Korekty tekstury z ocen „Jak wyszło?” per przepis: {chew, soft, short, grit} (ustawiane z UI przez setTexAdj)
+  let TEX_ADJ = {};
+  function setTexAdj(map) { TEX_ADJ = map || {}; }
+  const texAdjOf = id => TEX_ADJ[id] || 0;
+  function texTarget(bake) {
+    const T = bake.texture || TEX_TARGET[bake.rheologyClass];
+    if (!T) return null;
+    const a = TEX_ADJ[bake.id] || {};
+    const cl = v => Math.max(0, Math.min(1, v));
+    return [cl(T[0] + (a.chew || 0)), cl(T[1] + (a.soft || 0)), cl(T[2] + (a.short || 0)), 1 + (a.grit || 0)];
+  }
   const texOf = ing => TEXTURE[ing.id] || TEXTURE_ROLE[ing.role] || [0.3, 0.5, 0.5, 0.2];
   /** Tekstura mieszanki (średnia ważona). @param {Blend} blend */
   function textureOf(blend) {
@@ -342,16 +353,16 @@
   }
   /** Koszt odległości tekstury mieszanki od pszennego wzorca + kara za „piasek”. */
   function textureCost(blend, bake) {
-    const T = bake.texture || TEX_TARGET[bake.rheologyClass];
+    const T = texTarget(bake);
     if (!T) return 0;
     const m = textureOf(blend);
     // tapioka powyżej 30% mąk = ciasto gumowate (dotyczy każdego przepisu)
     const tap = blend.reduce((a, [i, x]) => a + (i.id === "tap" ? x : 0), 0);
-    return Math.max(0, tap - 0.3) * 20 + ((m.chew - T[0]) / 0.15) ** 2 + ((m.soft - T[1]) / 0.2) ** 2 + ((m.short - T[2]) / 0.2) ** 2 + 2 * m.grit;
+    return Math.max(0, tap - 0.3) * 20 + ((m.chew - T[0]) / 0.15) ** 2 + ((m.soft - T[1]) / 0.2) ** 2 + ((m.short - T[2]) / 0.2) ** 2 + 2 * T[3] * m.grit;
   }
   /** Dopasowanie tekstury 0–100% (100 = jak wzorzec pszenny). */
   function textureMatch(blend, bake) {
-    const T = bake.texture || TEX_TARGET[bake.rheologyClass];
+    const T = texTarget(bake);
     if (!T) return null;
     const m = textureOf(blend), d = Math.hypot(m.chew - T[0], m.soft - T[1], m.short - T[2]) + 0.5 * m.grit;
     return Math.max(0, Math.round(100 - d * 120));
@@ -408,7 +419,7 @@
    */
   const solveCache = new Map();
   function solveFlourBlend(pantryFlours, bake, tasteW = 0) {
-    const key = bake.id + "|" + tasteW + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
+    const key = bake.id + "|" + tasteW + "|" + JSON.stringify(TEX_ADJ[bake.id] || 0) + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
     if (!solveCache.has(key)) solveCache.set(key, solveFlourBlendRaw(pantryFlours, bake, tasteW));
     return solveCache.get(key);
   }
@@ -520,7 +531,7 @@
     const yeastEff = bake.yeastDry * (1 + Math.max(0, bake.sugar - 6) * 0.035 + Math.max(0, bake.fat - 8) * 0.015) * (1 + (calib.yeast || 0) / 100) * (coldProof ? COLD_YEAST : 1);
 
     // Hydrokoloid
-    let psy = bake.psyllium ?? mid(cls.psyllium); // zakresy klas już zakładają obecność HPMC w bazach komercyjnych
+    let psy = (bake.psyllium ?? mid(cls.psyllium)) * (1 + (calib.psy || 0) / 100); // zakresy klas już zakładają obecność HPMC w bazach komercyjnych
     let xan = 0;
     if (!pantryIds.includes("psy")) {
       if (pantryIds.includes("xan")) { xan = psy * XANTHAN_PER_PSYLLIUM; warnings.push("Brak psyllium: używam gumy ksantanowej. Ciasto będzie mniej elastyczne."); }
@@ -534,7 +545,7 @@
     if (wAddFrac < 0) { warnings.push("Jajka wnoszą więcej wody niż potrzeba: zmniejsz ilość jajek."); wAddFrac = 0; }
     const FRESH_PER_DRY = 3;
     const mixSalt = sol.blend.reduce((t, [i, x]) => t + (i.saltPct || 0) * x, 0);
-    const frac = { psy: psy / 100, xan: xan / 100, salt: Math.max(0, bake.salt - mixSalt) / 100, yeast: yeastEff * FRESH_PER_DRY / 100 /* drożdże świeże (priorytet) */, fat: bake.fat / 100, sugar: bake.sugar / 100 };
+    const frac = { psy: psy / 100, xan: xan / 100, salt: Math.max(0, bake.salt * (1 + (calib.salt || 0) / 100) - mixSalt) / 100, yeast: yeastEff * FRESH_PER_DRY / 100 /* drożdże świeże (priorytet) */, fat: bake.fat / 100, sugar: bake.sugar / 100 };
     const sumFrac = 1 + wAddFrac + E + frac.psy + frac.xan + frac.salt + frac.yeast + frac.fat + frac.sugar;
     const flour = doughWeight / sumFrac;
 
@@ -595,7 +606,7 @@
     return out;
   }
 
-  const GFEngine = { textureOf, textureCost, textureMatch, flavorOf, tasteOf, tasteWeight, ovenPlan, INGREDIENT_MATRIX, RHEOLOGY_CLASSES, BAKES, solveFlourBlend, calculateLaboratoryFormulation, validateDefaultBatches, defaultDough, profileOf };
+  const GFEngine = { setTexAdj, texAdjOf, textureOf, textureCost, textureMatch, flavorOf, tasteOf, tasteWeight, ovenPlan, INGREDIENT_MATRIX, RHEOLOGY_CLASSES, BAKES, solveFlourBlend, calculateLaboratoryFormulation, validateDefaultBatches, defaultDough, profileOf };
   if (typeof module !== "undefined" && module.exports) module.exports = GFEngine;
   global.GFEngine = GFEngine;
 })(typeof window !== "undefined" ? window : globalThis);
