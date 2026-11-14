@@ -1,7 +1,7 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
-  { v: "2.9.0", d: "14.11.2026", t: ["Nowy przepis: ciastka karmelowe w stylu Biscoff (speculoos), z opcjonalnym kremem."] },
+  { v: "2.9.1", d: "14.11.2026", t: ["Nowy przepis: ciastka karmelowe w stylu Biscoff (speculoos) oraz krem jak Biscoff Creamy (ciastka, olej rzepakowy, cukier – bez nabiału)."] },
   { v: "2.8.0", d: "14.11.2026", t: ["Licznik smażenia i gotowania partiami w trybie gotowania: sygnał „odwróć”, sygnał „zdejmij”, numer placka/partii, pauza i +15 s (tortilla, naleśniki, pancakes, racuchy, pączki, langosz, oponki, faworki, naan, English muffin, tempura, bajgle, precle, pierogi, kluski).",
     "Minutniki rozpoznają sekundy, a kroki bez czasu dostały typowe czasy (nagrzewanie piekarnika, studzenie, gotowanie ziemniaków); przypomnienie o włączeniu piekarnika w trakcie wyrastania.",
     "Odhaczanie dodanych składników w spisie i w trybie gotowania (zapamiętane po zminimalizowaniu, przycisk „Wyczyść”)."] },

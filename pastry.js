@@ -243,7 +243,7 @@
         "Owiń folią i schłódź w lodówce co najmniej 1 godzinę. Po nocy w lodówce smak jest pełniejszy.",
         `Rozwałkuj między dwoma arkuszami papieru na grubość ok. 3 mm. Wykrawaj prostokąty ok. 4 × 6 cm (wyjdzie ok. ${c.pcs} sztuk) i ułóż na blasze z papierem. Ponakłuwaj widelcem albo odciśnij wzór.`,
         "Piecz w 175°C 12–14 minut, aż brzegi będą ciemnozłote. Studź na kratce. Chrupiące stają się dopiero po ostygnięciu. Przechowuj w szczelnej puszce.",
-        "Krem jak Biscoff (opcjonalnie): 200 g ciastek zmiel na pył, zblenduj ze 100 g mleka skondensowanego słodzonego i 2 łyżkami oleju na gładką masę."
+        "Krem jak Biscoff Creamy (słoik ok. 400 g, skład jak w oryginale: ok. 58% ciastek, olej, cukier): 230 g ostudzonych ciastek zmiel w blenderze na pył. Dodaj 120 g oleju rzepakowego, 50 g cukru pudru i szczyptę soli. Blenduj 5–8 minut z przerwami, aż masa będzie gładka i błyszcząca. Przełóż do wyparzonego słoika. Bez nabiału, więc postoi w szafce 2–3 tygodnie. Gęstnieje po schłodzeniu, a gdy jest za gęsty, dodaj łyżkę oleju."
       ] },
     { id: "faworki", name: "Chruściki (faworki)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
       basis: "flour", components: [["yolks", 28], ["sourCream", 38], ["meltedButter", 8], ["powderedSugar", 5], ["vinegarOrSpirit", 4], ["bakingPowder", 0.5], ["salt", 0.5]],
