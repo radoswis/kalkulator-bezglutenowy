@@ -87,6 +87,10 @@ details .inner{display:grid;gap:10px;margin-top:12px}
 .newver{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:60;background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between;box-shadow:0 6px 24px #0004}
 .insthelp{display:flex;align-items:center;justify-content:center}.insthelp[hidden]{display:none}.instbox{background:var(--surface);border-radius:12px;padding:20px;max-width:440px;display:grid;gap:10px;margin:16px}.instbox p{margin:0}
 .sim{display:grid;gap:4px;font-size:.9rem;color:var(--muted)}.sim b{color:var(--fg)}.simbar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}.simbar i{display:block;height:100%;background:var(--accent)}
+tr[data-ing]{cursor:pointer}tr[data-ing] td:first-child::before{content:"○ ";color:var(--muted)}tr.done td{opacity:.45;text-decoration:line-through}tr.done td:first-child::before{content:"✓ ";color:var(--accent);opacity:1}
+.inghint{font-size:.85rem;color:var(--muted);margin:4px 0 8px}
+.fry{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--accent-soft);border:2px solid var(--accent);border-radius:10px;padding:12px 14px}
+.fry>div:first-child{display:grid;gap:2px}.fry b{font-size:1.5rem}.fry small{color:var(--muted)}.fry.done{background:var(--warn-soft);border-color:var(--warn)}.frybtns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .linkbtn{font:inherit;background:none;border:0;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
 .offlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .combo{position:relative}
@@ -297,7 +301,7 @@ function calc(){
  if(r.empty){$("out").innerHTML=`<h3>${b.name}</h3>${srcBar()}${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}`;return}
  if(r.family==="pastry"){renderPastry(r,b,D);$("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());return}
  const h=r.hydration,p=r.profile,t=p.target,sg=x=>(x>=0?"+":"")+x.toFixed(1);
- const rows=r.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
+ const rows=r.lines.map(l=>`<tr data-ing="${l.label}"${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
  const water=r.lines.find(l=>l.key==="water").grams,hasEggs=b.eggs>0,hasPsy=r.lines.some(l=>l.key==="psy"),hasXan=r.lines.some(l=>l.key==="xan");
  const why=[];
  if(h.deltaWAC<-0.5)why.push("te mąki piją mniej wody niż zwykle, więc dajemy jej trochę mniej");
@@ -323,14 +327,14 @@ function calc(){
   RHEO_ENRICHED_BRIOCHE_FRIED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`}[cl];
  const steps=pour?[...(s0?[s0]:[]),s1,s2,
   "Od razu przełóż ciasto do naoliwionej formy lub na blachę i rozprowadź mokrymi dłońmi.",
-  cold?"Przykryj formę szczelnie folią i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie urośnie.":"Przykryj ściereczką i zostaw w formie w ciepłym miejscu na 45–60 minut, aż wyraźnie urośnie.",
+  cold?"Przykryj formę szczelnie folią i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie urośnie.":"Przykryj ściereczką i zostaw w formie w ciepłym miejscu na 45–60 minut, aż wyraźnie urośnie. Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać.",
   `Na koniec: ${b.bakeNote}.`]
  :[...(s0?[s0]:[]),s1,s2,
   b.shapeStep?b.shapeStep({pcs,pw}):`Bez wyrastania w misce ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
-  cold?"Przykryj szczelnie folią, żeby nie obeschły, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie się napuszą.":"Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na 45–60 minut, aż wyraźnie się napuszą.",
+  cold?"Przykryj szczelnie folią, żeby nie obeschły, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie się napuszą.":"Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na 45–60 minut, aż wyraźnie się napuszą."+(/smaż|patelni/i.test(b.bakeNote)?" W tym czasie przygotuj olej lub patelnię.":" Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać."),
   ...(b.preBake?[b.preBake]:[]),
   `Na koniec: ${b.bakeNote}.`];
- cur={title:b.name,steps,lines:r.lines};
+ cur={id:b.id,title:b.name,steps,lines:r.lines,pcs};
  const tip=pour?"":`<div class="note">Ciasto bezglutenowe rośnie tylko raz. Jeśli wyrośnie w misce, a potem je ugnieciesz, już się nie podniesie, dlatego formujemy od razu.</div>`;
  $("out").innerHTML=`<h3>${b.name}</h3>
  <div class="hyd"><div><b>${water} g</b><span>wody wlej</span></div><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div></div>
@@ -396,9 +400,9 @@ function srcBar(){return `<div class="seg srcbar" role="group" aria-label="Z jak
  <div class="note">${src==="ideal"?"Podgląd przepisu na najlepszych mąkach. Zaznacz w spiżarni, co masz, a przeliczę przepis na Twoje mąki.":"Przepis przeliczony na mąki z Twojej spiżarni."}</div>`}
 const whyTxt=()=>src==="ideal"?"To najlepszy zestaw z całej bazy mąk dla tego przepisu.":"Z tego, co masz w domu, ta mieszanka da wynik najbardziej podobny do tradycyjnego, pszennego.";
 function renderPastry(r,b,D){
- cur={title:b.name,steps:r.steps,lines:r.lines};
+ cur={id:b.id,title:b.name,steps:r.steps,lines:r.lines,pcs:mode==="pcs"?+$("count").value:Math.max(1,Math.round(D/(b.unitWeight||100)))};
  const p=r.profile,t=p.target;
- const rows=r.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
+ const rows=r.lines.map(l=>`<tr data-ing="${l.label}"${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
  const flour=r.lines.find(l=>l.key==="flour").grams,pcs=Math.max(1,Math.round(D/b.unitWeight));
  $("out").innerHTML=`<h3>${b.name}</h3>
  <div class="hyd"><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div><div><b>${flour} g</b><span>mąk razem</span></div>${b.defaultCount>1||pcs>1?`<div><b>${pcs} × ${Math.round(D/pcs)} g</b><span>${b.unit}</span></div>`:""}</div>
@@ -440,28 +444,68 @@ $("searchBtn").onclick=async()=>{const q=$("q").value.trim();if(!q){$("searchMsg
 // ===== Tryb gotowania: kroki na cały ekran, minutniki, ekran nie gaśnie =====
 let cur=null,ci=0,wake=null,audio=null;const timers=[];
 const fmtT=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
-function findTimes(t){const out=[];let m;const re=/(\d+)(?:\s*[–-]\s*(\d+))?\s*(minut|min\b)/g;
- while((m=re.exec(t)))out.push(+m[1]);const hr=/(\d+)(?:\s*[–-]\s*(\d+))?\s*godzin/g;let hh=false;while((m=hr.exec(t))){out.push(+m[1]*60);hh=true}
- if(!hh&&/godzin[ęy]|1\s*h\b/.test(t)&&!out.includes(60))out.push(60);return [...new Set(out)].filter(x=>x>0&&x<=900)}
+// Czasy z tekstu kroku → sekundy (sekundy, minuty, godziny; z zakresu bierzemy dolną wartość)
+function findTimes(t){const out=[];let m;
+ const sec=/(\d+)(?:\s*[–-]\s*\d+)?\s*(?:sekund|s\b)/g;while((m=sec.exec(t)))out.push(+m[1]);
+ const re=/(\d+)(?:[,.]5)?(?:\s*[–-]\s*\d+(?:[,.]5)?)?\s*(?:minut|min\b)/g;while((m=re.exec(t)))out.push(Math.round(parseFloat(m[0].replace(",","."))*60));
+ const hr=/(\d+)(?:\s*[–-]\s*\d+)?\s*godzin/g;let hh=false;while((m=hr.exec(t))){out.push(+m[1]*3600);hh=true}
+ if(!hh&&/godzin[ęy]|1\s*h\b/.test(t)&&!out.includes(3600))out.push(3600);
+ // kroki bez podanego czasu, ale z czekaniem: typowe czasy
+ if(!out.length){if(/nagrzej piekarnik/i.test(t))out.push(900);if(/ugotuj (część )?ziemniak/i.test(t))out.push(1200);
+  if(/całkowicie wystudź|\bwystudź/i.test(t))out.push(1800);else if(/przestudź|ostudź/i.test(t))out.push(600)}
+ return [...new Set(out)].filter(x=>x>=5&&x<=54000)}
+const fmtDur=s=>s<60?s+" s":s<7200?(s%60?fmtT(s)+" min":s/60+" min"):Math.round(s/3600)+" godz.";
 async function keepAwake(){try{if("wakeLock" in navigator&&!$("cook").hidden)wake=await navigator.wakeLock.request("screen")}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")keepAwake()});
 function showStep(){const n=cur.steps.length;ci=Math.max(0,Math.min(n-1,ci));
  $("cookNum").textContent=`Krok ${ci+1} z ${n}`;$("cookText").textContent=cur.steps[ci];
- $("cookTimerBtns").innerHTML=findTimes(cur.steps[ci]).map(m=>`<button type="button" class="chip" data-timer="${m}">Minutnik ${m>=120?Math.round(m/60)+" godz.":m+" min"}</button>`).join("");
+ const fr=FRY[cur.id],isFry=fr&&FRY_STEP.test(cur.steps[ci]);
+ $("cookTimerBtns").innerHTML=(isFry?`<button type="button" class="btn" data-frystart>▶ Licznik ${fr[4]?"gotowania":"smażenia"}: ${frN()} ${fr[2]>1?"partii":"szt."} (${fr[1]?"odwróć po "+fmtDur(fr[0])+", gotowe po "+fmtDur(fr[1]):fmtDur(fr[0])})</button>`:"")
+  +findTimes(cur.steps[ci]).map(m=>`<button type="button" class="chip" data-timer="${m}">Minutnik ${fmtDur(m)}</button>`).join("");
  document.querySelector("[data-cookprev]").disabled=ci===0;const nx=document.querySelector("[data-cooknext]");nx.textContent=ci===n-1?"Koniec":"Dalej →"}
 function openCook(){if(!cur)return;ci=0;$("cookTitle").textContent=cur.title;
- $("cookIng").innerHTML="<table>"+cur.lines.map(l=>`<tr${l.sub?' class="sub"':""}><td>${l.label}</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("")+"</table>";
+ $("cookIng").innerHTML="<table>"+cur.lines.map(l=>`<tr data-ing="${l.label}"${l.sub?' class="sub"':""}><td>${l.label}</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("")+"</table>";
  $("cookIng").hidden=true;$("cook").hidden=false;document.body.style.overflow="hidden";showStep();keepAwake()}
 function closeCook(){$("cook").hidden=true;document.body.style.overflow="";try{wake&&wake.release()}catch(e){}wake=null}
 function beep(){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();for(let i=0;i<3;i++){const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=880;o.connect(g);g.connect(audio.destination);const t=audio.currentTime+i*0.45;g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);o.start(t);o.stop(t+0.36)}}catch(e){}
  try{navigator.vibrate&&navigator.vibrate([400,200,400,200,400])}catch(e){}}
-function startTimer(min){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
- timers.push({label:`${cur?cur.title+": ":""}${min>=120?Math.round(min/60)+" godz.":min+" min"}`,end:Date.now()+min*60000,done:false});renderTimers()}
-function renderTimers(){const now=Date.now();
+function startTimer(sec){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
+ timers.push({label:`${cur?cur.title+": ":""}${fmtDur(sec)}`,end:Date.now()+sec*1000,done:false});renderTimers()}
+
+// ===== Licznik smażenia / gotowania partiami: strona 1 → sygnał „odwróć” → strona 2 → sygnał „zdejmij” → następna partia =====
+// [strona 1 (s), strona 2 (s, 0 = bez odwracania), sztuk w partii, nazwa, od wypłynięcia]
+const FRY={tortilla:[50,50,1,"Placek"],nalesniki:[75,30,1,"Naleśnik"],pancakes:[120,60,3,"Partia"],racuchy:[150,150,4,"Partia"],
+ oponki:[150,150,4,"Partia"],paczki:[150,150,3,"Partia"],langosz:[150,150,1,"Langosz"],faworki:[8,8,4,"Partia"],naan:[120,120,1,"Placek"],
+ english_muffin:[480,480,4,"Partia"],tempura:[270,0,5,"Partia"],bajgle:[60,60,2,"Partia"],precle:[60,60,2,"Partia"],
+ pierogi:[150,0,12,"Partia",1],leniwe:[120,0,15,"Partia",1],kopytka:[150,0,20,"Partia",1],kluski_slaskie:[150,0,15,"Partia",1],gnocchi:[60,0,25,"Partia",1],pyzy:[1050,0,8,"Partia",1]};
+const FRY_STEP=/smaż|patelni|obgotuj|wrzątk|gotuj partiami/i;
+let fry=null;
+const frN=()=>{const f=FRY[cur.id];return Math.max(1,Math.ceil((cur.pcs||1)/f[2]))};
+function fryStart(){const f=FRY[cur.id];fry={title:cur.title,a:f[0],b:f[1],word:f[3],float:!!f[4],n:frN(),i:1,phase:f[4]?0:1,end:f[4]?0:Date.now()+f[0]*1000,left:0};renderTimers()}
+function fryTick(now){if(!fry||fry.left||!fry.end||now<fry.end)return;
+ if(fry.phase===1&&fry.b){fry.phase=2;fry.end=now+fry.b*1000;beep()}else{fry.phase=3;fry.end=0;beep()}}
+function fryHtml(now){if(!fry)return"";const f=fry,rem=f.left||Math.max(0,Math.ceil((f.end-now)/1000));
+ const head=`${f.word} ${f.i} z ${f.n}`;
+ const big=f.phase===0?"Start, gdy wypłyną":f.phase===3?(f.float?"WYJMUJ":"ZDEJMIJ")+(f.i<f.n?" – nakładaj następną":" – koniec"):(f.phase===2?"Strona 2 · ":f.b?"Strona 1 · ":"")+fmtT(rem);
+ const sub=f.phase===1&&f.b?"Sygnał = odwróć":f.phase===2?"Sygnał = zdejmij":"";
+ const btns=f.phase===0?`<button type="button" class="btn" data-fry="go">Wypłynęły – start</button>`:f.phase===3?(f.i<f.n?`<button type="button" class="btn" data-fry="next">Następna ▶</button>`:`<button type="button" class="btn" data-fry="stop">Koniec</button>`)
+  :`<button type="button" class="chip" data-fry="pause">${f.left?"Wznów":"Pauza"}</button><button type="button" class="chip" data-fry="plus">+15 s</button>`+(f.phase===1&&f.b?`<button type="button" class="chip" data-fry="flip">Odwróciłem</button>`:"");
+ return `<div class="fry${f.phase===3?" done":""}"><div><span>${f.title}: ${head}</span><b>${big}</b><small>${sub}</small></div><div class="frybtns">${btns}${f.phase!==3?`<button type="button" class="linkbtn" data-fry="stop">Stop</button>`:""}</div></div>`}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-fry],[data-frystart]");if(!b)return;
+ try{audio=audio||new (window.AudioContext||window.webkitAudioContext)()}catch(x){}
+ if(b.dataset.frystart!==undefined){fryStart();return}const a=b.dataset.fry,now=Date.now();
+ if(a==="stop")fry=null;
+ else if(a==="go"){fry.phase=1;fry.end=now+fry.a*1000}
+ else if(a==="next"){fry.i++;fry.phase=fry.float?0:1;fry.end=fry.float?0:now+fry.a*1000}
+ else if(a==="flip"){fry.phase=2;fry.end=now+fry.b*1000}
+ else if(a==="plus"){if(fry.left)fry.left+=15;else fry.end+=15000}
+ else if(a==="pause"){if(fry.left){fry.end=now+fry.left*1000;fry.left=0}else{fry.left=Math.max(1,Math.ceil((fry.end-now)/1000))}}
+ renderTimers()});
+function renderTimers(){const now=Date.now();fryTick(now);
  for(const t of timers)if(!t.done&&t.end<=now){t.done=true;beep()}
  const html=timers.map((t,i)=>`<div class="timer${t.done?" done":""}"><span>${t.label}</span><b>${t.done?"Gotowe!":fmtT(Math.ceil((t.end-now)/1000))}</b><button type="button" class="linkbtn" data-timerdel="${i}">${t.done?"OK":"Anuluj"}</button></div>`).join("");
- $("cookTimers").innerHTML=html;$("timerBadge").innerHTML=html;$("timerBadge").hidden=!timers.length||!$("cook").hidden}
-setInterval(()=>{if(timers.length)renderTimers()},1000);
+ const all=fryHtml(now)+html;$("cookTimers").innerHTML=all;$("timerBadge").innerHTML=all;$("timerBadge").hidden=!all||!$("cook").hidden}
+setInterval(()=>{if(timers.length||fry)renderTimers()},1000);
 document.addEventListener("click",e=>{const t=e.target;
  if(t.closest("[data-cook]")){openCook();renderTimers()}
  else if(t.closest("[data-cookclose]")){closeCook();renderTimers()}
@@ -509,19 +553,31 @@ if("serviceWorker" in navigator&&location.protocol==="https:"&&!/claude|anthropi
  // sprawdzanie nowej wersji przy powrocie do aplikacji
  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&swReg)swReg.update().catch(()=>{})})}
 
+
+// ===== Odhaczanie dodanych składników (spis w przepisie i w trybie gotowania) =====
+let doneIng=new Set(),doneSig="";
+const ingSig=()=>[$("bake").value,mode,$("count").value,$("portion").value,$("grams").value,src].join("|");
+function markDone(){const sg=ingSig();if(sg!==doneSig){doneSig=sg;doneIng.clear()}
+ document.querySelectorAll("tr[data-ing]").forEach(tr=>tr.classList.toggle("done",doneIng.has(tr.dataset.ing)));
+ document.querySelectorAll("table").forEach(t=>{if(!t.querySelector("tr[data-ing]")||(t.nextElementSibling&&t.nextElementSibling.classList.contains("inghint")))return;
+  t.insertAdjacentHTML("afterend",`<div class="inghint">Stuknij składnik, gdy go dodasz ✓ · <button type="button" class="linkbtn" data-ingclear>Wyczyść</button></div>`)})}
+document.addEventListener("click",e=>{if(e.target.closest("[data-ingclear]")){doneIng.clear();markDone();saveUI();return}
+ const tr=e.target.closest("tr[data-ing]");if(!tr)return;const k=tr.dataset.ing;doneIng.has(k)?doneIng.delete(k):doneIng.add(k);markDone();saveUI()});
+new MutationObserver(markDone).observe($("out"),{childList:true});new MutationObserver(markDone).observe($("cookIng"),{childList:true});
+
 // ===== Pamięć ekranu: po zminimalizowaniu starszy telefon (np. Redmi 10) zamyka kartę w tle,
 // więc zapisujemy, gdzie użytkownik był (przepis, ilości, przewinięcie, tryb gotowania, minutniki) i odtwarzamy przy powrocie.
 const UI_KEY="gf_ui_v1";
 function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({t:Date.now(),bake:$("bake").value,mode,src,
  count:$("count").value,portion:$("portion").value,grams:$("grams").value,y:window.scrollY,
- cook:!$("cook").hidden,ci,ing:!$("cookIng").hidden,timers}))}catch(e){}}
+ cook:!$("cook").hidden,ci,ing:!$("cookIng").hidden,timers,fry,done:[...doneIng],doneSig}))}catch(e){}}
 function restoreUI(){let u;try{u=JSON.parse(localStorage.getItem(UI_KEY)||"null")}catch(e){}
  if(!u||Date.now()-u.t>2*864e5||!BAKES.some(b=>b.id===u.bake))return false;
  $("bake").value=u.bake;lastBake=u.bake;src=u.src||"ideal";
  $("count").value=u.count;$("portion").value=u.portion;$("grams").value=u.grams;
  mode=u.mode||"pcs";$("mPcs").setAttribute("aria-pressed",mode==="pcs");$("mGr").setAttribute("aria-pressed",mode==="gr");
  $("lblCount").hidden=$("lblPortion").hidden=mode!=="pcs";$("lblGrams").hidden=mode==="pcs";
- (u.timers||[]).forEach(t=>timers.push(t));calc();
+ (u.timers||[]).forEach(t=>timers.push(t));fry=u.fry||null;doneIng=new Set(u.done||[]);doneSig=u.doneSig||"";calc();
  if(u.cook&&cur){openCook();ci=u.ci||0;showStep();$("cookIng").hidden=!u.ing}
  renderTimers();const y=u.y||0;window.scrollTo(0,y);setTimeout(()=>window.scrollTo(0,y),300);return y}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveUI()});

@@ -1,6 +1,9 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.8.0", d: "14.11.2026", t: ["Licznik smażenia i gotowania partiami w trybie gotowania: sygnał „odwróć”, sygnał „zdejmij”, numer placka/partii, pauza i +15 s (tortilla, naleśniki, pancakes, racuchy, pączki, langosz, oponki, faworki, naan, English muffin, tempura, bajgle, precle, pierogi, kluski).",
+    "Minutniki rozpoznają sekundy, a kroki bez czasu dostały typowe czasy (nagrzewanie piekarnika, studzenie, gotowanie ziemniaków); przypomnienie o włączeniu piekarnika w trakcie wyrastania.",
+    "Odhaczanie dodanych składników w spisie i w trybie gotowania (zapamiętane po zminimalizowaniu, przycisk „Wyczyść”)."] },
   { v: "2.7.0", d: "14.11.2026", t: ["Dobór mąk patrzy też na konsystencję: ciągliwość (tapioka), miękkość (skrobia ziemniaczana, owsiana), kruchość (kukurydziana, migdałowa) i „piasek” mąki ryżowej – mieszanka bliższa pszennemu wzorcowi danego wypieku.",
     "Tapioka maks. ok. 30% mąk – więcej robi ciasto gumowate.",
     "Bułki, słodkie drożdżowe, wałkowane i chleb tostowy: zaparzka z części mąki (miększy miąższ, dłużej świeży) i 15–20 minut odpoczynku ciasta przed formowaniem."] },

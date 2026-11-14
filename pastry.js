@@ -454,7 +454,7 @@
         "Przełóż do miski i studź 5–10 minut.",
         `Wbijaj jajka po jednym (razem do ${c.g("eggs")}), miksując po każdym. Ciasto ma być gładkie i lśniące i opadać z łyżki w kształt litery V. Ostatnie jajko może nie być potrzebne.`,
         `Szprycuj rękawem ${c.pcs} ptysi po ok. ${c.pw} g (albo eklery długości 10 cm). Piecz w 200°C 15 minut, potem w 180°C 15–20 minut. Przez pierwsze 20 minut nie otwieraj piekarnika.`,
-        "Churros: zamiast pieczenia wyciskaj paski prosto do oleju rozgrzanego do 180°C i smaż na złoto."
+        "Churros: zamiast pieczenia wyciskaj paski prosto do oleju rozgrzanego do 180°C i smaż na złoto, ok. 2–3 minuty."
       ] }
   ];
 
