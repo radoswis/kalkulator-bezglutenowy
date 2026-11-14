@@ -156,6 +156,10 @@
     { id: "hamburger",   name: "Bułki hamburgerowe",    rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 1.45, fat: 7, sugar: 5, eggs: 8, unitWeight: 90, defaultCount: 8, unit: "bułka", bakeNote: "200°C, 18 min" },
     { id: "subway",      name: "Bułki subway / hot dog", rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 1.45, fat: 6, sugar: 4, eggs: 5, unitWeight: 110, defaultCount: 6, unit: "bułka", bakeNote: "200°C, 20 min" },
     { id: "kajzerki",    name: "Kajzerki",              rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.0, yeastDry: 1.45, fat: 4, sugar: 2, eggs: 0, unitWeight: 80, defaultCount: 8, unit: "bułka", bakeNote: "220°C, 20 min z parą" },
+    // English muffin (bułeczki do McMuffina): wilgotne ciasto mleczne, pieczone na patelni. Źródło: klasyczne receptury (P. Reinhart, King Arthur), hydratacja podniesiona – ciasto miękkie.
+    { id: "english_muffin", name: "English muffin (bułeczki do McMuffina)", rheologyClass: "RHEO_TENSILE_SHAPED", hydration: 86, salt: 1.8, yeastDry: 1.45, fat: 5, sugar: 3, eggs: 0, unitWeight: 80, defaultCount: 8, unit: "bułeczka", bakeNote: "patelnia",
+      shapeStep: c => `Od razu, bez wyrastania w misce, podziel ciasto na ${c.pcs} kawałków po około ${c.pw} g. Mokrymi dłońmi zrób kulki i spłaszcz je na placki grubości ok. 2 cm (średnica 8–9 cm). Każdy obtocz z obu stron w kaszce kukurydzianej lub mące kukurydzianej i ułóż na blasze z papierem, z odstępami.`,
+      preBake: "Rozgrzej suchą patelnię (najlepiej żeliwną) na MAŁYM ogniu. Przekładaj bułeczki ostrożnie łopatką, nie ugniataj." },
     // RHEO_LAMINATED_ROLLED_STUFFED
     { id: "calzone",     name: "Calzone",               rheologyClass: "RHEO_LAMINATED_ROLLED_STUFFED", salt: 2.0, yeastDry: 1.45, fat: 10, sugar: 1, eggs: 8, unitWeight: 250, defaultCount: 3, unit: "calzone", bakeNote: "240°C, 12–15 min" },
     { id: "paszteciki",  name: "Paszteciki",            rheologyClass: "RHEO_LAMINATED_ROLLED_STUFFED", salt: 1.8, yeastDry: 1.45, fat: 11, sugar: 3, eggs: 10, unitWeight: 60, defaultCount: 12, unit: "pasztecik", bakeNote: "200°C, 20 min" },
@@ -171,7 +175,14 @@
     { id: "cynamonki",   name: "Cynamonki",             rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.6, yeastDry: 1.5, fat: 15, sugar: 13, eggs: 20, unitWeight: 95, defaultCount: 7, unit: "cynamonka", bakeNote: "180°C, 22 min", sweet: true },
     { id: "buleczki_maslane", name: "Bułeczki maślane", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 12, sugar: 10, eggs: 15, unitWeight: 70, defaultCount: 9, unit: "bułka", bakeNote: "190°C, 18 min", sweet: true },
     { id: "paczki",      name: "Pączki",                rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.8, yeastDry: 1.5, fat: 14, sugar: 14, eggs: 22, unitWeight: 70, defaultCount: 8, unit: "pączek", bakeNote: "smażenie w 170°C", sweet: true },
-    { id: "langosz",     name: "Langosz",               rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 2.0, yeastDry: 1.45, fat: 6, sugar: 2, eggs: 3, unitWeight: 120, defaultCount: 5, unit: "placek", bakeNote: "smażenie w 175°C" }
+    { id: "langosz",     name: "Langosz",               rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 2.0, yeastDry: 1.45, fat: 6, sugar: 2, eggs: 3, unitWeight: 120, defaultCount: 5, unit: "placek", bakeNote: "smażenie w 175°C" },
+    // Brioche: bardzo bogate ciasto (masło ok. 18–20%, jajka ok. 25%). Źródło: klasyczna brioche (proporcje piekarskie), dostosowane do klasy 6.
+    { id: "brioche", name: "Bułki brioche (np. do burgerów)", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.6, yeastDry: 1.5, fat: 18, sugar: 10, eggs: 25, unitWeight: 80, defaultCount: 8, unit: "bułka", bakeNote: "190°C, 15–18 min", sweet: true,
+      preBake: "Przed pieczeniem posmaruj bułki mlekiem lub samym białkiem. Do burgerów możesz posypać sezamem." },
+    // Placek drożdżowy z kruszonką (blachowy). Źródło: tradycyjna receptura polska, proporcje jak drożdżówki, ciasto rozprowadzane w formie.
+    { id: "placek_kruszonka", name: "Placek drożdżowy z kruszonką", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 14, sugar: 13, eggs: 20, unitWeight: 700, defaultCount: 1, unit: "blacha 24 × 30 cm", bakeNote: "180°C, 35 min", sweet: true,
+      shapeStep: () => "Od razu, bez wyrastania w misce, przełóż ciasto do formy 24 × 30 cm wyłożonej papierem i rozprowadź równo mokrymi dłońmi lub mokrą łyżką. Jeśli chcesz, ułóż na wierzchu owoce (śliwki, jabłka, jagody), lekko wciskając.",
+      preBake: "Kruszonka: 60 g zimnego masła, 60 g cukru i 90 g mąki (np. Mix C, ryżowej lub skrobi z mąką ryżową) rozetrzyj palcami na grudki. Posyp wyrośnięte ciasto tuż przed pieczeniem." }
   ];
 
   // ---------- Model pieczenia (temperatura i czas dla ciast bezglutenowych) ----------
@@ -185,7 +196,8 @@
     calzone: [240, 12, 15, "filled"], paszteciki: [200, 14, 17, "filled"] /* kalibracja 11.11: 200°C/16 min = wierzch gotowy, środek o chwilę za krótko → 180°C, 20–24 min */, pierogi_drozdzowe: [190, 18, 20, "filled"],
     bajgle: [210, 18, 20, "boil"], precle: [210, 13, 15, "boil"], grissini: [200, 13, 15],
     chalka: [180, 30, 35], babka: [175, 45, 50], drozdzowki: [180, 18, 20], cynamonki: [180, 20, 22], buleczki_maslane: [190, 16, 18],
-    paczki: [170, 0, 0, "fry"], langosz: [175, 0, 0, "fry"]
+    paczki: [170, 0, 0, "fry"], langosz: [175, 0, 0, "fry"],
+    english_muffin: [0, 7, 9, "griddle"], brioche: [190, 15, 18], placek_kruszonka: [180, 30, 35]
   };
   const GF_TIME_FACTOR = 1.2;     // żel psyllium + skrobi potrzebuje dłużej, żeby się upiec w środku
   const MIN_OVEN_TEMP = 160;
@@ -206,6 +218,7 @@
     const cT = calib.temp || 0, cK = 1 + (calib.time || 0) / 100;
     if (mode === "fry") return { note: `smażenie w ${t0}°C, 2–3 min z każdej strony`, doneness: "Gotowe, gdy są złote z obu stron, a wbity patyczek wychodzi suchy. Jeśli z zewnątrz ciemnieją za szybko, obniż temperaturę oleju o 5–10°C." };
     if (mode === "pan") return { note: "sucha, mocno rozgrzana patelnia, ok. 2 min na stronę", doneness: "Gotowe, gdy placek jest nadmuchany i ma brązowe plamki z obu stron." };
+    if (mode === "griddle") return { note: `sucha patelnia na małym ogniu, pod przykryciem, ${m0}–${m1} min z każdej strony (bezglutenowe potrzebują dłużej niż pszenne)`, doneness: "Gotowe, gdy oba boki są złote, a boki bułeczki sprężyste po naciśnięciu. Najpewniej: w środku 96°C. Jeśli z zewnątrz są gotowe, a w środku wilgotne, dopiecz 8–10 min w piekarniku w 180°C. Przed podaniem rozdziel widelcem na pół i opiecz w tosterze." };
     if (mode === "stone") return { note: `jak najwyższa temperatura piekarnika (${t0 >= 300 ? "250–300" : t0}°C), najlepiej na rozgrzanym kamieniu lub odwróconej blasze, ${m0}–${m1} min`, doneness: "Gotowe, gdy brzegi są wyrośnięte i lekko przypieczone, a spód twardy i rumiany." };
     const drop = browningDrop(b) + (mode === "filled" ? 10 : 0);
     const t = Math.max(MIN_OVEN_TEMP - 10, round5(t0 - drop + cT));

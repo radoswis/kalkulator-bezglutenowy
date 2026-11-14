@@ -1,6 +1,7 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.6.0", d: "14.11.2026", t: ["6 nowych przepisów: English muffin (do McMuffina), bułki brioche, placek drożdżowy z kruszonką, pyzy ziemniaczane, kluski lane, tarta wytrawna (quiche)."] },
   { v: "2.5.0", d: "13.11.2026", t: ["Przy każdym przepisie: szacunkowe podobieństwo do wersji pszennej (smak, konsystencja) z krótką uwagą, czego się spodziewać."] },
   { v: "2.4.0", d: "13.11.2026", t: ["Numer wersji, lista zmian i przycisk „Sprawdź aktualizację” na dole strony.",
     "Instalacja na telefonie działa też, gdy przeglądarka nie pokazuje sama okienka (instrukcja dla Chrome i Samsung Internet)."] },

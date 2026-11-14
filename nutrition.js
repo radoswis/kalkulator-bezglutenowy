@@ -47,7 +47,7 @@
     bakingPowder: N(0, 28, 0, 0, 0, 25), bakingSoda: N(0, 0, 0, 0, 0, 68),
     vinegarOrSpirit: WATER,                            // alkohol odparowuje przy smażeniu; ocet ~0 kcal
     spice: N(8, 50, 2, 20, 6), cinnamon: N(1.2, 27, 2, 53, 4), cocoa: N(11, 13, 1, 33, 20, 0.05),
-    quark: N(4.7, 3.7, 3.7, 0, 18.7, 0.1), cheesecakeQuark: N(10, 3, 3, 0, 13, 0.1), potatoes: N(0.1, 17, 0.8, 1.8, 1.9, 0.01),
+    quark: N(4.7, 3.7, 3.7, 0, 18.7, 0.1), cheesecakeQuark: N(10, 3, 3, 0, 13, 0.1), potatoes: N(0.1, 17, 0.8, 1.8, 1.9, 0.01), rawPotatoes: N(0.1, 17, 0.8, 1.8, 1.9, 0.01),
     darkChocolate: N(42, 33, 28, 11, 8, 0.02), chocolateChips: N(30, 60, 52, 6, 5), banana: N(0.3, 20, 12, 2.6, 1.1), carrot: N(0.2, 7, 4.7, 2.8, 0.9, 0.1)
   };
 
@@ -63,7 +63,7 @@
 
   // ---------- Zmiana masy przy obróbce: [utrata wody, wchłonięty olej] jako ułamek masy ciasta ----------
   const PASTRY_COOK = {
-    pierogi: [0, 0], makaron: [0, 0], leniwe: [0, 0], kopytka: [0, 0], kluski_slaskie: [0, 0], gnocchi: [0, 0], // gotowane: masa ok. bez zmian
+    pierogi: [0, 0], makaron: [0, 0], leniwe: [0, 0], kopytka: [0, 0], kluski_slaskie: [0, 0], gnocchi: [0, 0], pyzy: [0, 0], kluski_lane: [0, 0], quiche: [0.1, 0], // gotowane: masa ok. bez zmian
     tortilla: [0.1, 0], oponki: [0.08, 0.12], faworki: [0.1, 0.2], tempura: [0.1, 0.15], racuchy: [0.1, 0.1],
     nalesniki: [0.15, 0.02], pancakes: [0.12, 0.02], gofry: [0.15, 0],
     pierniczki: [0.1, 0], kruche_ciastka: [0.1, 0], cookies: [0.1, 0], tarta: [0.1, 0], szarlotka: [0.1, 0],
@@ -73,7 +73,7 @@
   function cookChange(bake) {
     if (bake.family === "pastry") return PASTRY_COOK[bake.id] || [0.1, 0];
     if (bake.id === "paczki" || bake.id === "langosz") return [0.05, 0.1];
-    if (bake.id === "naan") return [0.1, 0];
+    if (bake.id === "naan" || bake.id === "english_muffin") return [0.1, 0];
     return bake.unitWeight >= 300 ? [0.12, 0] : [0.15, 0];
   }
 

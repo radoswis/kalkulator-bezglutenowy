@@ -274,9 +274,9 @@ $("bake").onchange=()=>{lastBake=$("bake").value;src="ideal";setDefaults();calc(
 const SIMILAR={focaccia:[85],pizza_blacha:[85],pizza_patelnia:[85],langosz:[85],naan:[80],pita:[75,"kieszeń w środku tworzy się słabiej"],
  pizza_neapol:[65,"brzeg nie będzie tak sprężysty i dziurawy jak pszenny"],chleb_tostowy:[85],chleb_gryczany:[80],chleb_jasny:[75,"miąższ drobniejszy, mniej sprężysty"],
  ciabatta:[65,"mniejsze dziury, skórka mniej chrupiąca"],bagietka:[60,"skórka i duże dziury wymagają glutenu – będzie bliżej bułki niż bagietki"],
- grissini:[85],hamburger:[82],subway:[78],kajzerki:[65,"nacięcia się rozlewają, skórka mniej chrupiąca"],precle:[62,"mniej „gryzu”; kąpiel w sodzie pomaga"],bajgle:[60,"brak gumowatego „gryzu” pszennego bajgla"],
+ grissini:[85],hamburger:[82],subway:[78],english_muffin:[85,"środek mniej dziurawy, ale po opieczeniu w tosterze bardzo podobne"],brioche:[78,"miąższ mniej włóknisty i puszysty"],placek_kruszonka:[85],kajzerki:[65,"nacięcia się rozlewają, skórka mniej chrupiąca"],precle:[62,"mniej „gryzu”; kąpiel w sodzie pomaga"],bajgle:[60,"brak gumowatego „gryzu” pszennego bajgla"],
  babka:[85],buleczki_maslane:[82],paszteciki:[82],paczki:[82],drozdzowki:[80],cynamonki:[80],pierogi_drozdzowe:[80],calzone:[75,"brzeg mniej elastyczny, łatwiej pęka przy zawijaniu"],chalka:[72,"plecionka pęka, miąższ nie jest włóknisty"],
- kluski_slaskie:[97],kopytka:[92],leniwe:[92],gnocchi:[90],oponki:[88],pierogi:[75,"ciasto mniej elastyczne – zlepiaj od razu, nie przesuszaj"],tortilla:[75,"mniej giętka na zimno – zawijaj na ciepło"],makaron:[70,"mniej sprężysty, gotuj krócej"],
+ kluski_slaskie:[97],pyzy:[97],kluski_lane:[95],quiche:[92],kopytka:[92],leniwe:[92],gnocchi:[90],oponki:[88],pierogi:[75,"ciasto mniej elastyczne – zlepiaj od razu, nie przesuszaj"],tortilla:[75,"mniej giętka na zimno – zawijaj na ciepło"],makaron:[70,"mniej sprężysty, gotuj krócej"],
  cookies:[95],pierniczki:[92],kruche_ciastka:[92],tarta:[92],szarlotka:[92],faworki:[78,"trudniej o cienkie płaty z pęcherzykami"],
  sernik:[98],lava_cake:[97],brownie:[97],babka_piaskowa:[95],marchewkowe:[95],muffinki:[93],banana_bread:[93],biszkopt:[92],parzone:[82,"ptysie rosną trochę słabiej"],
  tempura:[95,"często chrupie lepiej niż pszenna"],pancakes:[93],gofry:[93],nalesniki:[90],racuchy:[85]};
@@ -319,8 +319,9 @@ function calc(){
   cold?"Przykryj formę szczelnie folią i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie urośnie.":"Przykryj ściereczką i zostaw w formie w ciepłym miejscu na 45–60 minut, aż wyraźnie urośnie.",
   `Na koniec: ${b.bakeNote}.`]
  :[s1,s2,
-  `Od razu, bez wyrastania w misce, ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
+  b.shapeStep?b.shapeStep({pcs,pw}):`Od razu, bez wyrastania w misce, ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
   cold?"Przykryj szczelnie folią, żeby nie obeschły, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie się napuszą.":"Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na 45–60 minut, aż wyraźnie się napuszą.",
+  ...(b.preBake?[b.preBake]:[]),
   `Na koniec: ${b.bakeNote}.`];
  cur={title:b.name,steps,lines:r.lines};
  const tip=pour?"":`<div class="note">Ciasto bezglutenowe rośnie tylko raz. Jeśli wyrośnie w misce, a potem je ugnieciesz, już się nie podniesie, dlatego formujemy od razu.</div>`;

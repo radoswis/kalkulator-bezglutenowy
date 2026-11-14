@@ -79,6 +79,7 @@
     quark:         { label: "Twaróg (zmielony)" },
     cheesecakeQuark: { label: "Twaróg sernikowy (zmielony)" },
     potatoes:      { label: "Ugotowane ziemniaki (przeciśnięte, zimne)" },
+    rawPotatoes:   { label: "Surowe ziemniaki (starte i mocno odciśnięte)" },
     darkChocolate: { label: "Czekolada gorzka 64–70%" },
     chocolateChips:{ label: "Czekolada posiekana lub kropelki" },
     banana:        { label: "Dojrzałe banany (rozgniecione)" },
@@ -398,6 +399,40 @@
         "Piecz 55–65 minut. Po 30 minutach przykryj wierzch folią.",
         "Studź 15 minut w formie, potem wyjmij na kratkę."
       ] },
+    // Pyzy (kartacze bez farszu lub z mięsem): surowe + gotowane ziemniaki, skrobia. Źródło: tradycyjna receptura (ok. 2:1 surowe:gotowane, 1–2 łyżki skrobi na 1 kg).
+    { id: "pyzy", name: "Pyzy ziemniaczane (też z mięsem)", category: "Pierogi, kluski i makarony (bez drożdży)", rheologyClass: "RHEO_CURD_POTATO_DUMPLINGS",
+      basis: "total", flourPct: 10, components: [["rawPotatoes", 56], ["potatoes", 30], ["eggs", 3], ["salt", 1]], target: { starch: [95, 100], protein: [0, 1], fiber: [0, 1] }, prefer: { szi: 1 },
+      unitWeight: 200, defaultCount: 4, unit: "porcja", bakeNote: "gotowanie 15–20 min na małym ogniu",
+      steps: c => [
+        `Ugotuj część ziemniaków, przeciśnij przez praskę i wystudź. Potrzebujesz ${c.g("potatoes")}.`,
+        `Surowe ziemniaki zetrzyj na najdrobniejszych oczkach i mocno odciśnij w gazie lub ściereczce. Potrzebujesz ${c.g("rawPotatoes")}. Odciśnięty sok zostaw na 5 minut, wylej wodę, a białą skrobię z dna dodaj do ciasta.`,
+        `Połącz oba rodzaje ziemniaków, skrobię (${c.flour}), jajko (${c.g("eggs")}) i sól. Wyrób gładkie ciasto.`,
+        `Mokrymi dłońmi formuj kulki wielkości śliwki. W wersji z mięsem spłaszcz kulkę, nałóż łyżeczkę mięsnego farszu i zlep. Wyjdzie ok. ${Math.round(c.pcs * 200 / 55)} pyz.`,
+        "Wkładaj do osolonego wrzątku, delikatnie zamieszaj, żeby nie przywarły. Gotuj na małym ogniu 15–20 minut od wypłynięcia. Podawaj ze skwarkami lub sosem."
+      ] },
+    // Kluski lane do rosołu. Źródło: tradycyjna receptura (2 jajka : 3–4 łyżki mąki).
+    { id: "kluski_lane", name: "Kluski lane (do zupy)", category: "Pierogi, kluski i makarony (bez drożdży)", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["eggs", 160], ["milkOrWater", 25], ["salt", 1.5]],
+      unitWeight: 60, defaultCount: 4, unit: "porcja", bakeNote: "gotowanie 1–2 min w zupie",
+      steps: c => [
+        `Jajka (${c.g("eggs")}) roztrzep widelcem z solą i mlekiem lub wodą.`,
+        `Wsyp mąki (${c.flour}) i mieszaj, aż ciasto będzie gładkie i gęste jak gęsta śmietana. Odstaw na 5 minut.`,
+        "Doprowadź zupę lub osoloną wodę do wrzenia.",
+        "Wlewaj ciasto cienką strużką z łyżki lub z kubka, przesuwając nad całym garnkiem. Nie mieszaj od razu, poczekaj aż się zetnie.",
+        "Gotuj 1–2 minuty, aż kluski wypłyną. Podawaj od razu."
+      ] },
+    // Tarta wytrawna (quiche). Spód kruchy bez cukru + masa jajeczno-śmietankowa. Źródło: klasyczna quiche lorraine (pâte brisée, 3 jajka : 250 ml śmietanki).
+    { id: "quiche", name: "Tarta wytrawna (quiche)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["coldButter", 52], ["eggs", 16], ["coldWater", 12], ["salt", 1.5]],
+      unitWeight: 520, defaultCount: 1, unit: "forma 26 cm", bakeNote: "190°C 15 min z obciążeniem + 5 min, potem z nadzieniem 175°C 30–35 min",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}) i sól. Dodaj zimne masło (${c.g("coldButter")}) w kostce i posiekaj nożem na kruszonkę.`,
+        `Dodaj jajko (${c.g("eggs")}) i zimną wodę. Szybko zagnieć, owiń folią i schłódź 30 minut.`,
+        "Rozwałkuj na 3–4 mm między dwoma arkuszami papieru i wyłóż formę 26 cm. Nakłuj spód widelcem i schłódź 15 minut.",
+        "Wyłóż spód papierem, obciąż suchą fasolą lub ryżem i piecz w 190°C 15 minut. Zdejmij obciążenie i piecz jeszcze 5 minut.",
+        "Nadzienie: 3 jajka roztrzep z 250 ml śmietanki 30%, solą, pieprzem i gałką. Na spód połóż 150 g podsmażonego boczku lub szpinaku i 100 g startego sera, zalej masą jajeczną.",
+        "Piecz w 175°C 30–35 minut, aż masa w środku przestanie się trząść. Odczekaj 10 minut przed krojeniem."
+      ] },
     { id: "marchewkowe", masked: true, name: "Ciasto marchewkowe (carrot cake)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
       basis: "flour", components: [["carrot", 110], ["oil", 50], ["eggs", 55], ["sugar", 55], ["bakingSoda", 1.2], ["bakingPowder", 1.8], ["spice", 2.5]],
       unitWeight: 900, defaultCount: 1, unit: "forma 24 cm", bakeNote: "175°C, 40–50 min", sweet: true, prefer: { mig: 0.15 },
@@ -433,8 +468,8 @@
   const YEAST_CATEGORY = {
     pizza_neapol: 0, pizza_blacha: 0, pizza_patelnia: 0, focaccia: 0, pita: 0, naan: 0, langosz: 0,
     chleb_jasny: 1, chleb_gryczany: 1, chleb_tostowy: 1, ciabatta: 1, bagietka: 1,
-    hamburger: 2, subway: 2, kajzerki: 2, bajgle: 2, precle: 2, grissini: 2,
-    calzone: 3, paszteciki: 3, pierogi_drozdzowe: 3, chalka: 3, babka: 3, drozdzowki: 3, cynamonki: 3, buleczki_maslane: 3, paczki: 3
+    hamburger: 2, subway: 2, kajzerki: 2, english_muffin: 2, brioche: 2, bajgle: 2, precle: 2, grissini: 2,
+    calzone: 3, paszteciki: 3, pierogi_drozdzowe: 3, chalka: 3, babka: 3, drozdzowki: 3, cynamonki: 3, buleczki_maslane: 3, paczki: 3, placek_kruszonka: 3
   };
   for (const b of BAKES) { b.category = CATEGORIES[YEAST_CATEGORY[b.id] ?? 3]; b.family = "yeast"; }
   for (const b of PASTRY_BAKES) b.family = "pastry";

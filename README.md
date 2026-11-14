@@ -1,6 +1,6 @@
 # Kalkulator ciast bezglutenowych
 
-Liczy proporcje 55 bezglutenowych przepisów: ciasta drożdżowe, pierogi i kluski, naleśniki i panierki, kruche, biszkopty i desery. Sam dobiera mieszankę z mąk, które masz w spiżarni, i podaje instrukcję krok po kroku.
+Liczy proporcje 61 bezglutenowych przepisów: ciasta drożdżowe, pierogi i kluski, naleśniki i panierki, kruche, biszkopty i desery. Sam dobiera mieszankę z mąk, które masz w spiżarni, i podaje instrukcję krok po kroku.
 
 Pliki: `index.html` (interfejs), `engine.js` (silnik drożdżowy), `pastry.js` (wyroby bezdrożdżowe).
 
