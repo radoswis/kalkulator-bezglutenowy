@@ -66,7 +66,7 @@
     pierogi: [0, 0], makaron: [0, 0], leniwe: [0, 0], kopytka: [0, 0], kluski_slaskie: [0, 0], gnocchi: [0, 0], pyzy: [0, 0], kluski_lane: [0, 0], quiche: [0.1, 0], // gotowane: masa ok. bez zmian
     tortilla: [0.1, 0], oponki: [0.08, 0.12], faworki: [0.1, 0.2], tempura: [0.1, 0.15], racuchy: [0.1, 0.1],
     nalesniki: [0.15, 0.02], pancakes: [0.12, 0.02], gofry: [0.15, 0],
-    pierniczki: [0.1, 0], kruche_ciastka: [0.1, 0], cookies: [0.1, 0], tarta: [0.1, 0], szarlotka: [0.1, 0],
+    pierniczki: [0.1, 0], kruche_ciastka: [0.1, 0], cookies: [0.1, 0], biscoff: [0.1, 0], tarta: [0.1, 0], szarlotka: [0.1, 0],
     biszkopt: [0.1, 0], lava_cake: [0.05, 0], brownie: [0.08, 0], sernik: [0.1, 0],
     muffinki: [0.1, 0], babka_piaskowa: [0.1, 0], banana_bread: [0.12, 0], marchewkowe: [0.1, 0], parzone: [0.25, 0]
   };

@@ -232,6 +232,19 @@
         `Formuj ${c.pcs} kul po ok. ${c.pw} g i układaj co 6 cm na blasze z papierem.`,
         "Piecz w 180°C 10–12 minut. Środek ma zostać miękki, stężeje podczas studzenia."
       ] },
+    // Biscoff (speculoos) – proporcje wg typowych receptur domowych speculoos: masło ~50%, cukier brązowy ~65%, cynamon ~2,5% od mąki, soda.
+    { id: "biscoff", masked: true, name: "Ciastka karmelowe w stylu Biscoff (speculoos)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["softButter", 50], ["brownSugar", 65], ["milk", 12], ["cinnamon", 2.5], ["bakingSoda", 1.0], ["salt", 0.6]],
+      unitWeight: 8, defaultCount: 70, unit: "ciastko", bakeNote: "175°C, 12–14 min", sweet: true,
+      steps: c => [
+        `Miękkie masło (${c.g("softButter")}) utrzyj z cukrem (${c.g("brownSugar")}) przez 2–3 minuty. Im ciemniejszy cukier (np. muscovado), tym bardziej karmelowy smak jak w oryginale. Możesz też zamienić 1 łyżkę cukru na ciemny syrop lub melasę.`,
+        `Dodaj mleko (${c.g("milk")}) i wymieszaj.`,
+        `Mąki (${c.flour}) wymieszaj z cynamonem (${c.g("cinnamon")}), sodą i solą. Wsyp do masy i zagnieć gładkie ciasto.`,
+        "Owiń folią i schłódź w lodówce co najmniej 1 godzinę. Po nocy w lodówce smak jest pełniejszy.",
+        `Rozwałkuj między dwoma arkuszami papieru na grubość ok. 3 mm. Wykrawaj prostokąty ok. 4 × 6 cm (wyjdzie ok. ${c.pcs} sztuk) i ułóż na blasze z papierem. Ponakłuwaj widelcem albo odciśnij wzór.`,
+        "Piecz w 175°C 12–14 minut, aż brzegi będą ciemnozłote. Studź na kratce. Chrupiące stają się dopiero po ostygnięciu. Przechowuj w szczelnej puszce.",
+        "Krem jak Biscoff (opcjonalnie): 200 g ciastek zmiel na pył, zblenduj ze 100 g mleka skondensowanego słodzonego i 2 łyżkami oleju na gładką masę."
+      ] },
     { id: "faworki", name: "Chruściki (faworki)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
       basis: "flour", components: [["yolks", 28], ["sourCream", 38], ["meltedButter", 8], ["powderedSugar", 5], ["vinegarOrSpirit", 4], ["bakingPowder", 0.5], ["salt", 0.5]],
       unitWeight: 15, defaultCount: 40, unit: "faworek", bakeNote: "smażenie w 175°C, kilka sekund z każdej strony", sweet: true,
