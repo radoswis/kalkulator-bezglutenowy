@@ -504,6 +504,7 @@
       // tapioka daje gumowatość: w cukiernictwie preferuj skrobię ziemniaczaną/kukurydzianą, chyba że przepis chce tapioki
       if (ing.id === "tap" && cls.solverMode === "PASTRY_STARCH_MODE" && !(b.prefer && b.prefer.tap)) c += 0.5 * x;
     }
+    c += G.textureCost(blend, b);
     // odległość od zakresu celu (0 w środku zakresu) + słabe przyciąganie do środka
     const d = (x, r) => (x < r[0] ? r[0] - x : x > r[1] ? x - r[1] : 0);
     c += (d(P, t.protein) / 1.0) ** 2 + (d(S, t.starch) / 3) ** 2 + (d(F, t.fiber) / 1.0) ** 2
@@ -641,7 +642,7 @@
     const used = new Set(blend.map(([i]) => i.id));
     return {
       bake, cls, empty: false, family: "pastry", taste: G.tasteOf(blend, bake),
-      blend: blend.map(([ingredient, share]) => ({ ingredient, share })),
+      blend: blend.map(([ingredient, share]) => ({ ingredient, share })), textureMatch: G.textureMatch(blend, bake),
       profile: { protein: P, fiber: F, starch: st, target: t },
       lines, total, steps, tip: bake.tip,
       unused: pantryFlours.filter(i => !used.has(i.id)),

@@ -311,6 +311,52 @@
     return { score, text, level: score < 0.12 ? 0 : score < 0.25 ? 1 : score < 0.4 ? 2 : 3 };
   }
 
+  // ---------- Tekstura: co dana mąka/skrobia robi z miąższem (0–1) ----------
+  // chew = ciągliwość, „gryz” (tapioka, ryż kleisty); soft = miękkość, puszystość (skrobia ziemniaczana, owsiana);
+  // short = kruchość, rozsypywanie (kukurydziana, migdałowa); grit = piasek w zębach (gruba mąka ryżowa, kukurydziana).
+  // Źródło: literatura o funkcjonalności skrobi i mąk BG (amyloza/amylopektyna, kleikowanie, granulacja) – SZACUNEK do kalibracji.
+  const TEXTURE = {
+    tap: [0.9, 0.4, 0.1, 0], szi: [0.3, 0.9, 0.4, 0], skk: [0.1, 0.5, 0.9, 0], ryzklei: [0.9, 0.5, 0.1, 0.1],
+    ryz: [0.2, 0.3, 0.6, 0.5], ryzb: [0.2, 0.2, 0.6, 0.6], gry: [0.3, 0.4, 0.4, 0.2], kuk: [0.1, 0.3, 0.8, 0.5],
+    jag: [0.2, 0.4, 0.6, 0.3], ows: [0.3, 0.7, 0.4, 0.1], cie: [0.3, 0.5, 0.5, 0.1], ama: [0.3, 0.4, 0.4, 0.2],
+    sor: [0.3, 0.5, 0.5, 0.2], tef: [0.4, 0.4, 0.4, 0.2], mig: [0.1, 0.6, 0.9, 0.2], kok: [0.1, 0.5, 0.6, 0.3],
+    kasztan: [0.2, 0.6, 0.5, 0.1], dynia: [0.2, 0.3, 0.5, 0.3],
+    mixb: [0.6, 0.7, 0.3, 0], mixit: [0.5, 0.7, 0.4, 0], mixc: [0.2, 0.8, 0.6, 0], scharmehl: [0.5, 0.7, 0.4, 0],
+    bzbread: [0.6, 0.6, 0.3, 0.1], bzmulti: [0.4, 0.6, 0.5, 0.1], bzekstra: [0.4, 0.6, 0.5, 0.1], bznalesn: [0.4, 0.6, 0.4, 0.1],
+    granouni: [0.4, 0.6, 0.5, 0.2], ocelio: [0.4, 0.5, 0.4, 0.2], fbaprot: [0.3, 0.5, 0.4, 0.2]
+  };
+  const TEXTURE_ROLE = { commercial_base: [0.4, 0.6, 0.4, 0.1], pure_starch: [0.3, 0.6, 0.5, 0], wholegrain_structure: [0.2, 0.4, 0.5, 0.3], high_protein: [0.3, 0.4, 0.5, 0.2] };
+  // Cel = tekstura pszennego odpowiednika [chew, soft, short]; przepis może nadpisać polem `texture`.
+  const TEX_TARGET = {
+    RHEO_POURABLE_HIGH_HYDRATION: [0.45, 0.7, 0.3], RHEO_FREE_STANDING_LOAF: [0.5, 0.55, 0.3], RHEO_TENSILE_SHAPED: [0.5, 0.6, 0.3],
+    RHEO_LAMINATED_ROLLED_STUFFED: [0.5, 0.6, 0.35], RHEO_STIFF_EXTRUDED_BOILED: [0.65, 0.45, 0.3], RHEO_ENRICHED_BRIOCHE_FRIED: [0.4, 0.85, 0.35],
+    RHEO_SCALDED_BOILED_DOUGH: [0.7, 0.5, 0.2], RHEO_CURD_POTATO_DUMPLINGS: [0.4, 0.8, 0.3], RHEO_SHORTCRUST_COOKIE_CRISP: [0.15, 0.45, 0.75],
+    RHEO_FOAM_EMULSION_CAKE: [0.15, 0.9, 0.5], RHEO_BATTER_COATING_SUSPENSION: [0.35, 0.6, 0.5], RHEO_CHEM_LEAVENED_MUFFIN_CHOUX: [0.2, 0.85, 0.5]
+  };
+  const texOf = ing => TEXTURE[ing.id] || TEXTURE_ROLE[ing.role] || [0.3, 0.5, 0.5, 0.2];
+  /** Tekstura mieszanki (średnia ważona). @param {Blend} blend */
+  function textureOf(blend) {
+    const t = [0, 0, 0, 0];
+    for (const [ing, x] of blend) texOf(ing).forEach((v, k) => { t[k] += x * v; });
+    return { chew: t[0], soft: t[1], short: t[2], grit: t[3] };
+  }
+  /** Koszt odległości tekstury mieszanki od pszennego wzorca + kara za „piasek”. */
+  function textureCost(blend, bake) {
+    const T = bake.texture || TEX_TARGET[bake.rheologyClass];
+    if (!T) return 0;
+    const m = textureOf(blend);
+    // tapioka powyżej 30% mąk = ciasto gumowate (dotyczy każdego przepisu)
+    const tap = blend.reduce((a, [i, x]) => a + (i.id === "tap" ? x : 0), 0);
+    return Math.max(0, tap - 0.3) * 20 + ((m.chew - T[0]) / 0.15) ** 2 + ((m.soft - T[1]) / 0.2) ** 2 + ((m.short - T[2]) / 0.2) ** 2 + 2 * m.grit;
+  }
+  /** Dopasowanie tekstury 0–100% (100 = jak wzorzec pszenny). */
+  function textureMatch(blend, bake) {
+    const T = bake.texture || TEX_TARGET[bake.rheologyClass];
+    if (!T) return null;
+    const m = textureOf(blend), d = Math.hypot(m.chew - T[0], m.soft - T[1], m.short - T[2]) + 0.5 * m.grit;
+    return Math.max(0, Math.round(100 - d * 120));
+  }
+
   /** Funkcja kosztu solvera. @param {Blend} blend @param {RheologyClass} cls */
   function blendCost(blend, cls, tasteW = 0, bake = null) {
     const p = profileOf(blend), t = cls.target;
@@ -328,6 +374,7 @@
         + ((p.starch - mid(t.starch)) / 2) ** 2
         + ((p.fiber - mid(t.fiber)) / 0.5) ** 2;
     }
+    if (bake) c += textureCost(blend, bake);
     for (const [ing, x] of blend) {
       if (x <= 1e-9) continue;
       c += 0.15; // prostota: każda kolejna mąka kosztuje
@@ -518,7 +565,7 @@
     const used = new Set(sol.blend.map(([i]) => i.id));
     return {
       bake, cls, empty: false, mode: sol.mode, taste: tasteOf(sol.blend, bake), coldProof,
-      blend: sol.blend.map(([ingredient, share]) => ({ ingredient, share })),
+      blend: sol.blend.map(([ingredient, share]) => ({ ingredient, share })), textureMatch: textureMatch(sol.blend, bake),
       profile: { protein: prof.protein, fiber: prof.fiber, starch: prof.starch, wacMix: prof.wac, target: cls.target },
       hydration: { base: hBase, deltaWAC: dWAC, deltaFat: dFat, deltaSugar: dSugar, deltaUser: dUser, effective: hEff },
       yeast: { dryEffective: yeastEff, freshPct: yeastEff * FRESH_PER_DRY, dryGrams: rg(flour * yeastEff / 100) },
@@ -548,7 +595,7 @@
     return out;
   }
 
-  const GFEngine = { flavorOf, tasteOf, tasteWeight, ovenPlan, INGREDIENT_MATRIX, RHEOLOGY_CLASSES, BAKES, solveFlourBlend, calculateLaboratoryFormulation, validateDefaultBatches, defaultDough, profileOf };
+  const GFEngine = { textureOf, textureCost, textureMatch, flavorOf, tasteOf, tasteWeight, ovenPlan, INGREDIENT_MATRIX, RHEOLOGY_CLASSES, BAKES, solveFlourBlend, calculateLaboratoryFormulation, validateDefaultBatches, defaultDough, profileOf };
   if (typeof module !== "undefined" && module.exports) module.exports = GFEngine;
   global.GFEngine = GFEngine;
 })(typeof window !== "undefined" ? window : globalThis);

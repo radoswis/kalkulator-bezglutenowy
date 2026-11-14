@@ -271,11 +271,11 @@ $("bake").onchange=()=>{lastBake=$("bake").value;src="ideal";setDefaults();calc(
 
 // Podobieństwo do wersji pszennej (smak, konsystencja, odczucie w ustach) – SZACUNEK eksperta z 13.11.2026,
 // dla świeżego wypieku w dniu pieczenia (mieszanki Schär + psyllium). Do poprawy po ocenach „Jak wyszło?”.
-const SIMILAR={focaccia:[85],pizza_blacha:[85],pizza_patelnia:[85],langosz:[85],naan:[80],pita:[75,"kieszeń w środku tworzy się słabiej"],
- pizza_neapol:[65,"brzeg nie będzie tak sprężysty i dziurawy jak pszenny"],chleb_tostowy:[85],chleb_gryczany:[80],chleb_jasny:[75,"miąższ drobniejszy, mniej sprężysty"],
+const SIMILAR={focaccia:[85],pizza_blacha:[85],pizza_patelnia:[85],langosz:[88],naan:[83],pita:[75,"kieszeń w środku tworzy się słabiej"],
+ pizza_neapol:[65,"brzeg nie będzie tak sprężysty i dziurawy jak pszenny"],chleb_tostowy:[88],chleb_gryczany:[80],chleb_jasny:[75,"miąższ drobniejszy, mniej sprężysty"],
  ciabatta:[65,"mniejsze dziury, skórka mniej chrupiąca"],bagietka:[60,"skórka i duże dziury wymagają glutenu – będzie bliżej bułki niż bagietki"],
- grissini:[85],hamburger:[82],subway:[78],english_muffin:[85,"środek mniej dziurawy, ale po opieczeniu w tosterze bardzo podobne"],brioche:[78,"miąższ mniej włóknisty i puszysty"],placek_kruszonka:[85],kajzerki:[65,"nacięcia się rozlewają, skórka mniej chrupiąca"],precle:[62,"mniej „gryzu”; kąpiel w sodzie pomaga"],bajgle:[60,"brak gumowatego „gryzu” pszennego bajgla"],
- babka:[85],buleczki_maslane:[82],paszteciki:[82],paczki:[82],drozdzowki:[80],cynamonki:[80],pierogi_drozdzowe:[80],calzone:[75,"brzeg mniej elastyczny, łatwiej pęka przy zawijaniu"],chalka:[72,"plecionka pęka, miąższ nie jest włóknisty"],
+ grissini:[85],hamburger:[85],subway:[81],english_muffin:[88,"środek mniej dziurawy, ale po opieczeniu w tosterze bardzo podobne"],brioche:[81,"miąższ mniej włóknisty i puszysty"],placek_kruszonka:[88],kajzerki:[68,"nacięcia się rozlewają, skórka mniej chrupiąca"],precle:[62,"mniej „gryzu”; kąpiel w sodzie pomaga"],bajgle:[60,"brak gumowatego „gryzu” pszennego bajgla"],
+ babka:[88],buleczki_maslane:[85],paszteciki:[85],paczki:[85],drozdzowki:[83],cynamonki:[83],pierogi_drozdzowe:[83],calzone:[78,"brzeg mniej elastyczny, łatwiej pęka przy zawijaniu"],chalka:[75,"plecionka pęka, miąższ nie jest włóknisty"],
  kluski_slaskie:[97],pyzy:[97],kluski_lane:[95],quiche:[92],kopytka:[92],leniwe:[92],gnocchi:[90],oponki:[88],pierogi:[75,"ciasto mniej elastyczne – zlepiaj od razu, nie przesuszaj"],tortilla:[75,"mniej giętka na zimno – zawijaj na ciepło"],makaron:[70,"mniej sprężysty, gotuj krócej"],
  cookies:[95],pierniczki:[92],kruche_ciastka:[92],tarta:[92],szarlotka:[92],faworki:[78,"trudniej o cienkie płaty z pęcherzykami"],
  sernik:[98],lava_cake:[97],brownie:[97],babka_piaskowa:[95],marchewkowe:[95],muffinki:[93],banana_bread:[93],biszkopt:[92],parzone:[82,"ptysie rosną trochę słabiej"],
@@ -308,18 +308,25 @@ function calc(){
  const cl=b.rheologyClass,pour=cl==="RHEO_POURABLE_HIGH_HYDRATION";
  const pcs=mode==="pcs"?+$("count").value:Math.max(1,Math.round(D/b.unitWeight)),pw=mode==="pcs"?+$("portion").value:Math.round(D/pcs);
  const cold=prefs.proof==="cold",wTxt=cold?"letniej wody (w temperaturze pokojowej)":"ciepłej wody (ciepłej jak do kąpieli, nie gorącej)";
- const s1=hasPsy?`Do dużej miski wlej ${water} g ${wTxt}. Rozkrusz w niej drożdże i wymieszaj, aż się rozpuszczą. Wsyp psyllium i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${water} g ${wTxt} i rozkrusz w niej drożdże${hasXan?", potem wmieszaj gumę ksantanową":""}.`;
- const s2=`Dodaj mąki, sól${b.sugar?", cukier":""}${b.fat?(b.sweet?", roztopione masło":", oliwę"):""}${hasEggs?" i roztrzepane jajka":""}. Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż zwykłe i tak ma być.`
-  +((cl==="RHEO_LAMINATED_ROLLED_STUFFED"||cl==="RHEO_ENRICHED_BRIOCHE_FRIED")?" Potem odstaw ciasto na 10–15 minut, żeby dobrze związało wodę. Wtedy łatwiej się wałkuje.":"");
+ // Zaparzka (tangzhong): 5% mąk + 5× tyle wody, zagotowane do budyniu – miększy miąższ, wolniejsze czerstwienie.
+ // Bierzemy ją z odważonych mąk i wody, więc bilans przepisu się nie zmienia.
+ const tzOn=(["RHEO_TENSILE_SHAPED","RHEO_LAMINATED_ROLLED_STUFFED","RHEO_ENRICHED_BRIOCHE_FRIED"].includes(b.rheologyClass)&&!["pizza_neapol","pita"].includes(b.id))||b.id==="chleb_tostowy";
+ const fl=r.lines.filter(l=>l.sub).sort((a,c)=>c.grams-a.grams)[0],flT=r.lines.find(l=>l.key==="flour").grams;
+ const tzF=tzOn&&fl?Math.round(flT*0.05):0,tzW=tzF*5,tz=tzF>=5&&water-tzW>=40;
+ const wMain=tz?Math.round((water-tzW)*10)/10:water;
+ const s0=tz?`Najpierw zaparzka (dzięki niej miąższ jest miększy i dłużej świeży): z odważonej porcji „${fl.label.replace(/^\s*[–-]\s*/,"")}” odsyp ${tzF} g, a z wody do dolania odlej ${tzW} g. Wymieszaj w rondelku na gładko i podgrzewaj na małym ogniu, cały czas mieszając, 1–2 minuty, aż zgęstnieje jak budyń. Przełóż do miski i ostudź do letniej (ok. 10 minut).`:"";
+ const s1=hasPsy?`Do dużej miski wlej ${wMain} g ${wTxt}. Rozkrusz w niej drożdże i wymieszaj, aż się rozpuszczą. Wsyp psyllium i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${wMain} g ${wTxt} i rozkrusz w niej drożdże${hasXan?", potem wmieszaj gumę ksantanową":""}.`;
+ const s2=`Dodaj ${tz?"zaparzkę, ":""}mąki${tz?" (bez odsypanej porcji)":""}, sól${b.sugar?", cukier":""}${b.fat?(b.sweet?", roztopione masło":", oliwę"):""}${hasEggs?" i roztrzepane jajka":""}. Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż zwykłe i tak ma być.`
+  +(pour?"":" Przykryj miskę i odstaw ciasto na 15–20 minut, żeby psyllium i mąki dobrze związały wodę (to nie jest wyrastanie). Potem ciasto mniej się klei, lepiej formuje i nie pęka.");
  const shape={RHEO_FREE_STANDING_LOAF:`uformuj ${pcs>1?`${pcs} szt. po około ${pw} g`:"bochenek"}`,RHEO_TENSILE_SHAPED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
   RHEO_LAMINATED_ROLLED_STUFFED:`podziel na ${pcs} kawałków po około ${pw} g, rozwałkuj, nałóż farsz i zlep lub zwiń`,RHEO_STIFF_EXTRUDED_BOILED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
   RHEO_ENRICHED_BRIOCHE_FRIED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`}[cl];
- const steps=pour?[s1,s2,
+ const steps=pour?[...(s0?[s0]:[]),s1,s2,
   "Od razu przełóż ciasto do naoliwionej formy lub na blachę i rozprowadź mokrymi dłońmi.",
   cold?"Przykryj formę szczelnie folią i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie urośnie.":"Przykryj ściereczką i zostaw w formie w ciepłym miejscu na 45–60 minut, aż wyraźnie urośnie.",
   `Na koniec: ${b.bakeNote}.`]
- :[s1,s2,
-  b.shapeStep?b.shapeStep({pcs,pw}):`Od razu, bez wyrastania w misce, ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
+ :[...(s0?[s0]:[]),s1,s2,
+  b.shapeStep?b.shapeStep({pcs,pw}):`Bez wyrastania w misce ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
   cold?"Przykryj szczelnie folią, żeby nie obeschły, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie się napuszą.":"Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na 45–60 minut, aż wyraźnie się napuszą.",
   ...(b.preBake?[b.preBake]:[]),
   `Na koniec: ${b.bakeNote}.`];
