@@ -208,7 +208,7 @@ const {INGREDIENT_MATRIX:ING,RHEOLOGY_CLASSES:CLS,ALL_BAKES,CATEGORIES,calculate
 const BAKES=ALL_BAKES,defaultDough=b=>b.unitWeight*b.defaultCount;
 const $=id=>document.getElementById(id);
 // Stan domu: spiżarnia, własne mąki, kalibracje. Lokalnie od razu, potem wspólnie przez serwer (/api/state).
-let custom=[],sel=new Set(["ryz","szi","tap","mixb","psy"]),calib={},prefs={taste:"wheat",proof:"warm"},syncMode="local";
+let custom=[],sel=new Set(["ryz","szi","tap","mixb","psy"]),calib={},prefs={taste:"wheat",proof:"warm",psyForm:"husk",rise2:false},syncMode="local";
 try{const st=JSON.parse(localStorage.getItem("gf_state_v2")||"null");
  if(st){custom=st.custom||[];sel=new Set(st.pantry||[]);calib=st.calib||{};prefs=Object.assign(prefs,st.prefs||{})}
  else{custom=JSON.parse(localStorage.getItem("gf_custom_v1")||"[]");const s=JSON.parse(localStorage.getItem("gf_pantry_v1")||"null");if(s)sel=new Set(s)}}catch(e){}
@@ -273,6 +273,8 @@ document.addEventListener("click",e=>{const fq=e.target.closest("[data-fbq]");
  const sb=e.target.closest("[data-src]");if(sb){src=sb.dataset.src;calc();return}
  const tb=e.target.closest("[data-taste]");if(tb){prefs.taste=tb.dataset.taste;save();calc();return}
  const pb=e.target.closest("[data-proof]");if(pb){prefs.proof=pb.dataset.proof;save();calc();return}
+ const pf=e.target.closest("[data-psyform]");if(pf){prefs.psyForm=pf.dataset.psyform;save();calc();return}
+ const r2=e.target.closest("[data-rise2]");if(r2){prefs.rise2=r2.dataset.rise2==="1";save();calc();return}
  const a=e.target.closest("[data-add]");if(a){a.dataset.add.split(",").forEach(id=>sel.add(id));save();renderPantry();calc();return}const c=e.target.closest(".chip");if(!c)return;src="pantry";const id=c.dataset.id;sel.has(id)?sel.delete(id):sel.add(id);c.setAttribute("aria-pressed",sel.has(id));save();calc()});
 
 function setDefaults(){const b=BAKES.find(x=>x.id===$("bake").value);$("count").value=b.defaultCount;$("portion").value=b.unitWeight;$("grams").value=defaultDough(b)}
@@ -306,7 +308,7 @@ function calc(){syncTex();
  if(D<50){$("out").innerHTML=`<h3>${b.name}</h3><div class="warn">Podaj ilość ciasta (min. 50 g).</div>`;return}
  const best=suggestIdealBlend(bakeId,[...sel],prefs.taste);
  const ids=src==="ideal"&&best?best.ideal.map(x=>x.ingredient.id).concat(["psy"]):[...sel];
- const r=calculateRecipe({bakeId,pantryIds:ids,doughWeight:D,extraIngredients:custom,calib:cb,taste:prefs.taste,coldProof:b.family==="yeast"&&prefs.proof==="cold"});
+ const r=calculateRecipe({bakeId,pantryIds:ids,doughWeight:D,extraIngredients:custom,calib:cb,taste:prefs.taste,coldProof:b.family==="yeast"&&prefs.proof==="cold",psyForm:prefs.psyForm||"husk"});
  if(r.empty){$("out").innerHTML=`<h3>${b.name}</h3>${srcBar()}${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}`;return}
  if(r.family==="pastry"){renderPastry(r,b,D);$("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());return}
  const h=r.hydration,p=r.profile,t=p.target,sg=x=>(x>=0?"+":"")+x.toFixed(1);
@@ -328,24 +330,27 @@ function calc(){syncTex();
  const tzF=tzOn&&fl?Math.round(flT*0.05):0,tzW=tzF*5,tz=tzF>=5&&water-tzW>=40;
  const wMain=tz?Math.round((water-tzW)*10)/10:water;
  const s0=tz?`Najpierw zaparzka (dzięki niej miąższ jest miększy i dłużej świeży): z odważonej porcji „${fl.label.replace(/^\s*[–-]\s*/,"")}” odsyp ${tzF} g, a z wody do dolania odlej ${tzW} g. Wymieszaj w rondelku na gładko i podgrzewaj na małym ogniu, cały czas mieszając, 1–2 minuty, aż zgęstnieje jak budyń. Przełóż do miski i ostudź do letniej (ok. 10 minut).`:"";
- const s1=hasPsy?`Do dużej miski wlej ${wMain} g ${wTxt}. Rozkrusz w niej drożdże i wymieszaj, aż się rozpuszczą. Wsyp psyllium i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${wMain} g ${wTxt} i rozkrusz w niej drożdże${hasXan?", potem wmieszaj gumę ksantanową":""}.`;
+ const pr=1+((calib[b.id]&&calib[b.id].proof)||0)/100,rise=`${Math.round(45*pr)}–${Math.round(60*pr)} minut`,rise2=`${Math.round(35*pr)}–${Math.round(45*pr)} minut`;
+ const two=!pour&&!cold&&prefs.rise2&&r.binderShare<0.5;
+ const s1=hasPsy?`Do dużej miski wlej ${wMain} g ${wTxt}. Rozkrusz w niej drożdże i wymieszaj, aż się rozpuszczą. Wsyp psyllium (najlepiej jasną łuskę – ciemna barwi ciasto) i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${wMain} g ${wTxt} i rozkrusz w niej drożdże${hasXan?", potem wmieszaj gumę ksantanową":""}.`;
  const s2=`Dodaj ${tz?"zaparzkę, ":""}mąki${tz?" (bez odsypanej porcji)":""}, sól${b.sugar?", cukier":""}${b.fat?(b.sweet?", roztopione masło":", oliwę"):""}${hasEggs?" i roztrzepane jajka":""}. Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż zwykłe i tak ma być.`
-  +(pour?"":" Przykryj miskę i odstaw ciasto na 15–20 minut, żeby psyllium i mąki dobrze związały wodę (to nie jest wyrastanie). Potem ciasto mniej się klei, lepiej formuje i nie pęka.");
+  +(pour?"":two?` Przykryj miskę i zostaw w ciepłym miejscu na ${rise}, aż ciasto wyraźnie urośnie (pierwsze wyrastanie). Potem wyłóż je na blat i krótko zagnieć, żeby wypuścić powietrze.`:" Przykryj miskę i odstaw ciasto na 15–20 minut, żeby psyllium i mąki dobrze związały wodę (to nie jest wyrastanie). Potem ciasto mniej się klei, lepiej formuje i nie pęka.");
  const shape={RHEO_FREE_STANDING_LOAF:`uformuj ${pcs>1?`${pcs} szt. po około ${pw} g`:"bochenek"}`,RHEO_TENSILE_SHAPED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
   RHEO_LAMINATED_ROLLED_STUFFED:`podziel na ${pcs} kawałków po około ${pw} g, rozwałkuj, nałóż farsz i zlep lub zwiń`,RHEO_STIFF_EXTRUDED_BOILED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
   RHEO_ENRICHED_BRIOCHE_FRIED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`}[cl];
- const pr=1+((calib[b.id]&&calib[b.id].proof)||0)/100,rise=`${Math.round(45*pr)}–${Math.round(60*pr)} minut`;
  const steps=pour?[...(s0?[s0]:[]),s1,s2,
   "Od razu przełóż ciasto do naoliwionej formy lub na blachę i rozprowadź mokrymi dłońmi.",
   cold?"Przykryj formę szczelnie folią i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie urośnie.":`Przykryj ściereczką i zostaw w formie w ciepłym miejscu na ${rise}, aż wyraźnie urośnie. Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać.`,
   `Na koniec: ${b.bakeNote}.`]
  :[...(s0?[s0]:[]),s1,s2,
-  b.shapeStep?b.shapeStep({pcs,pw}):`Bez wyrastania w misce ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
-  cold?"Przykryj szczelnie folią, żeby nie obeschły, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie się napuszą.":`Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na ${rise}, aż wyraźnie się napuszą.`+(/smaż|patelni/i.test(b.bakeNote)?" W tym czasie przygotuj olej lub patelnię.":" Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać."),
+  b.shapeStep?b.shapeStep({pcs,pw}):`${two?"Teraz":"Bez wyrastania w misce"} ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
+  cold?"Przykryj szczelnie folią, żeby nie obeschły, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie się napuszą.":`Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na ${two?rise2:rise}, aż wyraźnie się napuszą${two?" (drugie wyrastanie)":""}.`+(/smaż|patelni/i.test(b.bakeNote)?" W tym czasie przygotuj olej lub patelnię.":" Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać."),
   ...(b.preBake?[b.preBake]:[]),
   `Na koniec: ${b.bakeNote}.`];
+ const loaf=cl==="RHEO_FREE_STANDING_LOAF"||["chleb_tostowy","babka","chalka"].includes(b.id)||/chleb/.test(b.id);
+ if(loaf)steps.push("Wyjmij z formy i studź na kratce co najmniej 2 godziny przed krojeniem. Miąższ bezglutenowy ścina się dopiero podczas studzenia; pokrojony na ciepło będzie kleisty.");
  cur={id:b.id,title:b.name,steps,lines:r.lines,pcs};
- const tip=pour?"":`<div class="note">Ciasto bezglutenowe rośnie tylko raz. Jeśli wyrośnie w misce, a potem je ugnieciesz, już się nie podniesie, dlatego formujemy od razu.</div>`;
+ const tip=pour?"":two?`<div class="note">Wybrałeś dwa wyrastania: przy cieście z samych mąk i większej ilości psyllium ciasto zniesie odgazowanie. Jeśli po uformowaniu słabo rośnie, wróć do jednego wyrastania.</div>`:`<div class="note">Ciasto bezglutenowe rośnie tylko raz. Jeśli wyrośnie w misce, a potem je ugnieciesz, już się nie podniesie, dlatego formujemy od razu.</div>`;
  $("out").innerHTML=`<h3>${b.name}</h3>
  <div class="hyd"><div><b>${water} g</b><span>wody wlej</span></div><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div></div>
  <table>${rows}</table>
@@ -432,7 +437,9 @@ function nutrHtml(r,b,D){if(!GFEngine.nutritionOf)return "";
 
 function prefBar(){const b=BAKES.find(x=>x.id===$("bake").value),y=b&&b.family==="yeast";
  return `<div class="seg" role="group" aria-label="Smak"><button type="button" data-taste="wheat" aria-pressed="${prefs.taste==="wheat"}">Smak jak pszenny</button><button type="button" data-taste="bold" aria-pressed="${prefs.taste==="bold"}">Wyrazisty, pełnoziarnisty</button></div>
- ${y?`<div class="seg" role="group" aria-label="Wyrastanie"><button type="button" data-proof="warm" aria-pressed="${prefs.proof==="warm"}">Wyrastanie w cieple, ok. 1 h</button><button type="button" data-proof="cold" aria-pressed="${prefs.proof==="cold"}">W lodówce przez noc, lepszy smak</button></div>`:""}`}
+ ${y?`<div class="seg" role="group" aria-label="Wyrastanie"><button type="button" data-proof="warm" aria-pressed="${prefs.proof==="warm"}">Wyrastanie w cieple, ok. 1 h</button><button type="button" data-proof="cold" aria-pressed="${prefs.proof==="cold"}">W lodówce przez noc, lepszy smak</button></div>`:""}
+ ${sel.has("psy")?`<div class="seg" role="group" aria-label="Psyllium"><button type="button" data-psyform="husk" aria-pressed="${(prefs.psyForm||"husk")==="husk"}">Psyllium: cała łuska</button><button type="button" data-psyform="powder" aria-pressed="${prefs.psyForm==="powder"}">Psyllium w proszku (−15%)</button></div>`:""}
+ ${y&&b.rheologyClass!=="RHEO_POURABLE_HIGH_HYDRATION"&&prefs.proof!=="cold"?`<div class="seg" role="group" aria-label="Liczba wyrastań"><button type="button" data-rise2="0" aria-pressed="${!prefs.rise2}">Jedno wyrastanie</button><button type="button" data-rise2="1" aria-pressed="${!!prefs.rise2}">Dwa wyrastania (test, tylko z samych mąk)</button></div>`:""}`}
 function srcBar(){return `<div class="seg srcbar" role="group" aria-label="Z jakich mąk liczyć"><button type="button" data-src="ideal" aria-pressed="${src==="ideal"}">Najlepszy zestaw mąk</button><button type="button" data-src="pantry" aria-pressed="${src==="pantry"}">Z mojej spiżarni</button></div>
  ${prefBar()}
  <div class="note">${src==="ideal"?"Podgląd przepisu na najlepszych mąkach. Zaznacz w spiżarni, co masz, a przeliczę przepis na Twoje mąki.":"Przepis przeliczony na mąki z Twojej spiżarni."}</div>`}

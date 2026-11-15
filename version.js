@@ -1,6 +1,12 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.11.0", d: "15.11.2026", t: ["Wskazówki z bloga The Loopy Whisk: przy pieczywie z samych mąk (bez gotowej mieszanki ze spoiwem) psyllium 4,5–5,5% mąk i więcej wody; z Schär Mix B bez zmian.",
+    "Wybór: psyllium w całej łusce albo w proszku (proszek = 85% wagi łuski).",
+    "Guma ksantanowa w ciastach, ciastkach i muffinkach z mąk bez spoiwa (jeśli masz ją w spiżarni).",
+    "Ostrzeżenie, gdy płynu jest za mało na żel psyllium; podpowiedź o jasnej łusce; studzenie chleba min. 2 godziny przed krojeniem.",
+    "Nowa pozycja w spiżarni: domowa mieszanka uniwersalna 5:3:2 (mąka ryżowa pudrowa, skrobia ziemniaczana, mąka kukurydziana).",
+    "Opcja do testów: dwa wyrastania przy pieczywie z samych mąk."] },
   { v: "2.10.0", d: "14.11.2026", t: ["Dokładniejsze „Jak wyszło?”: 10 pytań (miąższ, konsystencja, twardość, wyrośnięcie, formowanie, kolor, upieczenie, słoność, smak mąk i piasek, następny dzień) po trzy odpowiedzi, ocena w gwiazdkach i jeden przycisk „Zapisz ocenę”.",
     "Oceny zmieniają teraz także psyllium, sól, czas wyrastania, czasy smażenia i dobór mąk (gumowate / rozsypuje się / piasek w zębach)."] },
   { v: "2.9.1", d: "14.11.2026", t: ["Nowy przepis: ciastka karmelowe w stylu Biscoff (speculoos) oraz krem jak Biscoff Creamy (ciastka, olej rzepakowy, cukier – bez nabiału)."] },

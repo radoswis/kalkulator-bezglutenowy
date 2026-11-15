@@ -62,6 +62,9 @@
     { id: "tap",   name: "Tapioka",               role: "pure_starch",          flavorProfile: "neutral",    macros: M(0.2, 0, 87, 0.1, 0.1), wac_cold: 0.65, wac_hot: 9 },
     { id: "mixb",  name: "Schär Mix B",           role: "commercial_base",      flavorProfile: "neutral",    macros: M(3.7, 6, 70, 1.5, 1),  wac_cold: 1.02, wac_hot: 3.2, isCommercialMix: true, hasHPMC: true,  starchBase: 0.45, mixPriority: 3 },
     { id: "mixit", name: "Schär Mix It! Universal", role: "commercial_base",    flavorProfile: "neutral",    macros: M(1.5, 4.5, 78, 0.5, 0.5),  wac_cold: 0.88, wac_hot: 3.0, isCommercialMix: true, hasHPMC: true,  starchBase: 0.50, mixPriority: 2 },
+    // Domowa mieszanka uniwersalna 5:3:2 (drobna mąka ryżowa : skrobia ziemniaczana : mąka kukurydziana) – wg The Loopy Whisk; makro = średnia ważona składników
+    { id: "mixdom", name: "Domowa mieszanka uniwersalna (zrób sam)", role: "commercial_base", flavorProfile: "neutral", macros: M(5, 2.6, 78.5, 1.5, 0.6), wac_cold: 0.74, wac_hot: 4.6, isCommercialMix: true, hasHPMC: false, starchBase: 0.3, mixPriority: 4, idealExclude: true,
+      composition: "zrób sam: 500 g drobno mielonej (pudrowej) mąki ryżowej + 300 g skrobi ziemniaczanej + 200 g mąki kukurydzianej (nie skrobi); wymieszaj, przechowuj w szczelnym słoju; bez spoiwa" },
     { id: "mixc",  name: "Schär Mix C",           role: "commercial_base",      flavorProfile: "neutral",    macros: M(3, 3, 75, 1, 0.8),    wac_cold: 0.82, wac_hot: 2.8, isCommercialMix: true, hasHPMC: false, starchBase: 0.55, mixPriority: 1 },
     // --- Mieszanki ze sklepów (Auchan, Carrefour i in.) – skład z etykiet producentów ---
     { id: "bzbread", name: "Bezgluten Bread Mix (chleb i pizza)", brands: "Bezgluten", role: "commercial_base", flavorProfile: "neutral", macros: M(1.9, 3.5, 78, 0.9, 1), wac_cold: 1.0, wac_hot: 3.2, isCommercialMix: true, hasHPMC: true, starchBase: 0.7, mixPriority: 2.5,
@@ -244,7 +247,16 @@
   // ---------- Stałe modelu ----------
   const WAC_REF = 0.96;
   const EGG_WATER = 0.75;
-  const XANTHAN_PER_PSYLLIUM = 0.6;    // zamiennik, gdy brak psyllium
+  const XANTHAN_PER_PSYLLIUM = 0.6;
+  /** Czy mąka/mieszanka ma własne spoiwo (HPMC, guma ksantanowa/guar, błonnik z babki płesznik). */
+  const hasBinder = i => !!(i.hasHPMC || /HPMC|guma|guar|płesznik|babki/i.test(i.composition || ""));
+  /** Udział mąk ze spoiwem w mieszance (0–1). */
+  const binderShareOf = blend => blend.reduce((s, b) => { const [i, x] = Array.isArray(b) ? b : [b.ingredient, b.share]; return s + (hasBinder(i) ? x : 0); }, 0);
+  // Psyllium: ilości w klasach zakładają mieszankę ze spoiwem (Schär Mix B). Przy samych mąkach – jak The Loopy Whisk:
+  // 5–7 g łuski na 100 g mąk (theloopywhisk.com/2021/10/23/psyllium-husk-101/). Proszek = 85% wagi łuski.
+  const PSY_POWDER = 0.85, PSY_WATER_PER_PCT = 8;
+  // % łuski przy samych mąkach (bez spoiwa) per klasa; bogate ciasta mniej (jajka i tłuszcz też wiążą)
+  const PSY_PURE = { RHEO_POURABLE_HIGH_HYDRATION: 4.5, RHEO_FREE_STANDING_LOAF: 5.5, RHEO_TENSILE_SHAPED: 5.5, RHEO_LAMINATED_ROLLED_STUFFED: 5.5, RHEO_STIFF_EXTRUDED_BOILED: 5, RHEO_ENRICHED_BRIOCHE_FRIED: 4.5 };    // zamiennik, gdy brak psyllium
   const STARCH_BLOCK_MIX_SHARE = 0.6;
   const TAPIOCA_EXCEPTION_CLASSES = new Set(["RHEO_TENSILE_SHAPED", "RHEO_LAMINATED_ROLLED_STUFFED", "RHEO_ENRICHED_BRIOCHE_FRIED"]);
   const TAPIOCA_EXCEPTION_SHARES = [0.05];  // siatka 5%; spec dopuszcza 5–8%
@@ -321,7 +333,7 @@
     jag: [0.2, 0.4, 0.6, 0.3], ows: [0.3, 0.7, 0.4, 0.1], cie: [0.3, 0.5, 0.5, 0.1], ama: [0.3, 0.4, 0.4, 0.2],
     sor: [0.3, 0.5, 0.5, 0.2], tef: [0.4, 0.4, 0.4, 0.2], mig: [0.1, 0.6, 0.9, 0.2], kok: [0.1, 0.5, 0.6, 0.3],
     kasztan: [0.2, 0.6, 0.5, 0.1], dynia: [0.2, 0.3, 0.5, 0.3],
-    mixb: [0.6, 0.7, 0.3, 0], mixit: [0.5, 0.7, 0.4, 0], mixc: [0.2, 0.8, 0.6, 0], scharmehl: [0.5, 0.7, 0.4, 0],
+    mixdom: [0.25, 0.6, 0.6, 0.15], mixb: [0.6, 0.7, 0.3, 0], mixit: [0.5, 0.7, 0.4, 0], mixc: [0.2, 0.8, 0.6, 0], scharmehl: [0.5, 0.7, 0.4, 0],
     bzbread: [0.6, 0.6, 0.3, 0.1], bzmulti: [0.4, 0.6, 0.5, 0.1], bzekstra: [0.4, 0.6, 0.5, 0.1], bznalesn: [0.4, 0.6, 0.4, 0.1],
     granouni: [0.4, 0.6, 0.5, 0.2], ocelio: [0.4, 0.5, 0.4, 0.2], fbaprot: [0.3, 0.5, 0.4, 0.2]
   };
@@ -501,7 +513,7 @@
     if (taste === "bold" || bake.boldByDesign) return 0;
     return TASTE_W * (bake.masked ? 0.3 : 1) * (1 + 0.5 * (calib.taste || 0));
   }
-  function calculateLaboratoryFormulation({ bakeId, pantryIds, doughWeight, extraIngredients = [], calib = {}, taste = "wheat", coldProof = false }) {
+  function calculateLaboratoryFormulation({ bakeId, pantryIds, doughWeight, extraIngredients = [], calib = {}, taste = "wheat", coldProof = false, psyForm = "husk" }) {
     const bake = BAKES.find(b => b.id === bakeId);
     if (!bake) throw new Error("Nieznany wypiek: " + bakeId);
     const cls = RHEOLOGY_CLASSES[bake.rheologyClass];
@@ -518,6 +530,13 @@
     const mixShare = sol.blend.filter(([i]) => i.isCommercialMix).reduce((s, [, x]) => s + x, 0);
     const hpmcShare = sol.blend.filter(([i]) => i.hasHPMC).reduce((s, [, x]) => s + x, 0);
 
+    const binderShare = binderShareOf(sol.blend);
+    const psyBase = bake.psyllium ?? mid(cls.psyllium); // zakresy klas zakładają obecność spoiwa w mieszance
+    const psyPure = Math.max(psyBase, PSY_PURE[bake.rheologyClass] || psyBase * 2);
+    const psyHusk = (psyBase + (psyPure - psyBase) * (1 - binderShare)) * (1 + (calib.psy || 0) / 100);
+    let psy = psyHusk * (psyForm === "powder" ? PSY_POWDER : 1);
+    // więcej psyllium = więcej wody (żel); 8 pkt % hydratacji na każdy dodatkowy 1% łuski
+    const dPsy = (psyHusk - psyBase) * PSY_WATER_PER_PCT;
     // A. Korekta WAC (wynik wzoru ×100 = punkty procentowe hydratacji)
     const dWAC = (prof.wac - WAC_REF) * 0.65 * 100;
     // B. Shortening
@@ -526,12 +545,11 @@
     const dSugar = -Math.max(0, bake.sugar - 6) * 0.25;
     const hBase = bake.hydration ?? mid(cls.hydration);
     const dUser = calib.water || 0; // korekta z ocen „Jak wyszło?”
-    const hEff = hBase + dWAC + dFat + dSugar + dUser;
+    const hEff = hBase + dWAC + dFat + dSugar + dUser + (pantryIds.includes("psy") ? dPsy : 0);
     const COLD_YEAST = 0.6; // wyrastanie w lodówce przez noc: mniej drożdży, więcej smaku
     const yeastEff = bake.yeastDry * (1 + Math.max(0, bake.sugar - 6) * 0.035 + Math.max(0, bake.fat - 8) * 0.015) * (1 + (calib.yeast || 0) / 100) * (coldProof ? COLD_YEAST : 1);
 
     // Hydrokoloid
-    let psy = (bake.psyllium ?? mid(cls.psyllium)) * (1 + (calib.psy || 0) / 100); // zakresy klas już zakładają obecność HPMC w bazach komercyjnych
     let xan = 0;
     if (!pantryIds.includes("psy")) {
       if (pantryIds.includes("xan")) { xan = psy * XANTHAN_PER_PSYLLIUM; warnings.push("Brak psyllium: używam gumy ksantanowej. Ciasto będzie mniej elastyczne."); }
@@ -543,6 +561,8 @@
     const E = bake.eggs / 100;
     let wAddFrac = hEff / 100 - E * EGG_WATER;
     if (wAddFrac < 0) { warnings.push("Jajka wnoszą więcej wody niż potrzeba: zmniejsz ilość jajek."); wAddFrac = 0; }
+    // Żel psyllium potrzebuje min. 10 części wody na 1 część łuski (The Loopy Whisk)
+    if (psy > 0 && (wAddFrac + E * EGG_WATER) * 100 < psy * 10) warnings.push("Mało płynu na psyllium (potrzeba ok. 10 g wody na 1 g łuski): ciasto może być sztywne i pękać. Jeśli tak wyjdzie, zaznacz w „Jak wyszło?” „Pękało”.");
     const FRESH_PER_DRY = 3;
     const mixSalt = sol.blend.reduce((t, [i, x]) => t + (i.saltPct || 0) * x, 0);
     const frac = { psy: psy / 100, xan: xan / 100, salt: Math.max(0, bake.salt * (1 + (calib.salt || 0) / 100) - mixSalt) / 100, yeast: yeastEff * FRESH_PER_DRY / 100 /* drożdże świeże (priorytet) */, fat: bake.fat / 100, sugar: bake.sugar / 100 };
@@ -575,7 +595,7 @@
 
     const used = new Set(sol.blend.map(([i]) => i.id));
     return {
-      bake, cls, empty: false, mode: sol.mode, taste: tasteOf(sol.blend, bake), coldProof,
+      bake, cls, empty: false, mode: sol.mode, binderShare, psyForm, taste: tasteOf(sol.blend, bake), coldProof,
       blend: sol.blend.map(([ingredient, share]) => ({ ingredient, share })), textureMatch: textureMatch(sol.blend, bake),
       profile: { protein: prof.protein, fiber: prof.fiber, starch: prof.starch, wacMix: prof.wac, target: cls.target },
       hydration: { base: hBase, deltaWAC: dWAC, deltaFat: dFat, deltaSugar: dSugar, deltaUser: dUser, effective: hEff },
@@ -606,7 +626,7 @@
     return out;
   }
 
-  const GFEngine = { setTexAdj, texAdjOf, textureOf, textureCost, textureMatch, flavorOf, tasteOf, tasteWeight, ovenPlan, INGREDIENT_MATRIX, RHEOLOGY_CLASSES, BAKES, solveFlourBlend, calculateLaboratoryFormulation, validateDefaultBatches, defaultDough, profileOf };
+  const GFEngine = { hasBinder, binderShareOf, PSY_POWDER, setTexAdj, texAdjOf, textureOf, textureCost, textureMatch, flavorOf, tasteOf, tasteWeight, ovenPlan, INGREDIENT_MATRIX, RHEOLOGY_CLASSES, BAKES, solveFlourBlend, calculateLaboratoryFormulation, validateDefaultBatches, defaultDough, profileOf };
   if (typeof module !== "undefined" && module.exports) module.exports = GFEngine;
   global.GFEngine = GFEngine;
 })(typeof window !== "undefined" ? window : globalThis);

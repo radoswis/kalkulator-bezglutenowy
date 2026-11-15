@@ -581,7 +581,7 @@
 
   /** Receptura bezdrożdżowa. */
   const LIQUIDS = ["hotWater", "water", "coldWater", "iceWater", "milkWater", "milk", "milkOrWater", "milkOrYogurt", "buttermilk", "kefir", "lemonMilk", "sourCream"];
-  function calculatePastryFormulation({ bake, pantryIds, doughWeight, extraIngredients = [], calib = {}, taste = "wheat" }) {
+  function calculatePastryFormulation({ bake, pantryIds, doughWeight, extraIngredients = [], calib = {}, taste = "wheat", psyForm = "husk" }) {
     const cls = RHEOLOGY_CLASSES[bake.rheologyClass];
     const all = INGREDIENT_MATRIX.concat(extraIngredients);
     const pantry = all.filter(i => pantryIds.includes(i.id));
@@ -602,6 +602,16 @@
       if (pantryIds.includes("xan")) { comps.push(["xan", psyPct * 0.6]); warnings.push("Brak psyllium: używam gumy ksantanowej."); }
       else warnings.push("Brak psyllium: ciasto będzie mniej elastyczne i może pękać przy lepieniu. Wałkuj grubiej.");
     }
+    // Proszek psyllium = 85% wagi łuski (The Loopy Whisk)
+    if (psyForm === "powder") comps = comps.map(([k, p]) => (k === "psy" ? [k, p * G.PSY_POWDER] : [k, p]));
+    // Guma ksantanowa w ciastach z mąk bez spoiwa: ok. ¼ łyżeczki na 120 g mieszanki ≈ 0,4–0,5% (The Loopy Whisk);
+    // kruche mniej, muffinki/ptysie więcej. Tylko gdy masz ksantan, a mieszanka nie ma własnego spoiwa.
+    const XAN_CLASS = { RHEO_SHORTCRUST_COOKIE_CRISP: 0.3, RHEO_FOAM_EMULSION_CAKE: 0.4, RHEO_CHEM_LEAVENED_MUFFIN_CHOUX: 0.5 };
+    const xanPct = (XAN_CLASS[bake.rheologyClass] || 0) * (1 - G.binderShareOf(blend));
+    if (xanPct >= 0.1 && pantryIds.includes("xan") && !comps.some(([k]) => k === "psy" || k === "xan")) {
+      comps.push(["xan", xanPct]);
+      warnings.push("Dodaję trochę gumy ksantanowej, bo mąki nie mają spoiwa: wymieszaj ją dokładnie z mąkami, wtedy ciasto mniej się kruszy.");
+    }
     // Psyllium i sól z ocen „Jak wyszło?” (procent zmiany)
     if (calib.psy) comps = comps.map(([k, p]) => (k === "psy" ? [k, p * (1 + calib.psy / 100)] : [k, p]));
     if (calib.salt) comps = comps.map(([k, p]) => (k === "salt" ? [k, p * (1 + calib.salt / 100)] : [k, p]));
@@ -610,6 +620,8 @@
       const liq = comps.filter(([k]) => LIQUIDS.includes(k)).sort((a, z) => z[1] - a[1])[0];
       if (liq) comps = comps.map(([k, p]) => (k === liq[0] ? [k, Math.max(0, p + calib.water)] : [k, p]));
     }
+    const psyC = comps.find(([k]) => k === "psy"), liqSum = comps.filter(([k]) => LIQUIDS.includes(k)).reduce((a, [, p]) => a + p, 0);
+    if (psyC && liqSum < psyC[1] * 10) warnings.push("Mało płynu na psyllium (potrzeba ok. 10 g płynu na 1 g łuski): ciasto może pękać.");
     const mixSalt = blend.reduce((s, [i, x]) => s + (i.saltPct || 0) * x, 0);
     if (mixSalt > 0) comps = comps.map(([k, p]) => (k === "salt" ? [k, Math.max(0, p - mixSalt)] : [k, p]));
     if (blend.some(([i]) => i.wheatStarch)) warnings.push("Wybrana mieszanka zawiera skrobię pszenną bezglutenową (do 20 ppm glutenu). Jeśli jej unikasz, odznacz ją w spiżarni.");
