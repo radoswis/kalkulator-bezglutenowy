@@ -193,32 +193,105 @@ summary{min-height:28px}
 .scanview{position:relative;border-radius:20px;overflow:hidden;background:#000;aspect-ratio:4/3}
 .scanview video{width:100%;height:100%;object-fit:cover;display:block}
 .scanview i{position:absolute;left:12%;right:12%;top:38%;bottom:38%;border:3px solid var(--gold);border-radius:12px;box-shadow:0 0 0 999px #0006}
+/* ===== Układ 3.0 (v2.14): ekrany jak w makiecie – Start / Spiżarnia / Przepis + dolny pasek zakładek ===== */
+body{padding-block:16px 120px}
+.wrap{max-width:720px}
+.view{display:grid;gap:16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn.small{min-height:44px;padding:8px 16px;font-size:.92rem}
+.hello{margin:8px 0 0;color:var(--muted);font-size:1.05rem}
+.vt{font-family:var(--display);font-size:clamp(2rem,8vw,2.6rem);line-height:1.12;margin:0;font-weight:700;letter-spacing:-.01em}
+.lead{margin:-6px 0 0;color:var(--muted)}
+.sh{font-size:1.15rem;margin-top:6px}
+.lastcard{position:relative;overflow:hidden;background:var(--accent);color:#FBF7F1;border-radius:24px;padding:22px;display:grid;gap:10px;justify-items:start;min-height:150px}
+.lastcard .lcimg{position:absolute;right:-18px;bottom:-14px}
+.lck{font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:#CFE3D7;font-weight:700}
+.lcn{font-family:var(--display);font-size:1.4rem;font-weight:700;max-width:62%;line-height:1.2;position:relative}
+.btn.light{background:#FBF7F1;color:#1F4D3A!important;position:relative}
+.cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (min-width:600px){.cats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.cat{font:inherit;color:var(--fg);background:var(--surface);border:1.5px solid var(--line);border-radius:20px;padding:14px;display:grid;gap:6px;justify-items:start;text-align:left;cursor:pointer;min-height:118px;align-content:start}
+.cat svg{color:var(--gold)}
+.cat span{font-weight:700;font-size:.98rem;line-height:1.25}
+.cat small{color:var(--muted);font-size:.85rem}
+.cat[aria-expanded="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.catlist{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px;display:grid;gap:10px}
+.catlist h3{margin:0;font-family:var(--display);font-size:1.1rem}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{font:inherit;min-height:46px;padding:8px 16px;border-radius:23px;border:0;background:var(--gold-soft);color:#1C1B19;cursor:pointer;font-size:1rem}
+:root[data-theme="dark"] .pill{color:var(--fg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill{color:var(--fg)}}
+details.all{background:transparent}
+details.all select{margin-top:10px}
+/* Spiżarnia */
+#vPantry .group{margin-top:14px}
+.chips.mixes{display:grid;gap:10px}
+.chips.mixes .chip{border-radius:18px;min-height:64px;padding:10px 16px;border-width:2px;justify-content:flex-start;font-size:1.05rem;font-weight:700;background:var(--surface);color:var(--fg)}
+.chips.mixes .chip::before{content:"";flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);box-sizing:border-box}
+.chips.mixes .chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
+.chips.mixes .chip[aria-pressed="true"]::before{content:"✓";background:var(--accent);border-color:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+.chips.mixes .chip small{flex-basis:100%;padding-left:32px;font-weight:400;opacity:.8}
+#addBox{margin-top:8px}
+.ctabar{position:sticky;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:30;display:grid;gap:6px;justify-items:center;padding:12px 0 4px;background:linear-gradient(transparent,var(--bg) 30%)}
+.ctabar span{font-size:.92rem;color:var(--muted)}
+.btn.cta{width:100%;min-height:58px;border-radius:29px;background:var(--gold);color:#1C1B19!important;font-family:var(--display);font-weight:700;font-size:1.1rem}
+/* Przepis */
+#vRecipe{gap:0}
+.hero{position:relative;height:180px;margin:-16px calc(-1 * max(16px,env(safe-area-inset-left,0px))) 0;background:var(--gold-soft);overflow:hidden}
+.hero svg{position:absolute;inset:0;width:100%;height:100%}
+.back{position:absolute;left:16px;top:16px;width:46px;height:46px;border-radius:23px;border:0;background:#FBF7F1;color:#1C1B19;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sheet{position:relative;margin-top:-26px;background:var(--bg);border-radius:28px 28px 0 0;padding-top:20px;display:grid;gap:16px}
+.qty{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:16px;display:grid;gap:12px}
+.qty h2{font-size:1.1rem}
+#out.card{position:static;background:transparent;border:0;box-shadow:none;padding:0;order:-1}
+.rtitle{font-family:var(--display);font-size:clamp(1.7rem,7vw,2.2rem);line-height:1.15;margin:0;font-weight:700}
+#out > h3{display:none}
+details.prefs .inner{display:grid;gap:10px}
+.chips.mixes .chip{display:grid;grid-template-columns:26px 1fr;column-gap:12px;align-items:center}
+.chips.mixes .chip small{grid-column:2;padding-left:0}
+.sheet .qty{order:0}.sheet #out{order:1}.sheet .about{order:2}
+#out h3{font-size:1.75rem}
+.blendhead{font-family:var(--display);font-weight:700;font-size:1.1rem;margin-top:4px}
+.blendbar{display:flex;height:22px;border-radius:11px;overflow:hidden;gap:2px;background:var(--line)}
+.blendbar i{display:block;height:100%}
+.dot{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:8px;vertical-align:-1px}
+.about{display:grid;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px}
+/* Dolny pasek zakładek */
+.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:45;width:min(560px,calc(100% - 24px));height:68px;border-radius:34px;background:#1C1B19;display:flex;justify-content:space-around;align-items:center;box-shadow:0 8px 28px #0003}
+.tabbar button{font:inherit;background:none;border:0;color:#D8D2C8;min-width:76px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.82rem;cursor:pointer;border-radius:20px}
+.tabbar button[aria-current="page"]{color:#F2BF6B;font-weight:700}
+.timerbadge{bottom:calc(88px + env(safe-area-inset-bottom,0px));left:12px;right:12px;border-radius:20px;border:1px solid var(--line)}
+.newver{bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+.appfoot{margin-bottom:8px}
+.cook{z-index:80}.scan{z-index:90}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 
 <div class="wrap">
-<header>
+<main>
+<div class="view" id="vStart">
+<header class="top">
 <div class="brand"><span class="brandmark" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FBF7F1" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M12 7c-2-2-5-2-5-2s0 3 2 5M12 7c2-2 5-2 5-2s0 3-2 5M12 12c-2-2-5-2-5-2s0 3 2 5M12 12c2-2 5-2 5-2s0 3-2 5"/><path d="M4 20L20 4" stroke="#E8A33D"/></svg></span><span>Bez glutenu</span></div>
-<h1>Kalkulator ciast bezglutenowych</h1>
-<button type="button" class="btn" id="installBtn">Zainstaluj na telefonie</button>
-<p>Wybierz, co chcesz zrobić, zaznacz, co masz w spiżarni, i podaj ilość. Aplikacja sama dobierze mąki i policzy składniki co do grama.</p>
+<button type="button" class="btn ghost small" id="installBtn">Zainstaluj na telefonie</button>
 </header>
-<div class="grid">
-<div class="col">
-<section><h2><span>1</span>Co robisz?</h2>
+<p class="hello" id="hello">Dzień dobry</p>
+<h1 class="vt">Co dziś<br>pieczemy?</h1>
 <div class="combo"><input id="bakeSearch" type="search" placeholder="Szukaj przepisu, np. pierogi, pizza, gofry" autocomplete="off" aria-label="Szukaj przepisu" aria-controls="bakeSuggest" aria-expanded="false">
 <div id="bakeSuggest" class="suggest" role="listbox" hidden></div></div>
-<select id="bake"></select>
 <div class="msg" id="bakeSearchMsg" hidden></div>
-<div class="note" id="bakeInfo"></div>
-<div class="sim" id="simInfo"></div>
-</section>
+<div class="lastcard" id="lastCard"></div>
+<h2 class="sh">Wybierz z kategorii</h2>
+<div class="cats" id="cats"></div>
+<div class="catlist" id="catList" hidden></div>
+<details class="all"><summary>Pełna lista przepisów</summary><select id="bake" aria-label="Przepis"></select></details>
+</div>
 
-<section><h2><span>2</span>Twoja spiżarnia</h2>
+<div class="view" id="vPantry" hidden>
+<h1 class="vt">Moja spiżarnia</h1>
+<p class="lead">Zaznacz mąki, które masz w domu. Aplikacja sama dobierze z nich najlepszą mieszankę.</p>
 <div class="msg" id="syncMsg">Wczytuję…</div>
-<div class="note">Zaznacz wszystko, co masz w domu. Aplikacja sama wybierze, których i ile użyć.</div>
 <div id="flours"></div>
 <div class="group">Dodatki wiążące</div>
 <div class="chips" id="addons"></div>
@@ -241,9 +314,15 @@ summary{min-height:28px}
 <div class="msg" id="nEst"></div>
 <button class="btn" id="addBtn" type="button">Dodaj do moich mąk</button>
 </div></details>
-</section>
+<div class="ctabar"><span id="pantryCount"></span><button type="button" class="btn cta" id="goBlend">Dobierz mieszankę</button></div>
+</div>
 
-<section><h2><span>3</span>Ile ciasta?</h2>
+<div class="view" id="vRecipe" hidden>
+<div class="hero"><svg viewBox="0 0 390 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><circle cx="330" cy="40" r="90" fill="#F6D396"/><ellipse cx="195" cy="185" rx="150" ry="70" fill="#C9822A"/><ellipse cx="195" cy="165" rx="138" ry="62" fill="#E8A33D"/><path d="M110 150q16-24 32 0M160 137q16-24 32 0M210 137q16-24 32 0M258 150q16-24 32 0" stroke="#A9661C" stroke-width="7" fill="none" stroke-linecap="round"/></svg>
+<button type="button" class="back" data-go="start" aria-label="Wróć do przepisów"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button></div>
+<div class="sheet">
+<h1 class="rtitle" id="rTitle"></h1>
+<section class="qty"><h2>Ile ciasta?</h2>
 <div class="seg" role="group" aria-label="Tryb ilości"><button id="mPcs" aria-pressed="true" type="button">Sztuki</button><button id="mGr" aria-pressed="false" type="button">Gramy ciasta</button></div>
 <div class="row">
 <label id="lblCount">Liczba sztuk<input id="count" type="number" min="1" value="3"></label>
@@ -251,10 +330,16 @@ summary{min-height:28px}
 <label id="lblGrams" hidden>Ciasto razem (g)<input id="grams" type="number" min="50" value="500"></label>
 </div>
 </section>
-</div>
-
 <aside class="card" aria-live="polite" id="out"></aside>
+<div class="about"><div class="note" id="bakeInfo"></div><div class="sim" id="simInfo"></div></div>
 </div>
+</div>
+</main>
+<nav class="tabbar" aria-label="Główne">
+<button type="button" data-go="start"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"/></svg>Start</button>
+<button type="button" data-go="pantry"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18H6zM6 9h12M6 15h12"/></svg>Spiżarnia</button>
+<button type="button" data-go="recipe"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M9 8h6M9 12h6"/></svg>Przepis</button>
+</nav>
 <footer class="appfoot">
 <span id="appVer"></span>
 <button type="button" class="linkbtn" id="chgBtn">Co nowego</button>
@@ -348,8 +433,8 @@ $("bakeSuggest").onkeydown=e=>{const t=e.target;if(e.key==="ArrowDown"&&t.nextEl
 document.addEventListener("pointerdown",e=>{if(!e.target.closest(".combo"))$("bakeSuggest").hidden=true});
 $("bake").value="pizza_neapol";
 function chip(f){return `<button type="button" class="chip" data-id="${f.id}" aria-pressed="${sel.has(f.id)}"${f.composition?` title="Skład: ${f.composition}"`:""}>${f.name}${f.brands?` <small>${f.brands}</small>`:""}${f.wheatStarch?` <small>· skrobia pszenna</small>`:""}${f.custom?" <small>(własna)</small>":""}</button>`}
-function renderPantry(){const g=[["Mąki",f=>["wholegrain_structure","high_protein"].includes(f.role)],["Skrobie",f=>f.role==="pure_starch"],["Gotowe mieszanki",f=>f.role==="commercial_base"]];
- $("flours").innerHTML=g.map(([n,fn])=>`<div class="group">${n}</div><div class="chips">${all().filter(fn).map(chip).join("")}</div>`).join("");
+function renderPantry(){const g=[["Gotowe mieszanki",f=>f.role==="commercial_base"],["Mąki",f=>["wholegrain_structure","high_protein"].includes(f.role)],["Skrobie",f=>f.role==="pure_starch"]];
+ $("flours").innerHTML=g.map(([n,fn])=>`<div class="group">${n}</div><div class="chips${n==="Gotowe mieszanki"?" mixes":""}">${all().filter(fn).map(chip).join("")}</div>`).join("");
  $("addons").innerHTML=all().filter(f=>f.role==="hydrocolloid").map(chip).join("")}
 document.addEventListener("click",e=>{const fq=e.target.closest("[data-fbq]");
  if(fq){const k=fq.dataset.fbq,v=fq.dataset.fba;if(v&&fbSel[k]!==v)fbSel[k]=v;else delete fbSel[k];refreshFb();return}
@@ -773,6 +858,48 @@ $("labelFile").onchange=async e=>{const file=e.target.files&&e.target.files[0];e
    +(j.wheatStarch?" <b>Uwaga: w składzie jest skrobia pszenna.</b>":"")+(j.glutenFree===false?" <b>Uwaga: na etykiecie nie widać oznaczenia „bez glutenu”.</b>":"")
    +(j.composition?`<br><small>Skład: ${String(j.composition).replace(/</g,"&lt;")}</small>`:"")}
  catch(err){m.textContent=(err.message||"Błąd")+" Możesz wpisać dane z etykiety ręcznie."}};
+
+// ===== Układ 3.0: zakładki Start / Spiżarnia / Przepis (jak w makiecie). Logika obliczeń bez zmian – tylko przełączanie widoków. =====
+const VIEWS={start:"vStart",pantry:"vPantry",recipe:"vRecipe"};let view="start";
+function go(v,keepScroll){if(!VIEWS[v])v="start";view=v;for(const k in VIEWS)$(VIEWS[k]).hidden=k!==v;
+ document.querySelectorAll(".tabbar [data-go]").forEach(b=>b.setAttribute("aria-current",b.dataset.go===v?"page":"false"));
+ try{localStorage.setItem("gf_view",v)}catch(e){}if(!keepScroll)window.scrollTo(0,0);if(v==="start")renderStart()}
+document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g)go(g.dataset.go)});
+// wybór przepisu (wyszukiwarka, kategorie, lista) → od razu ekran przepisu
+{const _pick=pickBake;pickBake=id=>{_pick(id);go("recipe")};
+ const _bc=$("bake").onchange;$("bake").onchange=()=>{_bc();go("recipe")}}
+$("goBlend").onclick=()=>{src="pantry";calc();go("recipe")};
+// Kategorie na ekranie startowym
+const CAT_ICON=['<circle cx="12" cy="12" r="8"/><circle cx="9.5" cy="10" r="1"/><circle cx="14" cy="14" r="1"/><circle cx="14.5" cy="9" r="1"/>',
+ '<path d="M4 12a8 5.5 0 0 1 16 0v7H4z"/><path d="M9 9.5l1 2M13.5 8.5l1 2"/>','<circle cx="8" cy="13" r="4"/><circle cx="16" cy="13" r="4"/>',
+ '<path d="M12 12m-1 0a1 1 0 1 0 2 0a3 3 0 1 0-6 0a5 5 0 1 0 10 0a7 7 0 1 0-14 0"/>','<path d="M3 15a9 9 0 0 1 18 0z"/><path d="M6 15l1-2M10 15l1-2M14 15l1-2M18 15l-1-2"/>',
+ '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16M4 15h16M10 4v16M15 4v16"/>','<circle cx="12" cy="12" r="8"/><path d="M9 9h.01M14 10h.01M10 14h.01M15 15h.01"/>',
+ '<path d="M3 18h18M5 18V11l7-5 7 5v7"/><path d="M5 13h14"/>'];
+let openCat=-1;
+function renderCats(){$("cats").innerHTML=CATEGORIES.map((c,i)=>{const n=BAKES.filter(b=>b.category===c).length;
+ return `<button type="button" class="cat" data-cat="${i}" aria-expanded="${openCat===i}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[i]||CAT_ICON[1]}</svg><span>${c}</span><small>${n} przepisów</small></button>`}).join("");
+ const box=$("catList");if(openCat<0){box.hidden=true;return}
+ box.hidden=false;box.innerHTML=`<h3>${CATEGORIES[openCat]}</h3><div class="pills">`+BAKES.filter(b=>b.category===CATEGORIES[openCat]).map(b=>`<button type="button" class="pill" data-pick="${b.id}">${b.name}</button>`).join("")+"</div>"}
+$("cats").addEventListener("click",e=>{const c=e.target.closest("[data-cat]");if(!c)return;const i=+c.dataset.cat;openCat=openCat===i?-1:i;renderCats();
+ if(openCat>=0)$("catList").scrollIntoView({behavior:"smooth",block:"nearest"})});
+function renderStart(){const h=new Date().getHours();$("hello").textContent=h<5||h>=18?"Dobry wieczór":h<12?"Dzień dobry":"Miłego popołudnia";
+ const b=BAKES.find(x=>x.id===$("bake").value);if(!b){$("lastCard").hidden=true;return}$("lastCard").hidden=false;
+ $("lastCard").innerHTML=`<svg class="lcimg" width="170" height="120" viewBox="0 0 170 120" aria-hidden="true"><ellipse cx="90" cy="80" rx="78" ry="40" fill="#E8A33D"/><ellipse cx="90" cy="70" rx="70" ry="34" fill="#F2BF6B"/><path d="M45 62q10-14 20 0M75 56q10-14 20 0M105 60q10-14 20 0" stroke="#C9822A" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
+ <span class="lck">Ostatnio wybrany</span><span class="lcn">${b.name}</span><button type="button" class="btn light" data-go="recipe">Otwórz przepis</button>`}
+// Wynik przepisu: pasek proporcji mąk (kolory jak w legendzie), licznik spiżarni. Dodawane po każdym przeliczeniu.
+const BLEND_COL=["#1F4D3A","#E8A33D","#7FA88F","#C9B9A3","#8FA9C4","#D98E73","#B9A0C9"];
+let prefsOpen=false;
+function decorateOut(){const out=$("out");const h=out.querySelector(":scope > h3");if(h)$("rTitle").textContent=h.textContent;
+ const ps=[...out.querySelectorAll(":scope > .seg:not(.srcbar)")];if(ps.length&&!out.querySelector("details.prefs")){const d=document.createElement("details");d.className="prefs";d.open=prefsOpen;d.innerHTML="<summary>Ustawienia przepisu: smak, wyrastanie, psyllium</summary>";ps[0].before(d);const w=document.createElement("div");w.className="inner";ps.forEach(x=>w.appendChild(x));d.appendChild(w);d.ontoggle=()=>prefsOpen=d.open}
+$("pantryCount").textContent=`Zaznaczono: ${sel.size}`;if(view==="start")renderStart();
+ if(out.querySelector(".blendbar"))return;const rows=[...out.querySelectorAll("tr.sub")];if(!rows.length)return;
+ const g=rows.map(r=>parseFloat((r.querySelector("td.g")||{}).textContent?.replace(/\s/g,"").replace(",","."))||0),sum=g.reduce((a,c)=>a+c,0);if(!sum)return;
+ rows.forEach((r,i)=>{const td=r.querySelector("td");if(td&&!td.querySelector(".dot"))td.insertAdjacentHTML("afterbegin",`<span class="dot" style="background:${BLEND_COL[i%BLEND_COL.length]}"></span>`)});
+ const bar=`<div class="blendbar" role="img" aria-label="Proporcje mąk w mieszance">${g.map((x,i)=>`<i style="width:${(x/sum*100).toFixed(1)}%;background:${BLEND_COL[i%BLEND_COL.length]}"></i>`).join("")}</div>`;
+ const t=out.querySelector("table");if(t)t.insertAdjacentHTML("beforebegin",`<div class="blendhead">Twoja mieszanka mąk</div>`+bar)}
+new MutationObserver(decorateOut).observe($("out"),{childList:true});
+renderCats();
+{let v="start";try{v=localStorage.getItem("gf_view")||"start"}catch(e){}go(v,true)}
 
 renderPantry();setDefaults();const ry=restoreUI();if(ry===false)calc();
 loadShared().then(()=>{if(ry)window.scrollTo(0,ry)});
