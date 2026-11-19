@@ -1,6 +1,10 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.15.0", d: "19.11.2026", t: ["30 nowych przepisów (razem 92).",
+    "Drożdżowe: chleb z ziarnami, chleb owsiany na miodzie, bułki ziarniste, cebularze lubelskie, bułki do kebaba (pide), odrywane bułeczki czosnkowe, szneki z glancem, jagodzianki, strucla z makiem, rogaliki drożdżowe z dżemem, pampuchy na parze.",
+    "Bez drożdży: uszka, knedle ze śliwkami, kluski kładzione, placki ziemniaczane, placki twarogowe, bliny gryczane, szybkie placki na jogurcie, mazurek, kruche babeczki, rogaliki twarogowe, krakersy, pączki serowe, murzynek, piernik, rolada biszkoptowa, ciasto jogurtowe z owocami, biszkopty do tiramisu, clafoutis, crumble.",
+    "Licznik smażenia i gotowania partiami dla nowych placków, klusek i pączków."] },
   { v: "2.14.0", d: "19.11.2026", t: ["Nowy układ jak w projekcie: trzy ekrany z dolnym paskiem – Start (wyszukiwarka, ostatni przepis, kafelki kategorii), Spiżarnia (gotowe mieszanki jako duże pola, przycisk „Dobierz mieszankę”), Przepis (nagłówek, ilość, kolorowy pasek proporcji mąk, składniki, kroki, „Jak wyszło?”).",
     "Ustawienia przepisu (smak, wyrastanie, psyllium) zwinięte w jedno pole, żeby przepis był krótszy. Wszystkie funkcje bez zmian."] },
   { v: "2.13.0", d: "19.11.2026", t: ["Gdy mąki nie ma w bazie (po kodzie kreskowym lub nazwie): zdjęcie etykiety – AI odczytuje nazwę, skład i wartości odżywcze, a brakujące szacuje (oznaczone jako „szacunek AI”).",

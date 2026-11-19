@@ -68,7 +68,9 @@
     nalesniki: [0.15, 0.02], pancakes: [0.12, 0.02], gofry: [0.15, 0],
     pierniczki: [0.1, 0], kruche_ciastka: [0.1, 0], cookies: [0.1, 0], biscoff: [0.1, 0], tarta: [0.1, 0], szarlotka: [0.1, 0],
     biszkopt: [0.1, 0], lava_cake: [0.05, 0], brownie: [0.08, 0], sernik: [0.1, 0],
-    muffinki: [0.1, 0], babka_piaskowa: [0.1, 0], banana_bread: [0.12, 0], marchewkowe: [0.1, 0], parzone: [0.25, 0]
+    muffinki: [0.1, 0], babka_piaskowa: [0.1, 0], banana_bread: [0.12, 0], marchewkowe: [0.1, 0], parzone: [0.25, 0],
+    uszka: [0, 0], knedle: [0, 0], kluski_kladzione: [0, 0], placki_ziemniaczane: [0.15, 0.12], placki_twarogowe: [0.1, 0.05], paczki_serowe: [0.08, 0.12], bliny: [0.12, 0.02], podplomyki: [0.12, 0],
+    mazurek: [0.1, 0], tartaletki: [0.1, 0], rogaliki_serowe: [0.12, 0], krakersy: [0.2, 0], crumble: [0.1, 0], murzynek: [0.1, 0], piernik: [0.1, 0], rolada: [0.1, 0], ciasto_jogurtowe: [0.1, 0], biszkopty_tiramisu: [0.12, 0], clafoutis: [0.1, 0]
   };
   function cookChange(bake) {
     if (bake.family === "pastry") return PASTRY_COOK[bake.id] || [0.1, 0];

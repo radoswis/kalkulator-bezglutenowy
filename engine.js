@@ -185,7 +185,42 @@
     // Placek drożdżowy z kruszonką (blachowy). Źródło: tradycyjna receptura polska, proporcje jak drożdżówki, ciasto rozprowadzane w formie.
     { id: "placek_kruszonka", name: "Placek drożdżowy z kruszonką", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 14, sugar: 13, eggs: 20, unitWeight: 700, defaultCount: 1, unit: "blacha 24 × 30 cm", bakeNote: "180°C, 35 min", sweet: true,
       shapeStep: () => "Od razu, bez wyrastania w misce, przełóż ciasto do formy 24 × 30 cm wyłożonej papierem i rozprowadź równo mokrymi dłońmi lub mokrą łyżką. Jeśli chcesz, ułóż na wierzchu owoce (śliwki, jabłka, jagody), lekko wciskając.",
-      preBake: "Kruszonka: 60 g zimnego masła, 60 g cukru i 90 g mąki (np. Mix C, ryżowej lub skrobi z mąką ryżową) rozetrzyj palcami na grudki. Posyp wyrośnięte ciasto tuż przed pieczeniem." }
+      preBake: "Kruszonka: 60 g zimnego masła, 60 g cukru i 90 g mąki (np. Mix C, ryżowej lub skrobi z mąką ryżową) rozetrzyj palcami na grudki. Posyp wyrośnięte ciasto tuż przed pieczeniem." },
+    // ===== Nowe przepisy drożdżowe (v2.15, 19.11.2026). Proporcje piekarskie wg typowych receptur polskich i klasycznych (tłuszcz, cukier, jajka w % od mąki), dopasowane do klas reologicznych. =====
+    { id: "chleb_ziarnisty", name: "Chleb z ziarnami (słonecznik, dynia, siemię)", rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 3, sugar: 1, eggs: 0, unitWeight: 750, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 45 min",
+      shapeStep: () => "Wmieszaj w ciasto 100 g ziaren (słonecznik, pestki dyni, siemię lniane – siemię najlepiej namoczone wcześniej w 50 g wody). Bez wyrastania w misce uformuj mokrymi dłońmi bochenek albo przełóż ciasto do keksówki wyłożonej papierem. Wierzch zwilż wodą i posyp ziarnami." },
+    { id: "chleb_owsiany", name: "Chleb owsiany na miodzie (z formy)", preferFlour: { ows: 0.3 }, rheologyClass: "RHEO_POURABLE_HIGH_HYDRATION", salt: 1.8, yeastDry: 1.45, fat: 3, sugar: 3, eggs: 0, unitWeight: 750, defaultCount: 1, unit: "forma", bakeNote: "200°C, 50 min",
+      preBake: "Cukier w tym chlebie zastąp miodem (taka sama waga). Wierzch posmaruj wodą i posyp płatkami owsianymi bezglutenowymi." },
+    { id: "bulki_ziarniste", name: "Bułki ziarniste", rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.0, yeastDry: 1.45, fat: 3, sugar: 1, eggs: 0, unitWeight: 90, defaultCount: 8, unit: "bułka", bakeNote: "220°C, 20 min z parą",
+      preBake: "Przed pieczeniem zwilż bułki wodą i obtocz wierzch w ziarnach (słonecznik, sezam, siemię, pestki dyni)." },
+    // Cebularz lubelski: płaski placek z cebulą i makiem. Źródło: receptura tradycyjna (Produkt Regionalny – cebularz lubelski).
+    { id: "cebularze", name: "Cebularze lubelskie", rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 1.45, fat: 5, sugar: 3, eggs: 5, unitWeight: 90, defaultCount: 8, unit: "cebularz", bakeNote: "230°C, 12–15 min",
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} kawałków po około ${c.pw} g. Mokrymi dłońmi zrób kulki i rozpłaszcz je na blasze z papierem na placki o średnicy ok. 12 cm, z grubszym brzegiem.`,
+      preBake: "Farsz: 2 duże cebule pokrój w drobną kostkę, wymieszaj z 1 łyżką oleju, 1 łyżeczką maku i szczyptą soli. Wyrośnięte placki posmaruj roztrzepanym jajkiem, wciśnij środek palcami i rozłóż cebulę, zostawiając brzeg." },
+    { id: "pide", name: "Bułki do kebaba (pide)", rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 1.45, fat: 5, sugar: 2, eggs: 0, unitWeight: 150, defaultCount: 4, unit: "bułka", bakeNote: "230°C, 12–14 min",
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} kawałków po około ${c.pw} g. Mokrymi dłońmi uformuj owalne placki grubości ok. 2 cm i ułóż na blasze z papierem.`,
+      preBake: "Posmaruj placki mlekiem lub jajkiem, mocno dociśnij palcami wzór kratki i posyp sezamem lub czarnuszką." },
+    { id: "bulki_czosnkowe", name: "Odrywane bułeczki czosnkowe (do grilla)", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.8, yeastDry: 1.45, fat: 10, sugar: 3, eggs: 10, unitWeight: 50, defaultCount: 12, unit: "kulka", bakeNote: "190°C, 25 min",
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} kulek po około ${c.pw} g (mokre dłonie). Ułóż je ciasno, jedna przy drugiej, w okrągłej formie wyłożonej papierem.`,
+      preBake: "Masło czosnkowe: 50 g miękkiego masła, 3 przeciśnięte ząbki czosnku, natka pietruszki, szczypta soli. Połowę rozsmaruj na kulkach przed pieczeniem, resztę zaraz po wyjęciu z piekarnika." },
+    // Szneki z glancem – ślimaki drożdżowe z lukrem (Pomorze, Kujawy). Proporcje jak drożdżówki.
+    { id: "szneki", name: "Szneki z glancem", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 14, sugar: 14, eggs: 18, unitWeight: 90, defaultCount: 8, unit: "szneka", bakeNote: "180°C, 20 min", sweet: true,
+      shapeStep: c => `Bez wyrastania w misce rozwałkuj ciasto na papierze oprószonym mąką ryżową na prostokąt grubości ok. 1 cm. Posmaruj roztopionym masłem i posyp cukrem z cynamonem. Zwiń ciasno wzdłuż dłuższego boku (pomagaj sobie papierem) i pokrój na ${c.pcs} plastrów. Ułóż je na blasze z papierem.`,
+      preBake: "Glanc (lukier) zrób po upieczeniu: 150 g cukru pudru utrzyj z 2–3 łyżkami gorącej wody i polej jeszcze ciepłe szneki." },
+    { id: "jagodzianki", name: "Jagodzianki", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 14, sugar: 14, eggs: 20, unitWeight: 90, defaultCount: 8, unit: "jagodzianka", bakeNote: "180°C, 20 min", sweet: true,
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} kawałków po około ${c.pw} g. Każdy rozpłaszcz na dłoni (mokrej lub oprószonej mąką ryżową), nałóż 1 łyżkę jagód wymieszanych z cukrem i łyżeczką skrobi ziemniaczanej, zlep brzegi i ułóż złączeniem w dół na blasze z papierem.`,
+      preBake: "Posmaruj roztrzepanym jajkiem i posyp kruszonką (30 g masła, 30 g cukru, 45 g mąki, rozetrzyj palcami)." },
+    { id: "strucla_makowa", name: "Strucla z makiem (makowiec drożdżowy)", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.6, yeastDry: 1.5, fat: 15, sugar: 14, eggs: 22, unitWeight: 750, defaultCount: 1, unit: "strucla", bakeNote: "175°C, 40 min", sweet: true,
+      shapeStep: () => "Bez wyrastania w misce rozwałkuj ciasto na papierze oprószonym mąką ryżową na prostokąt ok. 30 × 35 cm. Rozsmaruj gotową masę makową (ok. 500 g), zostawiając 2 cm brzegu. Zwiń ciasno, pomagając sobie papierem, i przełóż razem z papierem do keksówki albo na blachę, złączeniem w dół.",
+      preBake: "Posmaruj roztrzepanym jajkiem. Jeśli wierzch za szybko się rumieni, po 25 minutach przykryj go folią aluminiową." },
+    { id: "rogaliki_drozdzowe", name: "Rogaliki drożdżowe z dżemem", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 16, sugar: 10, eggs: 18, unitWeight: 40, defaultCount: 16, unit: "rogalik", bakeNote: "180°C, 15 min", sweet: true,
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na 2 części. Każdą rozwałkuj na papierze oprószonym mąką ryżową na koło o średnicy ok. 30 cm i pokrój jak tort na 8 trójkątów (razem ${c.pcs}). Na szerszym końcu połóż łyżeczkę gęstego dżemu lub powideł i zwiń w rogalik. Ułóż na blasze z papierem.`,
+      preBake: "Posmaruj roztrzepanym jajkiem. Po upieczeniu i wystudzeniu posyp cukrem pudrem." },
+    // Pampuchy (kluski na parze / buchty): ciasto drożdżowe z mlekiem, gotowane na parze, bez piekarnika.
+    { id: "pampuchy", name: "Pampuchy (kluski drożdżowe na parze)", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 6, sugar: 5, eggs: 10, unitWeight: 70, defaultCount: 10, unit: "pampuch", bakeNote: "na parze, pod przykryciem, 15–18 min",
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} kulek po około ${c.pw} g (mokre dłonie). Ułóż je na kwadratach papieru do pieczenia, z odstępami.`,
+      preBake: "Zagotuj wodę w szerokim garnku i nałóż na niego sitko lub parowar (woda nie może dotykać klusek). Wkładaj pampuchy razem z papierem, przykryj i gotuj na parze 15–18 minut, nie podnosząc pokrywki. Podawaj od razu, z sosem, jagodami albo masłem z cukrem." }
+
   ];
 
   // ---------- Model pieczenia (temperatura i czas dla ciast bezglutenowych) ----------
@@ -200,7 +235,10 @@
     bajgle: [210, 18, 20, "boil"], precle: [210, 13, 15, "boil"], grissini: [200, 13, 15],
     chalka: [180, 30, 35], babka: [175, 45, 50], drozdzowki: [180, 18, 20], cynamonki: [180, 20, 22], buleczki_maslane: [190, 16, 18],
     paczki: [170, 0, 0, "fry"], langosz: [175, 0, 0, "fry"],
-    english_muffin: [0, 7, 9, "griddle"], brioche: [190, 15, 18], placek_kruszonka: [180, 30, 35]
+    english_muffin: [0, 7, 9, "griddle"], brioche: [190, 15, 18], placek_kruszonka: [180, 30, 35],
+    chleb_ziarnisty: [220, 50, 55, "twoStage"], chleb_owsiany: [200, 45, 50], bulki_ziarniste: [220, 18, 20, "steam"], cebularze: [230, 12, 14], pide: [230, 12, 14],
+    bulki_czosnkowe: [190, 22, 25], szneki: [180, 18, 20], jagodzianki: [180, 18, 20], strucla_makowa: [175, 35, 40], rogaliki_drozdzowe: [180, 13, 15]
+    // pampuchy: na parze – bez piekarnika (ovenPlan zwraca null, używany bakeNote)
   };
   const GF_TIME_FACTOR = 1.2;     // żel psyllium + skrobi potrzebuje dłużej, żeby się upiec w środku
   const MIN_OVEN_TEMP = 160;

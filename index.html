@@ -467,7 +467,13 @@ const SIMILAR={focaccia:[85],pizza_blacha:[85],pizza_patelnia:[85],langosz:[88],
  kluski_slaskie:[97],pyzy:[97],kluski_lane:[95],quiche:[92],kopytka:[92],leniwe:[92],gnocchi:[90],oponki:[88],pierogi:[75,"ciasto mniej elastyczne – zlepiaj od razu, nie przesuszaj"],tortilla:[75,"mniej giętka na zimno – zawijaj na ciepło"],makaron:[70,"mniej sprężysty, gotuj krócej"],
  cookies:[95],biscoff:[94],pierniczki:[92],kruche_ciastka:[92],tarta:[92],szarlotka:[92],faworki:[78,"trudniej o cienkie płaty z pęcherzykami"],
  sernik:[98],lava_cake:[97],brownie:[97],babka_piaskowa:[95],marchewkowe:[95],muffinki:[93],banana_bread:[93],biszkopt:[92],parzone:[82,"ptysie rosną trochę słabiej"],
- tempura:[95,"często chrupie lepiej niż pszenna"],pancakes:[93],gofry:[93],nalesniki:[90],racuchy:[85]};
+ tempura:[95,"często chrupie lepiej niż pszenna"],pancakes:[93],gofry:[93],nalesniki:[90],racuchy:[85],
+ // v2.15 – szacunek jak wyżej
+ chleb_ziarnisty:[85,"ziarna maskują różnicę w miąższu"],chleb_owsiany:[82],bulki_ziarniste:[80],cebularze:[85],pide:[80,"mniej sprężyste, najlepsze na ciepło"],bulki_czosnkowe:[85],
+ szneki:[83],jagodzianki:[83],strucla_makowa:[78,"ciasto łatwiej pęka przy zwijaniu – zwijaj na papierze"],rogaliki_drozdzowe:[80],pampuchy:[80,"mniej puszyste i sprężyste, jedz od razu"],
+ uszka:[75,"ciasto mniej elastyczne – zlepiaj od razu"],placki_ziemniaczane:[98],knedle:[95],kluski_kladzione:[93],bliny:[95],placki_twarogowe:[96],podplomyki:[80,"mniej giętkie na zimno – zawijaj na ciepło"],
+ mazurek:[95],tartaletki:[94],rogaliki_serowe:[90,"bardziej kruche niż listkowane"],krakersy:[95],murzynek:[95],piernik:[96],rolada:[88,"ostrożnie przy zwijaniu – zwijaj na ciepło"],
+ ciasto_jogurtowe:[94],biszkopty_tiramisu:[90],paczki_serowe:[90],clafoutis:[97],crumble:[98]};
 function simHtml(id,fam){const v=SIMILAR[id];if(!v)return"";const [p,n]=v;
  const lvl=p>=90?"prawie jak pszenne":p>=80?"bardzo podobne":p>=70?"podobne, z różnicami":"wyraźnie inne";
  return `<div>Podobieństwo do pszennego: <b>${p}%</b> – ${lvl}${n?`. ${n[0].toUpperCase()+n.slice(1)}.`:""}</div><div class="simbar"><i style="width:${p}%"></i></div>`+
@@ -695,7 +701,9 @@ function startTimer(sec){try{audio=audio||new (window.AudioContext||window.webki
 const FRY={tortilla:[50,50,1,"Placek"],nalesniki:[75,30,1,"Naleśnik"],pancakes:[120,60,3,"Partia"],racuchy:[150,150,4,"Partia"],
  oponki:[150,150,4,"Partia"],paczki:[150,150,3,"Partia"],langosz:[150,150,1,"Langosz"],faworki:[8,8,4,"Partia"],naan:[120,120,1,"Placek"],
  english_muffin:[480,480,4,"Partia"],tempura:[270,0,5,"Partia"],bajgle:[60,60,2,"Partia"],precle:[60,60,2,"Partia"],
- pierogi:[150,0,12,"Partia",1],leniwe:[120,0,15,"Partia",1],kopytka:[150,0,20,"Partia",1],kluski_slaskie:[150,0,15,"Partia",1],gnocchi:[60,0,25,"Partia",1],pyzy:[1050,0,8,"Partia",1]};
+ pierogi:[150,0,12,"Partia",1],leniwe:[120,0,15,"Partia",1],kopytka:[150,0,20,"Partia",1],kluski_slaskie:[150,0,15,"Partia",1],gnocchi:[60,0,25,"Partia",1],pyzy:[1050,0,8,"Partia",1],
+ uszka:[120,0,20,"Partia",1],knedle:[330,0,6,"Partia",1],kluski_kladzione:[210,0,15,"Partia",1],placki_ziemniaczane:[210,210,4,"Partia"],placki_twarogowe:[180,180,4,"Partia"],
+ paczki_serowe:[270,0,6,"Partia"],bliny:[90,60,4,"Partia"],podplomyki:[90,90,1,"Placek"]};
 const FRY_STEP=/smaż|patelni|obgotuj|wrzątk|gotuj partiami/i;
 let fry=null;
 const frN=()=>{const f=FRY[cur.id];return Math.max(1,Math.ceil((cur.pcs||1)/f[2]))};

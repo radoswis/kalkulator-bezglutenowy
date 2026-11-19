@@ -10,7 +10,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - Bez logowania. Dwie osoby w domu, wspólne dane.
 - Działa na telefonie (Samsung S21 Ultra) i laptopie.
 
-## Stan obecny (v2.6 – 61 przepisów: 30 drożdżowych + 31 bezdrożdżowych)
+## Stan obecny (v2.15 – 92 przepisy: 41 drożdżowych + 51 bezdrożdżowych)
 - `engine.js` – silnik (globalny `GFEngine`, działa też w Node: `require("./engine.js")`). Typy w JSDoc.
   - `INGREDIENT_MATRIX` – składniki: `macros` (g/100 g), `wac_cold`, `wac_hot` (na razie informacyjnie), `flavorProfile`, `role`, mixy: `isCommercialMix`, `hasHPMC`, `starchBase`, `mixPriority`; `maxShare` = limit udziału.
   - `RHEOLOGY_CLASSES` – 6 klas reologicznych: zakresy hydratacji bazowej, psyllium, tłuszczu, jajek, cukru i cel profilu mąk (skrobia = udział frakcji skrobiowej, białko, błonnik).

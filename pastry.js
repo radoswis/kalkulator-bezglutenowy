@@ -468,7 +468,196 @@
         `Wbijaj jajka po jednym (razem do ${c.g("eggs")}), miksując po każdym. Ciasto ma być gładkie i lśniące i opadać z łyżki w kształt litery V. Ostatnie jajko może nie być potrzebne.`,
         `Szprycuj rękawem ${c.pcs} ptysi po ok. ${c.pw} g (albo eklery długości 10 cm). Piecz w 200°C 15 minut, potem w 180°C 15–20 minut. Przez pierwsze 20 minut nie otwieraj piekarnika.`,
         "Churros: zamiast pieczenia wyciskaj paski prosto do oleju rozgrzanego do 180°C i smaż na złoto, ok. 2–3 minuty."
+      ] },
+
+    // ===== Nowe przepisy bez drożdży (v2.15, 19.11.2026). Proporcje wg typowych receptur polskich i klasycznych, w % od mąk lub od masy ciasta. =====
+    { id: "uszka", name: "Uszka do barszczu", category: "Pierogi, kluski i makarony (bez drożdży)", rheologyClass: "RHEO_SCALDED_BOILED_DOUGH",
+      basis: "flour", components: [["hotWater", 78], ["butterOrOil", 5], ["eggs", 5], ["psy", 1.0], ["salt", 1.8]],
+      unitWeight: 8, defaultCount: 70, unit: "uszko", bakeNote: "gotowanie 2 min od wypłynięcia", prefer: { tap: 0.12 },
+      steps: c => [
+        `W misce wymieszaj mąki (${c.flour}), sól i psyllium.`,
+        `Wlej gorącą wodę (${c.g("hotWater")}) z tłuszczem, wymieszaj łyżką, a gdy przestygnie, dodaj jajko i zagnieć gładkie ciasto. Przykryj i odstaw na 15 minut.`,
+        "Farsz: 30 g suszonych grzybów namocz i ugotuj, posiekaj drobno z 1 podsmażoną cebulą, dopraw solą i pieprzem. Możesz dodać 100 g kapusty kiszonej.",
+        "Rozwałkuj cienko (ok. 1,5 mm) porcjami, resztę trzymaj pod miską. Wykrawaj kwadraty 4 × 4 cm.",
+        `Na każdy kwadrat nałóż odrobinę farszu, złóż w trójkąt, zlep i połącz rogi. Wyjdzie ok. ${c.pcs} uszek.`,
+        "Gotuj partiami we wrzątku z solą, 2 minuty od wypłynięcia. Wyjmuj łyżką cedzakową."
+      ] },
+    { id: "placki_ziemniaczane", name: "Placki ziemniaczane", category: "Naleśniki, gofry i panierki", rheologyClass: "RHEO_CURD_POTATO_DUMPLINGS",
+      basis: "total", flourPct: 8, components: [["rawPotatoes", 82], ["eggs", 8], ["salt", 1.0]], target: { starch: [70, 100], protein: [0, 4], fiber: [0, 3] }, prefer: { szi: 0.5 },
+      unitWeight: 70, defaultCount: 10, unit: "placek", bakeNote: "smażenie na oleju, 3–4 min z każdej strony",
+      steps: c => [
+        `Zetrzyj surowe ziemniaki na drobnych oczkach razem z 1 małą cebulą i mocno odciśnij przez ściereczkę. Potrzebujesz ${c.g("rawPotatoes")}. Odlany sok odstaw na chwilę i zlej wodę, a osiadłą na dnie skrobię dodaj z powrotem do ziemniaków.`,
+        `Dodaj jajka (${c.g("eggs")}), mąki (${c.flour}) i sól. Wymieszaj.`,
+        `Smaż na rozgrzanym oleju, nakładając po ok. ${c.pw} g i rozpłaszczając łyżką, 3–4 minuty z każdej strony, aż będą złote i chrupiące.`,
+        "Odsącz na ręczniku papierowym. Podawaj ze śmietaną, cukrem albo gulaszem."
+      ] },
+    { id: "knedle", name: "Knedle ze śliwkami", category: "Pierogi, kluski i makarony (bez drożdży)", rheologyClass: "RHEO_CURD_POTATO_DUMPLINGS",
+      basis: "total", flourPct: 30, components: [["potatoes", 62], ["eggs", 7], ["salt", 0.8]], target: { starch: [55, 75] }, prefer: { szi: 0.3 },
+      unitWeight: 70, defaultCount: 10, unit: "knedel", bakeNote: "gotowanie 5–6 min od wypłynięcia", sweet: true,
+      steps: c => [
+        `Ugotuj ziemniaki, przeciśnij przez praskę i wystudź. Potrzebujesz ${c.g("potatoes")}.`,
+        `Dodaj jajka (${c.g("eggs")}), mąki (${c.flour}) i sól. Szybko zagnieć gładkie ciasto.`,
+        `Podziel na ${c.pcs} części po ok. ${c.pw} g. Każdą rozpłaszcz na dłoni, włóż śliwkę (bez pestki, w środek możesz dać kostkę cukru) i zlep, tocząc kulkę.`,
+        "Gotuj partiami w osolonym wrzątku na małym ogniu, 5–6 minut od wypłynięcia.",
+        "Podawaj polane masłem zrumienionym z bułką tartą bezglutenową i cukrem, ze śmietaną."
+      ] },
+    { id: "kluski_kladzione", name: "Kluski kładzione", category: "Pierogi, kluski i makarony (bez drożdży)", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["eggs", 60], ["milkOrWater", 55], ["salt", 1.5]],
+      unitWeight: 150, defaultCount: 4, unit: "porcja", bakeNote: "gotowanie 3–4 min od wypłynięcia",
+      steps: c => [
+        `Jajka (${c.g("eggs")}) roztrzep z mlekiem lub wodą (${c.g("milkOrWater")}) i solą.`,
+        `Wsyp mąki (${c.flour}) i wymieszaj na gęste ciasto, które ledwo spływa z łyżki. Odstaw na 10 minut.`,
+        "Zagotuj osoloną wodę. Łyżką maczaną we wrzątku nabieraj ciasto i kładź je partiami do garnka.",
+        "Gotuj partiami 3–4 minuty od wypłynięcia. Podawaj z sosem, skwarkami lub do gulaszu."
+      ] },
+    { id: "bliny", name: "Bliny gryczane (małe placuszki)", category: "Naleśniki, gofry i panierki", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["milk", 140], ["eggs", 50], ["meltedButter", 10], ["bakingPowder", 2.0], ["salt", 1.0]], prefer: { gry: 0.5 },
+      unitWeight: 35, defaultCount: 18, unit: "blin", bakeNote: "patelnia, 1–2 min z każdej strony",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}) z proszkiem i solą.`,
+        `Dodaj mleko (${c.g("milk")}), jajka (${c.g("eggs")}) i roztopione masło. Wymieszaj na gładkie, gęste ciasto. Odstaw na 15 minut.`,
+        `Smaż na lekko natłuszczonej patelni małe placuszki po ok. ${c.pw} g, 1–2 minuty z każdej strony.`,
+        "Podawaj ze śmietaną, wędzonym łososiem albo z miodem."
+      ] },
+    { id: "placki_twarogowe", name: "Placki twarogowe (serniczki z patelni)", category: "Naleśniki, gofry i panierki", rheologyClass: "RHEO_CURD_POTATO_DUMPLINGS",
+      basis: "total", flourPct: 16, components: [["quark", 68], ["eggs", 11], ["sugar", 5], ["bakingPowder", 0.6]], target: { starch: [40, 60] },
+      unitWeight: 60, defaultCount: 10, unit: "placek", bakeNote: "patelnia, 3 min z każdej strony", sweet: true,
+      steps: c => [
+        `Twaróg (${c.g("quark")}) zmiel lub rozgnieć widelcem. Dodaj jajka (${c.g("eggs")}), cukier i szczyptę soli.`,
+        `Wsyp mąki (${c.flour}) z proszkiem i wymieszaj. Ciasto ma się dać formować mokrymi dłońmi.`,
+        `Uformuj ${c.pcs} placków po ok. ${c.pw} g, grubości 1,5 cm.`,
+        "Smaż na maśle lub oleju, na średnim ogniu, ok. 3 minuty z każdej strony, aż się zezłocą.",
+        "Podawaj ze śmietaną, owocami lub dżemem."
+      ] },
+    { id: "podplomyki", name: "Szybkie placki na jogurcie (bez drożdży, do gyrosa)", category: "Pizza i płaskie", rheologyClass: "RHEO_SCALDED_BOILED_DOUGH",
+      basis: "flour", components: [["milkOrYogurt", 80], ["oil", 6], ["psy", 1.0], ["bakingPowder", 2.5], ["salt", 1.5]],
+      unitWeight: 90, defaultCount: 6, unit: "placek", bakeNote: "sucha patelnia, 1–2 min z każdej strony",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}), psyllium, proszek i sól.`,
+        `Dodaj jogurt (${c.g("milkOrYogurt")}) i olej. Zagnieć gładkie ciasto i odstaw pod przykryciem na 10 minut.`,
+        `Podziel na ${c.pcs} kulek po ok. ${c.pw} g. Każdą rozwałkuj między dwoma arkuszami papieru do pieczenia na placek grubości 3–4 mm.`,
+        "Piecz na suchej, mocno rozgrzanej patelni, 1–2 minuty z każdej strony, aż pojawią się brązowe plamki.",
+        "Trzymaj pod ściereczką, wtedy zostaną miękkie. Zawijaj na ciepło."
+      ] },
+    { id: "mazurek", name: "Mazurek (kruchy spód)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["coldButter", 60], ["powderedSugar", 25], ["yolks", 20], ["salt", 0.5]],
+      unitWeight: 550, defaultCount: 1, unit: "blacha 24 × 30 cm", bakeNote: "180°C, 20–25 min", sweet: true,
+      steps: c => [
+        `Mąki (${c.flour}) wymieszaj z cukrem pudrem i solą. Dodaj zimne masło (${c.g("coldButter")}) w kostce i posiekaj nożem lub rozetrzyj palcami na kruszonkę.`,
+        `Dodaj żółtka (${c.g("yolks")}) i szybko zagnieć. Owiń folią i schłódź 30 minut.`,
+        "Rozwałkuj między arkuszami papieru na grubość 5 mm i przełóż do formy. Z resztek zrób wałeczek na brzeg. Nakłuj widelcem.",
+        "Piecz w 180°C 20–25 minut, aż będzie złoty. Wystudź w formie.",
+        "Posmaruj masą kajmakową, kremem czekoladowym lub dżemem i udekoruj bakaliami."
+      ] },
+    { id: "tartaletki", name: "Kruche babeczki / tartaletki", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["coldButter", 55], ["powderedSugar", 25], ["eggs", 16], ["salt", 0.5]],
+      unitWeight: 30, defaultCount: 20, unit: "babeczka", bakeNote: "180°C, 12–15 min", sweet: true,
+      steps: c => [
+        `Mąki (${c.flour}), cukier puder i sól wymieszaj z zimnym masłem (${c.g("coldButter")}) na kruszonkę.`,
+        `Dodaj jajka (${c.g("eggs")}) i szybko zagnieć. Owiń folią i schłódź 30 minut.`,
+        `Podziel na ${c.pcs} kulek po ok. ${c.pw} g i wciśnij palcami w foremki do babeczek (cienko, ok. 3 mm). Nakłuj widelcem.`,
+        "Piecz w 180°C 12–15 minut. Wystudź w foremkach, dopiero potem wyjmij – ciepłe łatwo pękają.",
+        "Napełnij budyniem, kremem i owocami albo farszem wytrawnym."
+      ] },
+    // Rogaliki serowe – klasyczna proporcja 1 : 1 : 1 (mąka, twaróg, masło).
+    { id: "rogaliki_serowe", name: "Rogaliki twarogowe (kruche)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["quark", 100], ["coldButter", 100], ["bakingPowder", 2.0], ["salt", 0.5]],
+      unitWeight: 30, defaultCount: 20, unit: "rogalik", bakeNote: "190°C, 15–18 min", sweet: true,
+      steps: c => [
+        `Mąki (${c.flour}) wymieszaj z proszkiem i solą. Dodaj zimne masło (${c.g("coldButter")}) i twaróg (${c.g("quark")}) i szybko zagnieć ciasto.`,
+        "Owiń folią i schłódź co najmniej 1 godzinę (może być na noc).",
+        `Rozwałkuj porcjami na papierze oprószonym mąką ryżową na grubość 3 mm, wykrawaj trójkąty. Na szerszy koniec połóż odrobinę dżemu i zwiń rogalik. Wyjdzie ok. ${c.pcs} sztuk.`,
+        "Piecz w 190°C 15–18 minut, aż lekko się zezłocą. Ciepłe posyp cukrem pudrem."
+      ] },
+    { id: "krakersy", name: "Krakersy wytrawne (z ziołami)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["water", 42], ["oil", 25], ["bakingPowder", 1.0], ["salt", 2.0]],
+      unitWeight: 10, defaultCount: 55, unit: "krakers", bakeNote: "180°C, 15–18 min",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}), sól, proszek i 1 łyżeczkę ziół (oregano, tymianek) lub sezamu.`,
+        `Dodaj wodę (${c.g("water")}) i olej, zagnieć gładkie ciasto.`,
+        "Rozwałkuj między arkuszami papieru do pieczenia bardzo cienko (2 mm). Zdejmij górny papier, potnij nożem lub radełkiem na kwadraty i nakłuj widelcem.",
+        "Posyp gruboziarnistą solą i piecz w 180°C 15–18 minut, aż brzegi się zezłocą. Studź na kratce – chrupią po wystygnięciu."
+      ] },
+    { id: "murzynek", masked: true, name: "Murzynek (ciasto kakaowe)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
+      basis: "flour", components: [["meltedButter", 70], ["sugar", 85], ["milk", 60], ["eggs", 70], ["cocoa", 18], ["bakingPowder", 3.0], ["bakingSoda", 0.5]],
+      unitWeight: 750, defaultCount: 1, unit: "keksówka 30 cm", bakeNote: "175°C, 40–45 min", sweet: true,
+      steps: c => [
+        `W garnku podgrzej masło (${c.g("meltedButter")}), cukier, mleko (${c.g("milk")}) i kakao, aż cukier się rozpuści. Odlej 4 łyżki na polewę. Resztę wystudź.`,
+        `Do przestudzonej masy dodaj jajka (${c.g("eggs")}) i wymieszaj.`,
+        `Wsyp mąki (${c.flour}) z proszkiem i sodą. Wymieszaj tylko do połączenia.`,
+        "Przelej do keksówki wyłożonej papierem. Piecz w 175°C 40–45 minut, aż patyczek będzie suchy.",
+        "Wystudź i polej odłożoną masą."
+      ] },
+    { id: "piernik", masked: true, name: "Piernik na miodzie (szybki)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
+      basis: "flour", components: [["honey", 60], ["softButter", 35], ["brownSugar", 30], ["eggs", 50], ["milk", 50], ["spice", 4], ["cocoa", 6], ["bakingSoda", 2.0]],
+      unitWeight: 750, defaultCount: 1, unit: "keksówka 30 cm", bakeNote: "165°C, 50–60 min", sweet: true,
+      steps: c => [
+        `Miód (${c.g("honey")}), masło (${c.g("softButter")}) i cukier podgrzej w garnku, aż się połączą. Wystudź.`,
+        `Dodaj jajka (${c.g("eggs")}) i mleko (${c.g("milk")}), wymieszaj.`,
+        `Wsyp mąki (${c.flour}) z przyprawą do piernika, kakao i sodą. Wymieszaj na gładko. Możesz dodać garść bakalii.`,
+        "Przelej do keksówki wyłożonej papierem. Piecz w 165°C 50–60 minut, aż patyczek będzie suchy.",
+        "Najlepszy po 1–2 dniach, owinięty w folię. Możesz przekroić i przełożyć powidłami."
+      ] },
+    { id: "rolada", name: "Rolada biszkoptowa", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
+      basis: "flour", components: [["eggs", 220], ["sugar", 100], ["bakingPowder", 1.0]], target: { starch: [45, 55] }, prefer: { szi: 0.45 },
+      unitWeight: 520, defaultCount: 1, unit: "blacha 30 × 40 cm", bakeNote: "180°C, 10–12 min", sweet: true,
+      steps: c => [
+        `Białka z jajek (${c.g("eggs")}) ubij ze szczyptą soli na sztywno, dodając stopniowo cukier. Wmiksuj po jednym żółtku.`,
+        `Wsyp przesiane mąki (${c.flour}) z proszkiem i delikatnie wymieszaj łopatką.`,
+        "Wylej na blachę wyłożoną papierem i wyrównaj. Piecz w 180°C 10–12 minut, aż będzie sprężysty.",
+        "Od razu zwiń ciepły biszkopt razem z papierem lub w ściereczkę oprószoną cukrem pudrem i zostaw do wystygnięcia.",
+        "Rozwiń, posmaruj dżemem lub kremem i zwiń z powrotem. Schłódź przed krojeniem."
+      ] },
+    { id: "ciasto_jogurtowe", name: "Ciasto jogurtowe ze śliwkami lub owocami", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
+      basis: "flour", components: [["milkOrYogurt", 90], ["oil", 45], ["sugar", 70], ["eggs", 60], ["bakingPowder", 3.0], ["salt", 0.4]],
+      unitWeight: 750, defaultCount: 1, unit: "blacha 24 × 30 cm", bakeNote: "175°C, 40–45 min", sweet: true,
+      steps: c => [
+        `Jajka (${c.g("eggs")}) ubij z cukrem na puszystą masę, ok. 4 minuty.`,
+        `Dodaj jogurt (${c.g("milkOrYogurt")}) i olej, krótko wymieszaj.`,
+        `Wsyp mąki (${c.flour}) z proszkiem i solą. Wymieszaj tylko do połączenia.`,
+        "Przelej do formy wyłożonej papierem. Ułóż owoce (śliwki, jabłka, rabarbar, jagody), lekko wciskając.",
+        "Piecz w 175°C 40–45 minut, aż patyczek będzie suchy. Posyp cukrem pudrem."
+      ] },
+    { id: "biszkopty_tiramisu", name: "Biszkopty podłużne (do tiramisu, kocie języczki)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
+      basis: "flour", components: [["eggs", 200], ["sugar", 80]], target: { starch: [45, 55] }, prefer: { szi: 0.45 },
+      unitWeight: 10, defaultCount: 50, unit: "biszkopt", bakeNote: "180°C, 10–12 min", sweet: true,
+      steps: c => [
+        `Oddziel białka od żółtek (jajka razem ${c.g("eggs")}). Białka ubij na sztywno, dodając stopniowo połowę cukru.`,
+        "Żółtka utrzyj z resztą cukru na jasną masę i delikatnie połącz z pianą.",
+        `Wsyp przesiane mąki (${c.flour}) i wymieszaj łopatką, tylko do połączenia.`,
+        `Szprycuj rękawem paski długości 8–10 cm na blachę z papierem (ok. ${c.pcs} sztuk). Posyp cukrem pudrem.`,
+        "Piecz w 180°C 10–12 minut, aż będą lekko złote. Studź na papierze."
+      ] },
+    { id: "paczki_serowe", name: "Pączki serowe (kuleczki z twarogu)", category: "Ciastka, pierniczki i kruche", rheologyClass: "RHEO_CURD_POTATO_DUMPLINGS",
+      basis: "total", flourPct: 38, components: [["quark", 42], ["eggs", 11], ["sugar", 7], ["bakingSoda", 0.8], ["vinegarOrSpirit", 1.2]],
+      target: { starch: [35, 45] }, unitWeight: 30, defaultCount: 20, unit: "pączek", bakeNote: "smażenie w 170°C, 4–5 min", sweet: true,
+      steps: c => [
+        `Twaróg (${c.g("quark")}) zmiel na gładko. Wymieszaj z jajkami (${c.g("eggs")}), cukrem i octem lub spirytusem.`,
+        `Wsyp mąki (${c.flour}) z sodą i zagnieć miękkie ciasto. Odstaw na 10 minut.`,
+        `Mokrymi dłońmi formuj ${c.pcs} kulek po ok. ${c.pw} g.`,
+        "Smaż partiami w oleju rozgrzanym do 170°C, 4–5 minut, obracając, aż będą złote. Nie za gorący olej – środek musi się dosmażyć.",
+        "Odsącz na ręczniku papierowym i obtocz w cukrze pudrze."
+      ] },
+    { id: "clafoutis", name: "Clafoutis (zapiekany placek z wiśniami)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["milk", 200], ["eggs", 120], ["sugar", 45], ["meltedButter", 12], ["salt", 0.4]],
+      unitWeight: 600, defaultCount: 1, unit: "forma 24 cm", bakeNote: "180°C, 35–40 min", sweet: true,
+      steps: c => [
+        "Formę wysmaruj masłem i posyp cukrem. Ułóż 400–500 g wiśni lub czereśni (mogą być z pestkami – tak jest tradycyjnie, ale uważaj przy jedzeniu).",
+        `Jajka (${c.g("eggs")}) roztrzep z cukrem i solą. Dodaj mąki (${c.flour}), wymieszaj na gładko.`,
+        `Wlej mleko (${c.g("milk")}) i roztopione masło, wymieszaj. Ciasto będzie rzadkie jak na naleśniki.`,
+        "Zalej owoce i piecz w 180°C 35–40 minut, aż wierzch się zezłoci, a środek przestanie się trząść.",
+        "Podawaj lekko ciepłe, posypane cukrem pudrem."
+      ] },
+    { id: "crumble", name: "Crumble owocowe (kruszonka na owocach)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["coldButter", 65], ["brownSugar", 65], ["cinnamon", 1.0], ["salt", 0.4]],
+      unitWeight: 500, defaultCount: 1, unit: "naczynie 20 × 25 cm", bakeNote: "180°C, 35–40 min", sweet: true,
+      steps: c => [
+        "Pokrój ok. 1 kg owoców (jabłka, śliwki, rabarbar, jagody), wymieszaj z 2 łyżkami cukru i 1 łyżką skrobi ziemniaczanej i przełóż do naczynia żaroodpornego.",
+        `Mąki (${c.flour}), cukier, cynamon i sól rozetrzyj palcami z zimnym masłem (${c.g("coldButter")}) na grube grudki. Możesz dodać garść płatków owsianych bezglutenowych lub posiekanych orzechów.`,
+        "Posyp kruszonką owoce.",
+        "Piecz w 180°C 35–40 minut, aż owoce zaczną bulgotać, a kruszonka się zezłoci. Podawaj na ciepło, z lodami lub jogurtem."
       ] }
+
   ];
 
   // ---------- Kategorie i drzewo wyboru ----------
@@ -482,7 +671,8 @@
     pizza_neapol: 0, pizza_blacha: 0, pizza_patelnia: 0, focaccia: 0, pita: 0, naan: 0, langosz: 0,
     chleb_jasny: 1, chleb_gryczany: 1, chleb_tostowy: 1, ciabatta: 1, bagietka: 1,
     hamburger: 2, subway: 2, kajzerki: 2, english_muffin: 2, brioche: 2, bajgle: 2, precle: 2, grissini: 2,
-    calzone: 3, paszteciki: 3, pierogi_drozdzowe: 3, chalka: 3, babka: 3, drozdzowki: 3, cynamonki: 3, buleczki_maslane: 3, paczki: 3, placek_kruszonka: 3
+    calzone: 3, paszteciki: 3, pierogi_drozdzowe: 3, chalka: 3, babka: 3, drozdzowki: 3, cynamonki: 3, buleczki_maslane: 3, paczki: 3, placek_kruszonka: 3,
+    chleb_ziarnisty: 1, chleb_owsiany: 1, bulki_ziarniste: 2, cebularze: 2, pide: 2, bulki_czosnkowe: 2, szneki: 3, jagodzianki: 3, strucla_makowa: 3, rogaliki_drozdzowe: 3, pampuchy: 3
   };
   for (const b of BAKES) { b.category = CATEGORIES[YEAST_CATEGORY[b.id] ?? 3]; b.family = "yeast"; }
   for (const b of PASTRY_BAKES) b.family = "pastry";
