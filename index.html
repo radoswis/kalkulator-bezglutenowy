@@ -7,6 +7,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1F4D3A">
 <meta name="color-scheme" content="light dark">
+<script>/* motyw zapisany na tym urządzeniu: auto / jasny / ciemny – ustawiany przed wyświetleniem, bez mignięcia */try{const t=localStorage.getItem("gf_theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
@@ -283,6 +284,8 @@ details.prefs .inner{display:grid;gap:10px}
 /* v2.16.2: jasny pas pod przepisem na całą szerokość ekranu (tekst nie dochodzi do krawędzi tła) */
 .sheet{margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
 :root{color-scheme:light dark}
+:root[data-theme="light"]{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
+.themepick{flex-basis:100%;display:grid;gap:6px}.themepick .seg{max-width:460px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -362,6 +365,7 @@ details.prefs .inner{display:grid;gap:10px}
 <button type="button" data-go="recipe"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M9 8h6M9 12h6"/></svg>Przepis</button>
 </nav>
 <footer class="appfoot">
+<div class="themepick"><span>Wygląd:</span><div class="seg" role="group" aria-label="Wygląd aplikacji"><button type="button" data-look="auto">Jak w telefonie</button><button type="button" data-look="light">Jasny</button><button type="button" data-look="dark">Ciemny</button></div></div>
 <span id="appVer"></span>
 <button type="button" class="linkbtn" id="chgBtn">Co nowego</button>
 <button type="button" class="btn" id="updBtn">Sprawdź aktualizację</button>
@@ -968,6 +972,14 @@ $("pantryCount").textContent=`Zaznaczono: ${sel.size}`;if(view==="start")renderS
 new MutationObserver(decorateOut).observe($("out"),{childList:true});
 renderCats();
 {let v="start";try{v=localStorage.getItem("gf_view")||"start"}catch(e){}go(v,true)}
+
+// Wygląd: jasny / ciemny / jak w telefonie – zapamiętany na tym urządzeniu (każdy telefon osobno)
+function setLook(v){try{v==="auto"?localStorage.removeItem("gf_theme"):localStorage.setItem("gf_theme",v)}catch(e){}
+ if(v==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",v);
+ const cur=document.documentElement.getAttribute("data-theme")||"auto";document.querySelectorAll("[data-look]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.look===cur));
+ const dark=cur==="dark"||(cur==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);document.querySelector('meta[name="theme-color"]').content=dark?"#141714":"#1F4D3A"}
+document.addEventListener("click",e=>{const l=e.target.closest("[data-look]");if(l)setLook(l.dataset.look)});
+setLook(document.documentElement.getAttribute("data-theme")||"auto");
 
 renderPantry();setDefaults();const ry=restoreUI();if(ry===false)calc();
 loadShared().then(()=>{if(ry)window.scrollTo(0,ry)});
