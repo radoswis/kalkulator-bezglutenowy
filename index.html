@@ -146,6 +146,7 @@ label{font-size:.95rem;font-weight:600;color:var(--fg)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn:not(.ghost){color:#10140f}}
 .btn.ghost{border-width:2px}
 .btn:active{transform:translateY(1px)}
+.labelbtn{justify-self:start}.labelgo{margin-top:8px}
 .scanbtn{background:var(--gold);color:#1C1B19!important;justify-self:start;font-family:var(--display);font-weight:700}
 .card{border-radius:28px;padding:22px;gap:16px;box-shadow:0 10px 30px #3a2a1012}
 .card h3{font-size:1.5rem;font-weight:700;line-height:1.2}
@@ -225,6 +226,9 @@ summary{min-height:28px}
 <div class="inner">
 <div class="row"><input id="q" placeholder="Nazwa lub kod kreskowy, np. mąka gryczana Bezgluten"><button class="btn ghost" id="searchBtn" type="button">Szukaj w internecie</button></div>
 <button class="btn scanbtn" id="scanBtn" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 7V4h3M21 7V4h-3M3 17v3h3M21 17v3h-3M7 8v8M10 8v8M13 8v8M16 8v8"/></svg>Zeskanuj kod kreskowy</button>
+<button class="btn ghost labelbtn" id="labelBtn" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Zdjęcie etykiety – AI odczyta skład</button>
+<input type="file" id="labelFile" accept="image/*" capture="environment" hidden>
+<div class="msg" id="labelMsg" role="status"></div>
 <div class="msg" id="searchMsg"></div>
 <div class="row">
 <label>Nazwa<input id="nName" placeholder="np. Mąka z sorgo XYZ"></label>
@@ -549,7 +553,7 @@ function renderPastry(r,b,D){
 }
 
 // Własna mąka
-let offComposition="";
+let offComposition="",offExtra={};
 const est=(t,p,f)=>Math.round((t==="skrobia"?.65:(.6+p*.01+f*.03+(t==="mix"?.1:0)))*100)/100;
 function updEst(){$("nEst").textContent=`Szacowana chłonność wody: ${est($("nType").value,+$("nProt").value||0,+$("nFib").value||0)} g wody na 1 g`}
 ["nType","nProt","nFib"].forEach(i=>$(i).oninput=updEst);updEst();
@@ -558,14 +562,14 @@ $("addBtn").onclick=()=>{const n=$("nName").value.trim();if(!n){$("nEst").textCo
  const f={id:"own"+Date.now(),name:n,custom:true,flavorProfile:"neutral",role:t==="skrobia"?"pure_starch":t==="mix"?"commercial_base":"wholegrain_structure",
   macros:{protein:P,fiber:F,starch:t==="skrobia"?85:65,fat:2,ash:1},wac_cold:est(t,P,F),wac_hot:t==="skrobia"?9:2.6,
   ...(t==="mix"?{isCommercialMix:true,hasHPMC:true,starchBase:.5,mixPriority:1.5}:{maxShare:.35})};
- if(offComposition){f.composition=offComposition;offComposition=""}custom.push(f);sel.add(f.id);save();$("nName").value="";renderPantry();calc();$("nEst").textContent=`Dodano: ${n}`};
+ if(offComposition){f.composition=offComposition;offComposition=""}Object.assign(f,offExtra);offExtra={};custom.push(f);sel.add(f.id);save();$("nName").value="";renderPantry();calc();$("nEst").textContent=`Dodano: ${n}`};
 $("searchBtn").onclick=async()=>{const q=$("q").value.trim();if(!q){$("searchMsg").textContent="Wpisz nazwę mąki lub kod kreskowy z opakowania.";return}
  $("searchMsg").textContent="Szukam w Open Food Facts…";
  try{const r=await fetch("/api/off?q="+encodeURIComponent(q));const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
-  if(!j.results.length){$("searchMsg").textContent="Nic nie znaleziono. Spróbuj innej nazwy albo wpisz dane z etykiety ręcznie.";return}
+  if(!j.results.length){$("searchMsg").innerHTML="Nie znalazłem tej mąki w bazie. Zrób zdjęcie etykiety (skład i tabelka wartości odżywczych) – AI odczyta dane i uzupełni brakujące. <button type=\"button\" class=\"btn labelgo\" data-labelgo>Zrób zdjęcie etykiety</button>";$("searchMsg").querySelector("[data-labelgo]").onclick=()=>$("labelFile").click();return}
   $("searchMsg").innerHTML="Wybierz produkt:<div class=\"offlist\">"+j.results.map((p,i)=>`<button type="button" class="chip" data-off="${i}">${p.name}${p.brands?` <small>${p.brands}</small>`:""}${p.poland?"":` <small>· spoza PL</small>`}${p.protein!=null?` <small>· białko ${p.protein} g</small>`:""}</button>`).join("")+"</div>";
   $("searchMsg").querySelectorAll("[data-off]").forEach(btn=>btn.onclick=()=>{const p=j.results[+btn.dataset.off];
-   $("nName").value=p.name+(p.brands?` (${p.brands.split(",")[0]})`:"");$("nProt").value=p.protein??"";$("nFib").value=p.fiber??"";offComposition=p.composition||"";updEst();
+   $("nName").value=p.name+(p.brands?` (${p.brands.split(",")[0]})`:"");$("nProt").value=p.protein??"";$("nFib").value=p.fiber??"";offComposition=p.composition||"";offExtra={};updEst();
    $("searchMsg").textContent="Dane wpisane. Sprawdź je z etykietą"+(p.fiber==null?" (brak błonnika w bazie, wpisz z opakowania)":"")+" i kliknij „Dodaj do moich mąk”."})}
  catch(e){$("searchMsg").textContent=(/przeciążona|Open Food Facts/.test(e.message)?e.message:"Wyszukiwanie nie działa w tym podglądzie albo nie ma internetu.")+" Możesz też wpisać dane z etykiety ręcznie."}};
 
@@ -745,6 +749,30 @@ async function openScan(){const msg=$("scanMsg"),v=$("scanVideo");$("scan").hidd
    :"Nie udało się uruchomić aparatu. Wpisz cyfry spod kodu w pole wyszukiwania."}}
 $("scanBtn").onclick=openScan;$("scanClose").onclick=closeScan;
 $("scan").addEventListener("click",e=>{if(e.target.id==="scan")closeScan()});
+
+// Zdjęcie etykiety → AI (Cloudflare Workers AI, darmowy limit) odczytuje skład i wartości odżywcze, brakujące szacuje.
+// Zdjęcie zmniejszane w telefonie do 1024 px (szybciej, mniej danych). Wynik wpisywany do formularza „Dodaj mąkę”.
+function shrinkImage(file){return new Promise((ok,err)=>{const img=new Image(),url=URL.createObjectURL(file);
+ img.onload=()=>{const k=Math.min(1,1024/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+  c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);ok(c.toDataURL("image/jpeg",.82))};
+ img.onerror=()=>err(new Error("Nie udało się otworzyć zdjęcia."));img.src=url})}
+const FIELD_PL={protein:"białko",fiber:"błonnik",carbs:"węglowodany",fat:"tłuszcz",composition:"skład",name:"nazwa"};
+$("labelBtn").onclick=()=>$("labelFile").click();
+$("labelFile").onchange=async e=>{const file=e.target.files&&e.target.files[0];e.target.value="";if(!file)return;
+ const m=$("labelMsg");$("addBox").open=true;m.textContent="Odczytuję etykietę (AI)… to trwa ok. 10–20 sekund.";
+ try{const image=await shrinkImage(file);
+  const r=await fetch("/api/label",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image})});
+  const j=await r.json();if(!r.ok)throw new Error(j.error||("kod "+r.status));
+  if(j.name)$("nName").value=j.name+(j.brands?` (${String(j.brands).split(",")[0]})`:"");
+  if(["pelna","skrobia","mix"].includes(j.type))$("nType").value=j.type;
+  $("nProt").value=j.protein??"";$("nFib").value=j.fiber??"";offComposition=j.composition||"";
+  offExtra={};if(j.brands)offExtra.brands=String(j.brands);if(j.wheatStarch)offExtra.wheatStarch=true;
+  updEst();
+  const est=(j.estimated||[]).map(k=>FIELD_PL[k]||k);
+  m.innerHTML="Dane odczytane z etykiety"+(est.length?`; <b>szacunek AI</b> (nie było na zdjęciu): ${est.join(", ")}`:"")+". Sprawdź je i kliknij „Dodaj do moich mąk”."
+   +(j.wheatStarch?" <b>Uwaga: w składzie jest skrobia pszenna.</b>":"")+(j.glutenFree===false?" <b>Uwaga: na etykiecie nie widać oznaczenia „bez glutenu”.</b>":"")
+   +(j.composition?`<br><small>Skład: ${String(j.composition).replace(/</g,"&lt;")}</small>`:"")}
+ catch(err){m.textContent=(err.message||"Błąd")+" Możesz wpisać dane z etykiety ręcznie."}};
 
 renderPantry();setDefaults();const ry=restoreUI();if(ry===false)calc();
 loadShared().then(()=>{if(ry)window.scrollTo(0,ry)});

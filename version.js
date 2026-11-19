@@ -1,6 +1,8 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.13.0", d: "19.11.2026", t: ["Gdy mąki nie ma w bazie (po kodzie kreskowym lub nazwie): zdjęcie etykiety – AI odczytuje nazwę, skład i wartości odżywcze, a brakujące szacuje (oznaczone jako „szacunek AI”).",
+    "Ostrzeżenie, gdy w składzie jest skrobia pszenna albo na etykiecie nie widać oznaczenia „bez glutenu”."] },
   { v: "2.12.0", d: "19.11.2026", t: ["Nowy wygląd: ciepłe tło, butelkowa zieleń i złote akcenty, większe litery (czcionka Atkinson Hyperlegible Next, nagłówki Poppins), sekcje w kartach, większe przyciski – łatwiej trafić palcem.",
     "Dodawanie mąki z kodu kreskowego: przycisk „Zeskanuj kod kreskowy” włącza aparat, odczytuje kod z opakowania i od razu szuka mąki w Open Food Facts (jeden wynik wpisuje się sam)."] },
   { v: "2.11.0", d: "15.11.2026", t: ["Wskazówki z bloga The Loopy Whisk: przy pieczywie z samych mąk (bez gotowej mieszanki ze spoiwem) psyllium 4,5–5,5% mąk i więcej wody; z Schär Mix B bez zmian.",

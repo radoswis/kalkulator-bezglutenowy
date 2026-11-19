@@ -11,5 +11,6 @@
   "kv_namespaces": [
     { "binding": "DATA", "id": "99f7470fa33844b5873a554820150ab6" }
   ],
+  "ai": { "binding": "AI" },
   "observability": { "enabled": true }
 }

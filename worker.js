@@ -3,6 +3,7 @@
  *  GET  /api/state       – wspólne dane domu (spiżarnia, własne mąki, kalibracje)
  *  PUT  /api/state       – zapis wspólnych danych (JSON, do 100 KB)
  *  GET  /api/off?q=…     – wyszukiwanie mąki w Open Food Facts (nazwa lub kod kreskowy)
+ *  POST /api/label       – zdjęcie etykiety → Workers AI odczytuje skład i wartości odżywcze (brakujące szacuje)
  * Wszystko w darmowym limicie Cloudflare (KV: 1000 zapisów/dzień, zapisy w aplikacji są grupowane).
  */
 const STATE_KEY = "state:v1";
@@ -98,12 +99,67 @@ async function handleOff(url) {
   return json({ results: list });
 }
 
+// Odczyt etykiety przez Workers AI (darmowy limit dzienny). Modele z licencją Apache 2.0 (Llama 3.2 Vision ma ograniczenia w UE).
+const LABEL_MODELS = ["@cf/mistralai/mistral-small-3.1-24b-instruct", "@cf/google/gemma-3-12b-it"];
+const LABEL_PROMPT = `Na zdjęciu jest etykieta mąki, skrobi albo bezglutenowej mieszanki mąk (zwykle po polsku).
+Zwróć WYŁĄCZNIE obiekt JSON, bez komentarzy:
+{"name": nazwa produktu po polsku, "brands": marka lub null,
+ "type": "pelna" (mąka z białkiem/błonnikiem) | "skrobia" (czysta skrobia, np. ziemniaczana, kukurydziana, tapioka) | "mix" (mieszanka z zagęstnikiem: HPMC/E464, guma ksantanowa/E415, guma guar/E412, psyllium, błonnik bambusowy),
+ "protein": g/100 g, "fiber": g/100 g, "carbs": g/100 g, "fat": g/100 g,
+ "composition": skład dosłownie z etykiety albo null,
+ "wheatStarch": true jeśli w składzie jest skrobia pszenna,
+ "glutenFree": true jeśli widać oznaczenie bez glutenu / przekreślony kłos, false jeśli wyraźnie go brak, null jeśli nie wiadomo,
+ "estimated": lista pól, których NIE było na zdjęciu i które oszacowałeś}
+Liczby przepisuj z tabeli wartości odżywczych (na 100 g). Jeśli wartości nie widać, oszacuj typową wartość dla tego rodzaju mąki i dopisz nazwę pola do "estimated". Liczby jako liczby (kropka dziesiętna).`;
+
+function pickJson(out) {
+  if (out && typeof out === "object" && !Array.isArray(out) && ("protein" in out || "name" in out)) return out;
+  const t = typeof out === "string" ? out : JSON.stringify(out ?? "");
+  const m = t.match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try { return JSON.parse(m[0]); } catch { return null; }
+}
+const num = v => { if (v == null || v === "") return null; const n = parseFloat(String(v).replace(",", ".")); return Number.isFinite(n) && n >= 0 && n <= 100 ? Math.round(n * 10) / 10 : null; };
+
+async function handleLabel(req, env) {
+  if (req.method !== "POST") return json({ error: "Metoda niedozwolona." }, 405);
+  if (!env.AI) return json({ error: "Odczyt etykiet nie jest jeszcze włączony na serwerze (brak Workers AI)." }, 503);
+  const body = await req.text();
+  if (body.length > 2_500_000) return json({ error: "Zdjęcie jest za duże." }, 413);
+  let image;
+  try { image = JSON.parse(body).image; } catch { return json({ error: "Nieprawidłowe dane." }, 400); }
+  if (typeof image !== "string" || !/^data:image\/(jpeg|png|webp);base64,/.test(image)) return json({ error: "Brak zdjęcia." }, 400);
+  const messages = [{ role: "user", content: [{ type: "text", text: LABEL_PROMPT }, { type: "image_url", image_url: { url: image } }] }];
+  let data = null; const errors = [];
+  for (const model of LABEL_MODELS) {
+    try {
+      const out = await env.AI.run(model, { messages, max_tokens: 900, temperature: 0.1 });
+      data = pickJson(out && out.response !== undefined ? out.response : out);
+      if (data) break;
+      errors.push(model + ": brak JSON");
+    } catch (e) { errors.push(model + ": " + (e && e.message ? e.message : e)); }
+  }
+  if (!data) return json({ error: "AI nie odczytała etykiety. Zrób wyraźniejsze zdjęcie składu i tabelki wartości odżywczych.", detail: errors.join(" | ") }, 502);
+  const type = ["pelna", "skrobia", "mix"].includes(data.type) ? data.type : "pelna";
+  return json({
+    name: typeof data.name === "string" ? data.name.slice(0, 120) : "",
+    brands: typeof data.brands === "string" ? data.brands.slice(0, 80) : "",
+    type,
+    protein: num(data.protein), fiber: num(data.fiber), carbs: num(data.carbs), fat: num(data.fat),
+    composition: typeof data.composition === "string" ? data.composition.slice(0, 1500) : "",
+    wheatStarch: data.wheatStarch === true || /skrobi[aę] pszenn/i.test(String(data.composition || "")),
+    glutenFree: typeof data.glutenFree === "boolean" ? data.glutenFree : null,
+    estimated: Array.isArray(data.estimated) ? data.estimated.filter(x => typeof x === "string").slice(0, 8) : []
+  });
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     try {
       if (url.pathname === "/api/state") return await handleState(req, env);
       if (url.pathname === "/api/off") return await handleOff(url);
+      if (url.pathname === "/api/label") return await handleLabel(req, env);
       if (url.pathname.startsWith("/api/")) return json({ error: "Nie ma takiego adresu." }, 404);
     } catch (e) {
       return json({ error: "Błąd serwera: " + (e && e.message ? e.message : String(e)) }, 500);

@@ -51,6 +51,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - `index.html` – interfejs; spiżarnia i własne mąki w `localStorage`.
 - Wygląd 3.0 (v2.12): zmienne CSS w `:root` (tło #FBF7F1, akcent #1F4D3A, złoty `--gold` #E8A33D), czcionki Atkinson Hyperlegible Next (tekst) i Poppins (nagłówki); nadpisania stylu w bloku „Wygląd 3.0” na końcu `<style>`. Projekt makiet: artefakt „Kalkulator bezglutenowy – nowy wygląd”. Zmiany wyglądu tylko w CSS – identyfikatory i struktura HTML bez zmian.
 - Skaner kodu kreskowego (index.html: `openScan/closeScan/gotCode`, okno `#scan`): `BarcodeDetector` (EAN-13/8, UPC), zapasowo ZXing z jsDelivr (`loadZX`); kod → pole `#q` → `searchBtn` → `/api/off`; jeden wynik wpisywany automatycznie.
+- Zdjęcie etykiety (v2.13): `#labelBtn`/`#labelFile` → zdjęcie zmniejszone do 1024 px (`shrinkImage`) → `POST /api/label` (worker.js `handleLabel`, Workers AI, binding `AI` w wrangler.jsonc; modele `LABEL_MODELS`: Mistral Small 3.1, zapasowo Gemma 3 – licencja Apache, Llama 3.2 Vision ma ograniczenia w UE) → JSON {name, brands, type, protein, fiber, carbs, fat, composition, wheatStarch, glutenFree, estimated}. Pola z `estimated` to szacunek AI. `offExtra` przenosi `brands`/`wheatStarch` do dodawanej mąki. Brak wyników w OFF pokazuje przycisk „Zrób zdjęcie etykiety”.
 - Psyllium = łuska babki jajowatej (Plantago ovata) lub płesznik.
 - Wszystkie współczynniki są SZACUNKOWE (ze specyfikacji, bez pomiarów). Makro Mix It!/Mix C do weryfikacji z etykietą.
 
@@ -58,7 +59,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 1. Kalibracja współczynników na prawdziwych wypiekach + ocena wypieku (za suche / kleiste / płaskie) korygująca wodę.
 2. Cloudflare Worker jako proxy do Open Food Facts (wyszukiwanie po nazwie i kodzie kreskowym).
 3. Cloudflare D1: wspólna baza mąk i ocen zamiast `localStorage`.
-4. OCR etykiety (Tesseract.js). (Skan kodu kreskowego – zrobione w v2.12.)
+4. Skan kodu (v2.12) i odczyt etykiety przez AI (v2.13) – zrobione.
 5. Więcej gotowych mieszanek z polskich sklepów.
 6. `wac_hot` – wykorzystać do prognozy czerstwienia / czasu pieczenia.
 
