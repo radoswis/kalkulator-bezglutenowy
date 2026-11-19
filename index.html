@@ -1020,7 +1020,7 @@ function gorCard(b){if(!isGor())return "";const m=gorMode(b);
  ${m.steam?`<small>Para: zanim włączysz piekarnik, wstaw na 1. poziom zimną, płytką blachę i wlej na nią najwyżej 2 dl wody. Ciasto piecz na 2. poziomie. Nie otwieraj drzwi i nie dolewaj wody w trakcie.</small>`:""}
  ${GOR_MULTI.has(b.id)?`<small>Dwie blachy naraz: tryb „Gorące powietrze” <img src="gorenje/gp.png" alt="" width="28" height="25" class="inl">, temperatura o 20°C niższa, poziomy 1 i 3.</small>`:""}
  ${b.id==="lasagne"||b.id==="quiche"?`<small>Na koniec 3–5 min „Duży grill” <img src="gorenje/grill.png" alt="" width="28" height="25" class="inl"> do zrumienienia sera.</small>`:""}
- <small>Rozgrzewanie: możesz użyć „Szybkiego podgrzewania”, ale przed włożeniem ciasta przełącz na tryb powyżej.</small></div></div>`}
+ <small>${m.steam?"Nagrzewaj od razu w tym trybie, razem z blachą z wodą (bez „Szybkiego podgrzewania”).":"Rozgrzewanie: możesz użyć „Szybkiego podgrzewania”, ale przed włożeniem ciasta przełącz na tryb powyżej."}</small></div></div>`}
 function ovenSeg(){document.querySelectorAll("[data-oven]").forEach(x=>x.setAttribute("aria-pressed",(prefs.oven||"uni")===x.dataset.oven))}
 document.addEventListener("click",e=>{const o=e.target.closest("[data-oven]");if(!o)return;prefs.oven=o.dataset.oven;save();ovenSeg();calc()});
 

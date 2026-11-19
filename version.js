@@ -1,6 +1,9 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.17.0", d: "19.11.2026", t: ["Nowy przełącznik w przepisie: „Piekarnik uniwersalny” (przepisy bez zmian) albo „Piekę w Gorenje” (kuchnia Gorenje MEKS5141X).",
+    "W trybie Gorenje każdy przepis pokazuje, jaki system ustawić – z ikoną z instrukcji – poziom blachy i obsługę pary: pieczywo z parą (górna i dolna grzałka + para), pizza i tarty na „gorące powietrze i dolna grzałka”, pizza neapolitańska 300°C, placek z kruszonką na „grzałka dolna i wentylator”, ciastka na 2 blachach na „gorące powietrze” −20°C.",
+    "Kroki przepisów drożdżowych podają od razu tryb Gorenje i poziom. Przepisy z patelni, garnka i gofrownicy są oznaczone jako niewymagające piekarnika."] },
   { v: "2.16.3", d: "19.11.2026", t: ["Wybór wyglądu na dole strony: Jak w telefonie / Jasny / Ciemny. Zapamiętany na danym telefonie – np. jasna aplikacja przy ciemnym motywie telefonu."] },
   { v: "2.16.2", d: "19.11.2026", t: ["Przepis: tło na całą szerokość ekranu i większy margines przy tekście. Aplikacja ma własny tryb ciemny, więc przeglądarka (np. Samsung Internet) nie przyciemnia jej już po swojemu."] },
   { v: "2.16.1", d: "19.11.2026", t: ["Wybrana opcja w przełącznikach (sztuki/gramy, zestaw mąk, smak, wyrastanie, psyllium) ma pełny kolor i znaczek ✓ – czytelne także w trybie ciemnym."] },
