@@ -273,6 +273,12 @@ details.prefs .inner{display:grid;gap:10px}
 .pill small{opacity:.7;font-size:.8em}
 .pill{text-align:left}
 @media (min-width:600px){.cats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* v2.16.1: wybrana opcja w przełącznikach wyraźnie wyróżniona (pełny kolor + ✓), także w trybie ciemnym */
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:700;box-shadow:none}
+.seg button[aria-pressed="true"]::before{content:"✓ "}
+.seg button[aria-pressed="false"]{background:transparent;color:var(--fg);opacity:.75}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#10140f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#10140f}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
