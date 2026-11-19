@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kalkulator ciast bezglutenowych</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#4f6b2e">
+<meta name="theme-color" content="#1F4D3A">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
 <style>
 /* Układ: dwie kolumny — wybory po lewej, przepis (karta wagi) po prawej; na telefonie jedna kolumna */
-:root{--bg:#f6f6f2;--surface:#ffffff;--fg:#1f2219;--muted:#666b5c;--line:#dcded3;--accent:#4f6b2e;--accent-soft:#e7eedc;--warn:#9a5b10;--warn-soft:#fbefdc;
---display:"Bricolage Grotesque",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15170f;--surface:#1e2117;--fg:#e9eadf;--muted:#a1a593;--line:#343828;--accent:#a3c46f;--accent-soft:#2b3520;--warn:#f0b35c;--warn-soft:#3a2c17;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#15170f;--surface:#1e2117;--fg:#e9eadf;--muted:#a1a593;--line:#343828;--accent:#a3c46f;--accent-soft:#2b3520;--warn:#f0b35c;--warn-soft:#3a2c17;color-scheme:dark}
+:root{--bg:#FBF7F1;--surface:#ffffff;--fg:#1C1B19;--muted:#5E564C;--line:#E6DED2;--accent:#1F4D3A;--accent-soft:#EAF2EC;--warn:#8A4F0E;--warn-soft:#FFF4DF;--gold:#E8A33D;--gold-soft:#F2BF6B;
+--display:"Poppins",system-ui,sans-serif;--body:"Atkinson Hyperlegible Next",system-ui,sans-serif;--mono:"Atkinson Hyperlegible Next",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141714;--surface:#1D221E;--fg:#EEEAE2;--muted:#B5AEA2;--line:#323A34;--accent:#8CC6A2;--accent-soft:#22332A;--warn:#F0B35C;--warn-soft:#3A2C17;--gold:#E8A33D;--gold-soft:#5A4320;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141714;--surface:#1D221E;--fg:#EEEAE2;--muted:#B5AEA2;--line:#323A34;--accent:#8CC6A2;--accent-soft:#22332A;--warn:#F0B35C;--warn-soft:#3A2C17;--gold:#E8A33D;--gold-soft:#5A4320;color-scheme:dark}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
 .wrap{max-width:1080px;margin:0 auto;display:grid;gap:24px}
 header h1{font-family:var(--display);font-size:clamp(1.6rem,4vw,2.3rem);margin:0;text-wrap:balance}
@@ -115,6 +115,83 @@ tr[data-ing]{cursor:pointer}tr[data-ing] td:first-child::before{content:"○ ";c
 .note{font-size:.95rem}
 details.tech{background:transparent;padding:8px 12px}
 details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
+/* ===== Wygląd 3.0 (19.11.2026): ciepłe tło, butelkowa zieleń, złoty akcent, duże pola dotyku – czytelne dla starszej osoby ===== */
+body{font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+input,select,button,table{font-variant-numeric:tabular-nums}
+header{display:grid;gap:8px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:1.05rem}
+.brandmark{width:42px;height:42px;border-radius:13px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
+header h1{font-weight:700;line-height:1.15;letter-spacing:-.01em;margin-top:6px}
+header p{font-size:1.02rem}
+#installBtn{justify-self:start;margin-top:4px}
+.col>section{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:20px;gap:14px}
+h2{font-size:1.25rem;font-weight:700;align-items:center}
+h2 span{flex:none;width:34px;height:34px;border-radius:17px;background:var(--accent);color:var(--bg);display:inline-flex;align-items:center;justify-content:center;font-family:var(--display);font-size:.95rem;font-weight:700}
+select,input{min-height:50px;border:2px solid var(--line);border-radius:14px;padding:10px 14px;font-size:1rem}
+select:focus,input:focus{border-color:var(--accent);outline:none}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+label{font-size:.95rem;font-weight:600;color:var(--fg)}
+.group{font-size:.8rem;font-weight:700;margin-top:10px}
+.chips{gap:10px}
+.chip{min-height:46px;padding:8px 16px;font-size:1rem;border-radius:23px;border:1.5px solid var(--line);display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;text-align:left}
+.chip[aria-pressed="true"]{font-weight:600;color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#10140f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#10140f}}
+.chip[aria-pressed="true"]::before{content:"✓"}
+.seg{border:0;background:var(--accent-soft);border-radius:16px;padding:4px;gap:4px}
+.seg button{min-height:46px;border-radius:12px;background:transparent;font-size:1rem}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--accent);box-shadow:0 1px 4px #0002}
+.btn{min-height:48px;padding:10px 20px;border-radius:24px;font-size:1rem;display:inline-flex;align-items:center;justify-content:center;gap:8px;color:#fff}
+:root[data-theme="dark"] .btn:not(.ghost){color:#10140f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn:not(.ghost){color:#10140f}}
+.btn.ghost{border-width:2px}
+.btn:active{transform:translateY(1px)}
+.scanbtn{background:var(--gold);color:#1C1B19!important;justify-self:start;font-family:var(--display);font-weight:700}
+.card{border-radius:28px;padding:22px;gap:16px;box-shadow:0 10px 30px #3a2a1012}
+.card h3{font-size:1.5rem;font-weight:700;line-height:1.2}
+.hyd{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+.hyd div{background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:12px;gap:2px}
+.hyd b{font-family:var(--display);font-size:1.35rem;color:var(--fg)}
+.hyd span{font-size:.78rem;font-weight:600}
+td{padding:11px 0;border-bottom:1px solid var(--line);font-size:1.02rem}
+td.g{font-family:var(--display);font-size:1.05rem}
+td.p{font-family:var(--body);font-size:.85rem}
+.warn{border-radius:16px;padding:12px 16px;font-size:.98rem;color:var(--fg);border-left:0}
+.warn{background:var(--warn-soft)}
+details{border-radius:18px;padding:14px 16px}
+summary{min-height:28px}
+.note{color:var(--muted)}
+.msg{font-size:.95rem}
+.nutr{border-radius:18px}
+.cook{background:var(--bg)}
+.cookbar b{font-size:1.2rem}
+.cooknum{font-family:var(--display);font-weight:700;font-size:1rem}
+#cookText{font-family:var(--body)}
+.cooknav .btn{min-height:60px;border-radius:30px}
+.cooking{border-radius:20px}
+.timer{border-radius:16px}
+.timer b{font-family:var(--display)}
+.timerbadge{border-radius:24px 24px 0 0;box-shadow:0 -6px 24px #0002}
+.fry{border-radius:18px}
+.fbq .seg{background:transparent;padding:0}
+.fbq .seg button{border-radius:14px;border-width:1.5px}
+.fbq .seg button[aria-pressed="true"]{box-shadow:none}
+.stars button{color:var(--gold)}
+.ideal{border-radius:18px;padding:14px 16px}
+.sim .simbar{height:8px;border-radius:4px}
+.sim .simbar i{background:var(--gold)}
+.suggest{border-radius:16px}
+.suggest button{min-height:44px}
+.newver{border-radius:20px}
+.instbox{border-radius:24px}
+.appfoot{font-size:.95rem}
+/* Skaner kodu kreskowego */
+.scan{position:fixed;inset:0;z-index:70;background:#000c;display:flex;align-items:center;justify-content:center;padding:16px}
+.scanbox{background:var(--surface);border-radius:28px;padding:20px;width:100%;max-width:440px;display:grid;gap:12px}
+.scanbox h2{font-size:1.3rem}
+.scanview{position:relative;border-radius:20px;overflow:hidden;background:#000;aspect-ratio:4/3}
+.scanview video{width:100%;height:100%;object-fit:cover;display:block}
+.scanview i{position:absolute;left:12%;right:12%;top:38%;bottom:38%;border:3px solid var(--gold);border-radius:12px;box-shadow:0 0 0 999px #0006}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -122,6 +199,7 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 
 <div class="wrap">
 <header>
+<div class="brand"><span class="brandmark" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FBF7F1" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M12 7c-2-2-5-2-5-2s0 3 2 5M12 7c2-2 5-2 5-2s0 3-2 5M12 12c-2-2-5-2-5-2s0 3 2 5M12 12c2-2 5-2 5-2s0 3-2 5"/><path d="M4 20L20 4" stroke="#E8A33D"/></svg></span><span>Bez glutenu</span></div>
 <h1>Kalkulator ciast bezglutenowych</h1>
 <button type="button" class="btn" id="installBtn">Zainstaluj na telefonie</button>
 <p>Wybierz, co chcesz zrobić, zaznacz, co masz w spiżarni, i podaj ilość. Aplikacja sama dobierze mąki i policzy składniki co do grama.</p>
@@ -143,9 +221,10 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
 <div id="flours"></div>
 <div class="group">Dodatki wiążące</div>
 <div class="chips" id="addons"></div>
-<details id="addBox"><summary>Dodaj własną mąkę</summary>
+<details id="addBox"><summary>Dodaj mąkę – zeskanuj kod kreskowy lub wpisz nazwę</summary>
 <div class="inner">
 <div class="row"><input id="q" placeholder="Nazwa lub kod kreskowy, np. mąka gryczana Bezgluten"><button class="btn ghost" id="searchBtn" type="button">Szukaj w internecie</button></div>
+<button class="btn scanbtn" id="scanBtn" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 7V4h3M21 7V4h-3M3 17v3h3M21 17v3h-3M7 8v8M10 8v8M13 8v8M16 8v8"/></svg>Zeskanuj kod kreskowy</button>
 <div class="msg" id="searchMsg"></div>
 <div class="row">
 <label>Nazwa<input id="nName" placeholder="np. Mąka z sorgo XYZ"></label>
@@ -198,6 +277,11 @@ details.tech summary{font-weight:500;color:var(--muted);font-size:.9rem}
  <div class="cooknav"><button type="button" class="btn ghost" data-cookprev="1">← Wstecz</button><button type="button" class="btn" data-cooknext="1">Dalej →</button></div>
 </div>
 <div id="timerBadge" class="timerbadge" hidden></div>
+<div id="scan" class="scan" hidden role="dialog" aria-modal="true" aria-labelledby="scanTitle">
+<div class="scanbox"><h2 id="scanTitle">Skanuj kod kreskowy</h2>
+<div class="scanview"><video id="scanVideo" playsinline muted></video><i aria-hidden="true"></i></div>
+<p id="scanMsg" class="msg" role="status"></p>
+<button type="button" class="btn ghost" id="scanClose">Zamknij</button></div></div>
 
 <script src="version.js"></script>
 <script src="engine.js"></script>
@@ -629,6 +713,38 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 window.addEventListener("pagehide",saveUI);
 let uiT=null;const saveSoon=()=>{clearTimeout(uiT);uiT=setTimeout(saveUI,500)};
 document.addEventListener("click",saveSoon);document.addEventListener("input",saveSoon);window.addEventListener("scroll",saveSoon,{passive:true});
+
+// Skaner kodu kreskowego (EAN) do dodawania mąk: BarcodeDetector (Chrome na Androidzie), zapasowo ZXing z jsDelivr (darmowe).
+// Odczytany kod trafia do pola wyszukiwania i od razu do Open Food Facts (/api/off).
+let scanStream=null,scanOn=false,zxReader=null;
+function loadZX(){return window.ZXing?Promise.resolve():new Promise((ok,err)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js";s.onload=ok;s.onerror=()=>err(new Error("zxing"));document.head.appendChild(s)})}
+function closeScan(){scanOn=false;if(zxReader){try{zxReader.reset()}catch{}zxReader=null}if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null}const v=$("scanVideo");v.srcObject=null;$("scan").hidden=true}
+async function gotCode(code){closeScan();if(navigator.vibrate)navigator.vibrate(80);
+ $("addBox").open=true;$("q").value=code;$("addBox").scrollIntoView({behavior:"smooth",block:"start"});
+ await $("searchBtn").onclick();
+ const b=$("searchMsg").querySelectorAll("[data-off]");if(b.length===1)b[0].click()}
+async function openScan(){const msg=$("scanMsg"),v=$("scanVideo");$("scan").hidden=false;scanOn=true;msg.textContent="Uruchamiam aparat…";
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){msg.textContent="Ta przeglądarka nie ma dostępu do aparatu. Wpisz cyfry spod kodu kreskowego w pole wyszukiwania.";return}
+ try{
+  let fmts=[];if("BarcodeDetector" in window){try{fmts=await BarcodeDetector.getSupportedFormats()}catch{}}
+  const want=["ean_13","ean_8","upc_a","upc_e"].filter(f=>fmts.includes(f));
+  if(want.length){
+   scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+   if(!scanOn){closeScan();return}
+   v.srcObject=scanStream;await v.play();msg.textContent="Skieruj aparat na kod kreskowy na opakowaniu mąki.";
+   const det=new BarcodeDetector({formats:want});
+   const loop=async()=>{if(!scanOn)return;try{const r=await det.detect(v);const c=r.find(x=>/^\d{8,14}$/.test(x.rawValue));if(c){gotCode(c.rawValue);return}}catch{}setTimeout(loop,200)};loop();return}
+  msg.textContent="Wczytuję czytnik kodów…";await loadZX();if(!scanOn)return;
+  const hints=new Map();hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.UPC_A,ZXing.BarcodeFormat.UPC_E]);
+  zxReader=new ZXing.BrowserMultiFormatReader(hints);
+  msg.textContent="Skieruj aparat na kod kreskowy na opakowaniu mąki.";
+  await zxReader.decodeFromVideoDevice(null,v,res=>{if(res&&scanOn&&/^\d{8,14}$/.test(res.getText()))gotCode(res.getText())})}
+ catch(e){const deny=e&&(e.name==="NotAllowedError"||e.name==="SecurityError");
+  msg.textContent=deny?"Brak zgody na aparat. Zezwól na aparat w ustawieniach przeglądarki albo wpisz cyfry spod kodu w pole wyszukiwania."
+   :e&&e.message==="zxing"?"Nie udało się wczytać czytnika (brak internetu?). Wpisz cyfry spod kodu w pole wyszukiwania."
+   :"Nie udało się uruchomić aparatu. Wpisz cyfry spod kodu w pole wyszukiwania."}}
+$("scanBtn").onclick=openScan;$("scanClose").onclick=closeScan;
+$("scan").addEventListener("click",e=>{if(e.target.id==="scan")closeScan()});
 
 renderPantry();setDefaults();const ry=restoreUI();if(ry===false)calc();
 loadShared().then(()=>{if(ry)window.scrollTo(0,ry)});

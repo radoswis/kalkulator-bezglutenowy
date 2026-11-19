@@ -1,6 +1,8 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.12.0", d: "19.11.2026", t: ["Nowy wygląd: ciepłe tło, butelkowa zieleń i złote akcenty, większe litery (czcionka Atkinson Hyperlegible Next, nagłówki Poppins), sekcje w kartach, większe przyciski – łatwiej trafić palcem.",
+    "Dodawanie mąki z kodu kreskowego: przycisk „Zeskanuj kod kreskowy” włącza aparat, odczytuje kod z opakowania i od razu szuka mąki w Open Food Facts (jeden wynik wpisuje się sam)."] },
   { v: "2.11.0", d: "15.11.2026", t: ["Wskazówki z bloga The Loopy Whisk: przy pieczywie z samych mąk (bez gotowej mieszanki ze spoiwem) psyllium 4,5–5,5% mąk i więcej wody; z Schär Mix B bez zmian.",
     "Wybór: psyllium w całej łusce albo w proszku (proszek = 85% wagi łuski).",
     "Guma ksantanowa w ciastach, ciastkach i muffinkach z mąk bez spoiwa (jeśli masz ją w spiżarni).",

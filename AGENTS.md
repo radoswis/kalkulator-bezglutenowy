@@ -49,6 +49,8 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - Przepis drożdżowy może mieć `shapeStep(ctx)` (własny krok formowania zamiast ogólnego z klasy) i `preBake` (krok tuż przed pieczeniem); tryb pieczenia `griddle` = sucha patelnia (English muffin).
 - Kategorie w UI: `CATEGORIES` (8 grup), wypieki drożdżowe mapowane w `YEAST_CATEGORY`.
 - `index.html` – interfejs; spiżarnia i własne mąki w `localStorage`.
+- Wygląd 3.0 (v2.12): zmienne CSS w `:root` (tło #FBF7F1, akcent #1F4D3A, złoty `--gold` #E8A33D), czcionki Atkinson Hyperlegible Next (tekst) i Poppins (nagłówki); nadpisania stylu w bloku „Wygląd 3.0” na końcu `<style>`. Projekt makiet: artefakt „Kalkulator bezglutenowy – nowy wygląd”. Zmiany wyglądu tylko w CSS – identyfikatory i struktura HTML bez zmian.
+- Skaner kodu kreskowego (index.html: `openScan/closeScan/gotCode`, okno `#scan`): `BarcodeDetector` (EAN-13/8, UPC), zapasowo ZXing z jsDelivr (`loadZX`); kod → pole `#q` → `searchBtn` → `/api/off`; jeden wynik wpisywany automatycznie.
 - Psyllium = łuska babki jajowatej (Plantago ovata) lub płesznik.
 - Wszystkie współczynniki są SZACUNKOWE (ze specyfikacji, bez pomiarów). Makro Mix It!/Mix C do weryfikacji z etykietą.
 
@@ -56,7 +58,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 1. Kalibracja współczynników na prawdziwych wypiekach + ocena wypieku (za suche / kleiste / płaskie) korygująca wodę.
 2. Cloudflare Worker jako proxy do Open Food Facts (wyszukiwanie po nazwie i kodzie kreskowym).
 3. Cloudflare D1: wspólna baza mąk i ocen zamiast `localStorage`.
-4. Skan kodu kreskowego (BarcodeDetector / ZXing) i OCR etykiety (Tesseract.js).
+4. OCR etykiety (Tesseract.js). (Skan kodu kreskowego – zrobione w v2.12.)
 5. Więcej gotowych mieszanek z polskich sklepów.
 6. `wac_hot` – wykorzystać do prognozy czerstwienia / czasu pieczenia.
 
