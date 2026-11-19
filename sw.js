@@ -2,7 +2,7 @@
    Nazwa pamięci = wersja z version.js, więc każde wydanie (nowy numer) wymienia pliki na telefonie. */
 importScripts("/version.js");
 const CACHE = "bezglutenowo-" + self.APP_VERSION;
-const FILES = ["/", "/index.html", "/version.js", "/engine.js", "/pastry.js", "/nutrition.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/icon-maskable.png"];
+const FILES = ["/", "/index.html", "/version.js", "/engine.js", "/pastry.js", "/nutrition.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/icon-maskable.png", "/gorenje/gd.png", "/gorenje/pizza.png", "/gorenje/gp.png", "/gorenje/dw.png", "/gorenje/grill.png"];
 // cache:"reload" – przy instalacji nowej wersji pliki zawsze prosto z serwera, nie z pamięci przeglądarki
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: "reload" }))))); });
 self.addEventListener("message", e => { if (e.data === "skipWaiting") self.skipWaiting(); });

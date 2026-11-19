@@ -286,6 +286,10 @@ details.prefs .inner{display:grid;gap:10px}
 :root{color-scheme:light dark}
 :root[data-theme="light"]{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
 .themepick{flex-basis:100%;display:grid;gap:6px}.themepick .seg{max-width:460px}
+.ovencard{display:flex;gap:14px;align-items:flex-start;background:var(--accent-soft);border:2px solid var(--accent);border-radius:18px;padding:14px}
+.ovencard>img{flex:none;border-radius:10px;background:#d6d6d6}
+.ovencard>div{display:grid;gap:6px}.ovencard b{font-family:var(--display);font-size:1.05rem}.ovencard small{color:var(--muted);font-size:.9rem;line-height:1.45}
+.ovencard img.inl{vertical-align:middle;border-radius:4px;background:#d6d6d6}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -346,6 +350,7 @@ details.prefs .inner{display:grid;gap:10px}
 <button type="button" class="back" data-go="start" aria-label="Wróć do przepisów"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button></div>
 <div class="sheet">
 <h1 class="rtitle" id="rTitle"></h1>
+<div class="seg ovenseg" role="group" aria-label="Piekarnik"><button type="button" data-oven="uni">Piekarnik uniwersalny</button><button type="button" data-oven="gorenje">Piekę w Gorenje</button></div>
 <section class="qty"><h2>Ile ciasta?</h2>
 <div class="seg" role="group" aria-label="Tryb ilości"><button id="mPcs" aria-pressed="true" type="button">Sztuki</button><button id="mGr" aria-pressed="false" type="button">Gramy ciasta</button></div>
 <div class="row">
@@ -511,7 +516,7 @@ function simHtml(id,fam){const v=SIMILAR[id];if(!v)return"";const [p,n]=v;
   (fam==="yeast"?`<div>Najlepsze w dniu pieczenia; następnego dnia odśwież w piekarniku (bezglutenowe szybciej czerstwieje).</div>`:"")}
 function calc(){syncTex();
  const bakeId=$("bake").value,b=BAKES.find(x=>x.id===bakeId);
- const cb=calib[b.id]||{};const op=GFEngine.ovenPlan&&b.family==="yeast"?GFEngine.ovenPlan(b,cb):null;if(op)b.bakeNote=op.note;
+ const cb=calib[b.id]||{};const op=GFEngine.ovenPlan&&b.family==="yeast"?GFEngine.ovenPlan(b,cb):null;if(op)b.bakeNote=gorNote(op.note,b);
  $("simInfo").innerHTML=simHtml(b.id,b.family);
  $("bakeInfo").textContent=`Rodzaj: ${CLS[b.rheologyClass].label} · Domyślnie ${b.defaultCount} × ${b.unitWeight} g (${b.unit}) · ${b.bakeNote}`;
  const D=mode==="pcs"?(+$("count").value||0)*(+$("portion").value||0):(+$("grams").value||0);
@@ -961,7 +966,7 @@ function renderStart(){const h=new Date().getHours();$("hello").textContent=h<5|
 // Wynik przepisu: pasek proporcji mąk (kolory jak w legendzie), licznik spiżarni. Dodawane po każdym przeliczeniu.
 const BLEND_COL=["#1F4D3A","#E8A33D","#7FA88F","#C9B9A3","#8FA9C4","#D98E73","#B9A0C9"];
 let prefsOpen=false;
-function decorateOut(){const out=$("out");const h=out.querySelector(":scope > h3");if(h)$("rTitle").textContent=h.textContent;
+function decorateOut(){const out=$("out");ovenSeg();if(isGor()&&!out.querySelector(".ovencard")){const bb=BAKES.find(x=>x.id===$("bake").value),hy=out.querySelector(".hyd");if(bb&&hy)hy.insertAdjacentHTML("afterend",gorCard(bb))}const h=out.querySelector(":scope > h3");if(h)$("rTitle").textContent=h.textContent;
  const ps=[...out.querySelectorAll(":scope > .seg:not(.srcbar)")];if(ps.length&&!out.querySelector("details.prefs")){const d=document.createElement("details");d.className="prefs";d.open=prefsOpen;d.innerHTML="<summary>Ustawienia przepisu: smak, wyrastanie, psyllium</summary>";ps[0].before(d);const w=document.createElement("div");w.className="inner";ps.forEach(x=>w.appendChild(x));d.appendChild(w);d.ontoggle=()=>prefsOpen=d.open}
 $("pantryCount").textContent=`Zaznaczono: ${sel.size}`;if(view==="start")renderStart();
  if(out.querySelector(".blendbar"))return;const rows=[...out.querySelectorAll("tr.sub")];if(!rows.length)return;
@@ -980,6 +985,44 @@ function setLook(v){try{v==="auto"?localStorage.removeItem("gf_theme"):localStor
  const dark=cur==="dark"||(cur==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);document.querySelector('meta[name="theme-color"]').content=dark?"#141714":"#1F4D3A"}
 document.addEventListener("click",e=>{const l=e.target.closest("[data-look]");if(l)setLook(l.dataset.look)});
 setLook(document.documentElement.getAttribute("data-theme")||"auto");
+
+// ===== Mój piekarnik: Gorenje MEKS5141X (instrukcja: systemy przyrządzania str. 14–15). „Uniwersalny” = przepisy bez zmian. =====
+// Ikony wycięte z instrukcji (gorenje/*.png). Para: zimna płytka blacha z max 2 dl wody na 1. poziomie, potrawa na 2. poziomie.
+const GOR={
+ gd:{img:"gd",name:"Górna i dolna grzałka",lvl:"2. poziom"},
+ gdp:{img:"gd",name:"Górna i dolna grzałka + para",lvl:"2. poziom",steam:1},
+ pizza:{img:"pizza",name:"Gorące powietrze i dolna grzałka (pizza)",lvl:"1. lub 2. poziom"},
+ pizzap:{img:"pizza",name:"Gorące powietrze i dolna grzałka + para",lvl:"2. poziom",steam:1},
+ dw:{img:"dw",name:"Grzałka dolna i wentylator",lvl:"2. poziom"}};
+const GOR_ID={
+ // pieczywo z parą
+ chleb_jasny:"gdp",chleb_gryczany:"gdp",bagietka:"gdp",ciabatta:"gdp",chleb_tostowy:"gdp",chleb_ziarnisty:"gdp",chleb_owsiany:"gdp",chleb_proteinowy:"gdp",bulka_tarta:"gdp",
+ kajzerki:"gdp",hamburger:"gdp",subway:"gdp",bulki_ziarniste:"gdp",pide:"gdp",bajgle:"gdp",precle:"gdp",chalka:"gdp",brioche:"gdp",
+ // pizza i chrupiący spód
+ pizza_neapol:"pizza",pinsa:"pizzap",pita:"pizza",pizza_blacha:"pizza",pizza_patelnia:"pizza",focaccia:"pizzap",calzone:"pizza",cebularze:"pizza",pizzerinki:"pizza",
+ quiche:"pizza",tarta:"pizza",szarlotka:"pizza",crostata:"pizza",mazurek:"pizza",
+ // niskie ciasta drożdżowe (instrukcja: dolna grzałka i wentylator)
+ placek_kruszonka:"dw"};
+const GOR_HOT={pizza_neapol:"Ustaw 300°C (maksimum). Blachę lub kamień rozgrzewaj razem z piekarnikiem co najmniej 30 min; piecz 5–7 min.",pinsa:"Ustaw 280°C, blacha rozgrzana razem z piekarnikiem; podpiecz 5 min, dodaj dodatki i piecz jeszcze 4–5 min.",pita:"Ustaw 280°C, blacha rozgrzana razem z piekarnikiem; 4–5 min."};
+const GOR_MULTI=new Set("pierniczki kruche_ciastka cookies biscoff krakersy lamance taralli cantucci rogaliki_serowe paluszki_serowe biszkopty_tiramisu tartaletki muffinki muffinki_wytrawne gougeres parzone scones".split(" "));
+const NO_OVEN=/smaż|patelni|^gotowanie|na parze|gofrownic|rondel|^olej/i;
+const isGor=()=>prefs.oven==="gorenje";
+function gorMode(b){return NO_OVEN.test(b.bakeNote||"")?null:GOR[GOR_ID[b.id]||"gd"]}
+// Tekst kroków drożdżowych (ovenPlan) w wersji pod Gorenje
+function gorNote(note,b){if(!isGor())return note;const m=gorMode(b);if(!m)return note;
+ let n=note.replace(/, góra–dół bez termoobiegu/,"").replace(/środkowa półka/,m.lvl).replace(/, z parą przez pierwsze 10 min \(naczynie z wrzątkiem na dnie piekarnika\)/,"").replace(/, z parą na początku/,"");
+ return `tryb „${m.name}”, ${n}`}
+function gorCard(b){if(!isGor())return "";const m=gorMode(b);
+ if(!m)return `<div class="ovencard"><div><b>Gorenje</b><span>Ten przepis nie używa piekarnika (patelnia, garnek, gofrownica lub para).</span></div></div>`;
+ const hot=GOR_HOT[b.id];
+ return `<div class="ovencard"><img src="gorenje/${m.img}.png" alt="" width="64" height="58"><div><b>Ustaw: ${m.name}</b>
+ <span>${m.lvl} · ${hot||"temperatura i czas jak w przepisie"}</span>
+ ${m.steam?`<small>Para: zanim włączysz piekarnik, wstaw na 1. poziom zimną, płytką blachę i wlej na nią najwyżej 2 dl wody. Ciasto piecz na 2. poziomie. Nie otwieraj drzwi i nie dolewaj wody w trakcie.</small>`:""}
+ ${GOR_MULTI.has(b.id)?`<small>Dwie blachy naraz: tryb „Gorące powietrze” <img src="gorenje/gp.png" alt="" width="28" height="25" class="inl">, temperatura o 20°C niższa, poziomy 1 i 3.</small>`:""}
+ ${b.id==="lasagne"||b.id==="quiche"?`<small>Na koniec 3–5 min „Duży grill” <img src="gorenje/grill.png" alt="" width="28" height="25" class="inl"> do zrumienienia sera.</small>`:""}
+ <small>Rozgrzewanie: możesz użyć „Szybkiego podgrzewania”, ale przed włożeniem ciasta przełącz na tryb powyżej.</small></div></div>`}
+function ovenSeg(){document.querySelectorAll("[data-oven]").forEach(x=>x.setAttribute("aria-pressed",(prefs.oven||"uni")===x.dataset.oven))}
+document.addEventListener("click",e=>{const o=e.target.closest("[data-oven]");if(!o)return;prefs.oven=o.dataset.oven;save();ovenSeg();calc()});
 
 renderPantry();setDefaults();const ry=restoreUI();if(ry===false)calc();
 loadShared().then(()=>{if(ry)window.scrollTo(0,ry)});
