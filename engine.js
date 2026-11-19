@@ -219,7 +219,36 @@
     // Pampuchy (kluski na parze / buchty): ciasto drożdżowe z mlekiem, gotowane na parze, bez piekarnika.
     { id: "pampuchy", name: "Pampuchy (kluski drożdżowe na parze)", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 6, sugar: 5, eggs: 10, unitWeight: 70, defaultCount: 10, unit: "pampuch", bakeNote: "na parze, pod przykryciem, 15–18 min",
       shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} kulek po około ${c.pw} g (mokre dłonie). Ułóż je na kwadratach papieru do pieczenia, z odstępami.`,
-      preBake: "Zagotuj wodę w szerokim garnku i nałóż na niego sitko lub parowar (woda nie może dotykać klusek). Wkładaj pampuchy razem z papierem, przykryj i gotuj na parze 15–18 minut, nie podnosząc pokrywki. Podawaj od razu, z sosem, jagodami albo masłem z cukrem." }
+      preBake: "Zagotuj wodę w szerokim garnku i nałóż na niego sitko lub parowar (woda nie może dotykać klusek). Wkładaj pampuchy razem z papierem, przykryj i gotuj na parze 15–18 minut, nie podnosząc pokrywki. Podawaj od razu, z sosem, jagodami albo masłem z cukrem." },
+    // ===== v2.16 (19.11.2026): kuchnie świata, kuchnia włoska, ciasta laminowane, święta, przekąski, śniadania. Proporcje piekarskie wg typowych receptur. =====
+    // Laminowane: `laminate` = masło do przekładania jako ułamek masy ciasta (dopisywane w UI jako osobna pozycja). Technika wg The Loopy Whisk (GF croissants): ciasto bogate z psyllium, zimne, 3 złożenia pojedyncze.
+    { id: "croissant", name: "Croissanty (rogaliki francuskie, listkowane)", laminate: 0.35, rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.8, yeastDry: 1.5, fat: 8, sugar: 10, eggs: 10, unitWeight: 75, defaultCount: 8, unit: "croissant", bakeNote: "200°C, 20 min", sweet: true,
+      shapeStep: c => `To ciasto laminowane – potrzebuje czasu i zimna. Owiń ciasto folią, rozpłaszcz na prostokąt i schłódź w lodówce 1 godzinę (bez wyrastania w cieple). Zimne masło do przekładania rozbij wałkiem między papierem na płaski prostokąt ok. 15 × 20 cm i też schłódź. Rozwałkuj ciasto na papierze oprószonym mąką ryżową na prostokąt dwa razy dłuższy niż masło, połóż masło na połowie, przykryj drugą połową i dociśnij brzegi. Rozwałkuj na długi pas, złóż na trzy jak list i schłódź 30 minut. Powtórz wałkowanie i składanie jeszcze 2 razy (razem 3 złożenia, za każdym razem 30 minut w lodówce). Na koniec rozwałkuj na grubość 5 mm, pokrój na ${c.pcs} wysokich trójkątów i zwiń luźno od szerszego boku. Ułóż na blasze z papierem.`,
+      preBake: "Posmaruj roztrzepanym jajkiem (ostrożnie, nie zalewaj warstw na bokach). Piecz od razu po wyrośnięciu, zanim masło zacznie się topić – wyrastanie w temperaturze pokojowej, nie w ciepłym miejscu." },
+    { id: "rogale_marcinskie", name: "Rogale świętomarcińskie (z białym makiem)", laminate: 0.3, rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.6, yeastDry: 1.5, fat: 8, sugar: 10, eggs: 12, unitWeight: 150, defaultCount: 4, unit: "rogal", bakeNote: "180°C, 25 min", sweet: true,
+      shapeStep: c => `Ciasto laminowane: owiń folią, rozpłaszcz i schłódź 1 godzinę. Zimne masło do przekładania rozbij między papierem na prostokąt ok. 15 × 20 cm. Zawiń masło w ciasto, rozwałkuj na pas, złóż na trzy i schłódź 30 minut – powtórz 3 razy. Masa: 250 g gotowej masy z białym makiem wymieszaj z 2 łyżkami pokruszonych bezglutenowych biszkoptów i bakaliami. Rozwałkuj ciasto na 5 mm, pokrój na ${c.pcs} trójkątów, nałóż masę na szerszy brzeg i zwiń w rogale.`,
+      preBake: "Posmaruj jajkiem. Po upieczeniu polej lukrem (cukier puder z gorącą wodą) i posyp posiekanymi orzechami." },
+    { id: "bao", name: "Bułeczki bao (na parze, do nadziewania)", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.6, yeastDry: 1.5, fat: 6, sugar: 8, eggs: 0, unitWeight: 50, defaultCount: 12, unit: "bułeczka", bakeNote: "na parze, pod przykryciem, 12–14 min",
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} kulek po około ${c.pw} g. Każdą rozwałkuj na owal grubości 5 mm, posmaruj odrobiną oleju i złóż na pół (zostanie kieszonka do nadziewania). Ułóż na kwadratach papieru do pieczenia.`,
+      preBake: "Gotuj na parze (woda nie może dotykać bułeczek), pod przykryciem, 12–14 minut. Nie podnoś pokrywki przez pierwsze 10 minut. Nadziewaj pieczonym boczkiem, kurczakiem w sosie, ogórkiem i kolendrą." },
+    { id: "pinsa", name: "Pinsa rzymska", rheologyClass: "RHEO_TENSILE_SHAPED", hydration: 85, salt: 2.2, yeastDry: 1.2, fat: 3, sugar: 0, eggs: 0, unitWeight: 300, defaultCount: 2, unit: "pinsa", bakeNote: "250°C, 10–12 min",
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} części po około ${c.pw} g. Na papierze do pieczenia, mokrymi dłońmi, rozciągnij każdą w owal ok. 30 × 20 cm, z grubszym brzegiem. Pinsa najlepiej wychodzi z wyrastania w lodówce przez noc.`,
+      preBake: "Piecz na rozgrzanej blasze lub kamieniu: najpierw 6 minut z samą oliwą, potem dodaj sos, mozzarellę i dodatki i piecz jeszcze 4–6 minut." },
+    { id: "panzerotti", name: "Panzerotti (smażone pierożki z pomidorem i mozzarellą)", rheologyClass: "RHEO_LAMINATED_ROLLED_STUFFED", salt: 2.0, yeastDry: 1.45, fat: 6, sugar: 2, eggs: 0, unitWeight: 75, defaultCount: 8, unit: "panzerotto", bakeNote: "smażenie w 175°C",
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} kulek po około ${c.pw} g. Każdą rozwałkuj na papierze na koło o średnicy ok. 14 cm. Na połowę nałóż łyżkę gęstej passaty i kawałki odsączonej mozzarelli, złóż na pół i bardzo dokładnie zlep brzegi widelcem.` },
+    { id: "bomboloni", name: "Bomboloni (włoskie pączki z kremem)", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.6, yeastDry: 1.5, fat: 12, sugar: 12, eggs: 22, unitWeight: 60, defaultCount: 10, unit: "bombolone", bakeNote: "smażenie w 170°C", sweet: true,
+      preBake: "Smaż w oleju rozgrzanym do 170°C po 2–3 minuty z każdej strony. Obtocz w cukrze i jeszcze ciepłe nadziej rękawem kremem budyniowym (crema pasticcera), nutellą lub dżemem." },
+    { id: "paska", name: "Paska wielkanocna (słodki chleb z bakaliami)", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.4, yeastDry: 1.5, fat: 20, sugar: 18, eggs: 30, unitWeight: 750, defaultCount: 1, unit: "forma", bakeNote: "170°C, 45–50 min", sweet: true,
+      shapeStep: () => "Wmieszaj w ciasto 100 g rodzynek i kandyzowanej skórki pomarańczowej oraz skórkę z 1 cytryny. Bez wyrastania w misce przełóż do wysokiej formy (np. puszki po panettone lub tortownicy 18 cm) wyłożonej papierem, wypełniając do połowy.",
+      preBake: "Posmaruj jajkiem. Gdy wierzch się zrumieni (ok. 25 min), przykryj folią aluminiową. Po upieczeniu polej lukrem i posyp kolorową posypką." },
+    { id: "pizzerinki", name: "Pizzerinki (małe pizze do pudełka)", rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.0, yeastDry: 1.45, fat: 5, sugar: 1, eggs: 0, unitWeight: 40, defaultCount: 15, unit: "pizzerinka", bakeNote: "220°C, 12–14 min",
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} kulek po około ${c.pw} g. Rozpłaszcz mokrymi dłońmi na krążki o średnicy 8 cm i ułóż na blasze z papierem.`,
+      preBake: "Na wyrośnięte krążki nałóż łyżeczkę sosu pomidorowego, starty ser i dodatki (szynka, salami, oregano)." },
+    { id: "chleb_proteinowy", name: "Chleb proteinowy (ciecierzyca, amarantus, ziarna)", boldByDesign: true, preferFlour: { cie: 0.25, ama: 0.1 }, rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 3, sugar: 1, eggs: 0, unitWeight: 750, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 45 min",
+      shapeStep: () => "Wmieszaj w ciasto 80 g ziaren (słonecznik, pestki dyni, siemię). Bez wyrastania w misce przełóż do keksówki wyłożonej papierem i wyrównaj mokrą łyżką. Posyp ziarnami." },
+    { id: "bulka_tarta", name: "Chleb na bułkę tartą (domowa bułka tarta)", rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 2, sugar: 1, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 40 min",
+      preBake: "Po upieczeniu: wystudź (najlepiej zostaw do następnego dnia), pokrój w kostkę 1 cm i susz w piekarniku w 120°C przez 40–60 minut, mieszając co 15 minut, aż będzie zupełnie sucha. Wystudź i zmiel w blenderze. Z bochenka wychodzi ok. 400 g bułki tartej; przechowuj w słoiku do 2 miesięcy." }
+
 
   ];
 
@@ -237,7 +266,10 @@
     paczki: [170, 0, 0, "fry"], langosz: [175, 0, 0, "fry"],
     english_muffin: [0, 7, 9, "griddle"], brioche: [190, 15, 18], placek_kruszonka: [180, 30, 35],
     chleb_ziarnisty: [220, 50, 55, "twoStage"], chleb_owsiany: [200, 45, 50], bulki_ziarniste: [220, 18, 20, "steam"], cebularze: [230, 12, 14], pide: [230, 12, 14],
-    bulki_czosnkowe: [190, 22, 25], szneki: [180, 18, 20], jagodzianki: [180, 18, 20], strucla_makowa: [175, 35, 40], rogaliki_drozdzowe: [180, 13, 15]
+    bulki_czosnkowe: [190, 22, 25], szneki: [180, 18, 20], jagodzianki: [180, 18, 20], strucla_makowa: [175, 35, 40], rogaliki_drozdzowe: [180, 13, 15],
+    croissant: [200, 18, 20], rogale_marcinskie: [180, 22, 25], pinsa: [250, 10, 12], panzerotti: [175, 0, 0, "fry"], bomboloni: [170, 0, 0, "fry"], paska: [170, 45, 50],
+    pizzerinki: [220, 12, 14], chleb_proteinowy: [220, 50, 55, "twoStage"], bulka_tarta: [220, 45, 55, "twoStage"]
+    // bao: na parze – bez piekarnika
     // pampuchy: na parze – bez piekarnika (ovenPlan zwraca null, używany bakeNote)
   };
   const GF_TIME_FACTOR = 1.2;     // żel psyllium + skrobi potrzebuje dłużej, żeby się upiec w środku

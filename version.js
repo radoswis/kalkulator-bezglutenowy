@@ -1,6 +1,11 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.16.0", d: "19.11.2026", t: ["Nowy porządek przepisów: 12 rodzajów wypieku (m.in. Pączki i słodkie smażone, Ciasto francuskie i rogale, Przekąski i wytrawne, W kuchni: panierki i sosy) oraz tematy: Kuchnia włoska, Kuchnie świata, Święta i okazje, Śniadanie, Na obiad, Przekąski i do pudełka, Bez piekarnika, Bez drożdży. Przepisy na listach alfabetycznie.",
+    "37 nowych przepisów (razem 129). Kuchnia włoska: pinsa, piadina, panzerotti, bomboloni, taralli, cantucci, crostata, torta caprese, ravioli, płaty do lasagne.",
+    "Kuchnie świata: gyoza, bułeczki bao, czapati, placki z dymką, gözleme. Ciasta laminowane: croissanty i rogale świętomarcińskie (masło do przekładania liczone osobno), szybkie ciasto francuskie, paluchy francuskie z serem.",
+    "W kuchni: panierka do schabowego, beszamel i zasmażka, chleb na bułkę tartą. Święta: łamańce z makiem, paska, baranek, róże karnawałowe, biszkopt kakaowy na tort.",
+    "Przekąski: pizzerinki, paluszki serowe, muffinki wytrawne, ptysie serowe. Śniadania: placuszki bananowe, gofry białkowe, scones, chleb proteinowy. Z gofrownicy: gofry ziemniaczane i pizzowe."] },
   { v: "2.15.0", d: "19.11.2026", t: ["30 nowych przepisów (razem 92).",
     "Drożdżowe: chleb z ziarnami, chleb owsiany na miodzie, bułki ziarniste, cebularze lubelskie, bułki do kebaba (pide), odrywane bułeczki czosnkowe, szneki z glancem, jagodzianki, strucla z makiem, rogaliki drożdżowe z dżemem, pampuchy na parze.",
     "Bez drożdży: uszka, knedle ze śliwkami, kluski kładzione, placki ziemniaczane, placki twarogowe, bliny gryczane, szybkie placki na jogurcie, mazurek, kruche babeczki, rogaliki twarogowe, krakersy, pączki serowe, murzynek, piernik, rolada biszkoptowa, ciasto jogurtowe z owocami, biszkopty do tiramisu, clafoutis, crumble.",

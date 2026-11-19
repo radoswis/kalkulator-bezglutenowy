@@ -264,6 +264,15 @@ details.prefs .inner{display:grid;gap:10px}
 .newver{bottom:calc(90px + env(safe-area-inset-bottom,0px))}
 .appfoot{margin-bottom:8px}
 .cook{z-index:80}.scan{z-index:90}
+.themes{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px}
+.themes::-webkit-scrollbar{display:none}
+.theme{flex:none;font:inherit;font-size:.98rem;font-weight:600;min-height:46px;padding:8px 18px;border-radius:23px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;white-space:nowrap}
+.theme[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.subcat{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:8px}
+.catlist h3 small{font-weight:400;color:var(--muted);font-size:.9rem}
+.pill small{opacity:.7;font-size:.8em}
+.pill{text-align:left}
+@media (min-width:600px){.cats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -282,9 +291,11 @@ details.prefs .inner{display:grid;gap:10px}
 <div id="bakeSuggest" class="suggest" role="listbox" hidden></div></div>
 <div class="msg" id="bakeSearchMsg" hidden></div>
 <div class="lastcard" id="lastCard"></div>
-<h2 class="sh">Wybierz z kategorii</h2>
-<div class="cats" id="cats"></div>
+<h2 class="sh">Tematy</h2>
+<div class="themes" id="themes" role="group" aria-label="Tematy"></div>
 <div class="catlist" id="catList" hidden></div>
+<h2 class="sh">Rodzaj wypieku</h2>
+<div class="cats" id="cats"></div>
 <details class="all"><summary>Pełna lista przepisów</summary><select id="bake" aria-label="Przepis"></select></details>
 </div>
 
@@ -473,7 +484,13 @@ const SIMILAR={focaccia:[85],pizza_blacha:[85],pizza_patelnia:[85],langosz:[88],
  szneki:[83],jagodzianki:[83],strucla_makowa:[78,"ciasto łatwiej pęka przy zwijaniu – zwijaj na papierze"],rogaliki_drozdzowe:[80],pampuchy:[80,"mniej puszyste i sprężyste, jedz od razu"],
  uszka:[75,"ciasto mniej elastyczne – zlepiaj od razu"],placki_ziemniaczane:[98],knedle:[95],kluski_kladzione:[93],bliny:[95],placki_twarogowe:[96],podplomyki:[80,"mniej giętkie na zimno – zawijaj na ciepło"],
  mazurek:[95],tartaletki:[94],rogaliki_serowe:[90,"bardziej kruche niż listkowane"],krakersy:[95],murzynek:[95],piernik:[96],rolada:[88,"ostrożnie przy zwijaniu – zwijaj na ciepło"],
- ciasto_jogurtowe:[94],biszkopty_tiramisu:[90],paczki_serowe:[90],clafoutis:[97],crumble:[98]};
+ ciasto_jogurtowe:[94],biszkopty_tiramisu:[90],paczki_serowe:[90],clafoutis:[97],crumble:[98],
+ croissant:[75,"warstwy mniej wyraźne i bardziej kruche niż listkowane – ale smak masła ten sam"],rogale_marcinskie:[75,"ciasto mniej listkowane"],bao:[85,"mniej puszyste, jedz od razu"],
+ pinsa:[78,"brzeg mniej sprężysty"],panzerotti:[85],bomboloni:[83],paska:[80],pizzerinki:[88],chleb_proteinowy:[75,"smak wyraźnie strączkowy i orzechowy"],bulka_tarta:[95],
+ piadina:[85],taralli:[92],cantucci:[96],crostata:[94],torta_caprese:[99],ravioli:[72,"ciasto mniej elastyczne – zlepiaj od razu"],lasagne:[85],gyoza:[75,"ciasto łatwiej pęka przy zaginaniu"],
+ czapati:[80],placki_dymka:[78,"mniej elastyczne warstwy"],gozleme:[82],francuskie:[72,"rośnie i listkuje się słabiej niż pszenne"],paluchy_francuskie:[78],panierka:[97,"często bardziej chrupiąca"],
+ beszamel:[97],lamance:[92],baranek:[94],roze_karnawalowe:[78,"płatki cieńsze trudniej uzyskać"],biszkopt_kakaowy:[93],paluszki_serowe:[95],muffinki_wytrawne:[94],gougeres:[85,"rosną trochę słabiej"],
+ placuszki_bananowe:[97],gofry_bialkowe:[95],scones:[92],gofry_ziemniaczane:[97],gofry_pizzowe:[95]};
 function simHtml(id,fam){const v=SIMILAR[id];if(!v)return"";const [p,n]=v;
  const lvl=p>=90?"prawie jak pszenne":p>=80?"bardzo podobne":p>=70?"podobne, z różnicami":"wyraźnie inne";
  return `<div>Podobieństwo do pszennego: <b>${p}%</b> – ${lvl}${n?`. ${n[0].toUpperCase()+n.slice(1)}.`:""}</div><div class="simbar"><i style="width:${p}%"></i></div>`+
@@ -488,6 +505,7 @@ function calc(){syncTex();
  const best=suggestIdealBlend(bakeId,[...sel],prefs.taste);
  const ids=src==="ideal"&&best?best.ideal.map(x=>x.ingredient.id).concat(["psy"]):[...sel];
  const r=calculateRecipe({bakeId,pantryIds:ids,doughWeight:D,extraIngredients:custom,calib:cb,taste:prefs.taste,coldProof:b.family==="yeast"&&prefs.proof==="cold",psyForm:prefs.psyForm||"husk"});
+ if(b.laminate&&!r.empty&&r.family!=="pastry"&&!r.lines.some(l=>l.key==="butter")){const fg=r.lines.find(l=>l.key==="flour").grams,g=Math.round(r.total*b.laminate);r.lines.push({key:"butter",label:"Masło do przekładania (zimne, osobno)",grams:g,pct:g/fg*100})}
  if(r.empty){$("out").innerHTML=`<h3>${b.name}</h3>${srcBar()}${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}`;return}
  if(r.family==="pastry"){renderPastry(r,b,D);$("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());return}
  const h=r.hydration,p=r.profile,t=p.target,sg=x=>(x>=0?"+":"")+x.toFixed(1);
@@ -504,7 +522,7 @@ function calc(){syncTex();
  const cold=prefs.proof==="cold",wTxt=cold?"letniej wody (w temperaturze pokojowej)":"ciepłej wody (ciepłej jak do kąpieli, nie gorącej)";
  // Zaparzka (tangzhong): 5% mąk + 5× tyle wody, zagotowane do budyniu – miększy miąższ, wolniejsze czerstwienie.
  // Bierzemy ją z odważonych mąk i wody, więc bilans przepisu się nie zmienia.
- const tzOn=(["RHEO_TENSILE_SHAPED","RHEO_LAMINATED_ROLLED_STUFFED","RHEO_ENRICHED_BRIOCHE_FRIED"].includes(b.rheologyClass)&&!["pizza_neapol","pita"].includes(b.id))||b.id==="chleb_tostowy";
+ const tzOn=!b.laminate&&(["RHEO_TENSILE_SHAPED","RHEO_LAMINATED_ROLLED_STUFFED","RHEO_ENRICHED_BRIOCHE_FRIED"].includes(b.rheologyClass)&&!["pizza_neapol","pita"].includes(b.id))||b.id==="chleb_tostowy";
  const fl=r.lines.filter(l=>l.sub).sort((a,c)=>c.grams-a.grams)[0],flT=r.lines.find(l=>l.key==="flour").grams;
  const tzF=tzOn&&fl?Math.round(flT*0.05):0,tzW=tzF*5,tz=tzF>=5&&water-tzW>=40;
  const wMain=tz?Math.round((water-tzW)*10)/10:water;
@@ -703,7 +721,9 @@ const FRY={tortilla:[50,50,1,"Placek"],nalesniki:[75,30,1,"Naleśnik"],pancakes:
  english_muffin:[480,480,4,"Partia"],tempura:[270,0,5,"Partia"],bajgle:[60,60,2,"Partia"],precle:[60,60,2,"Partia"],
  pierogi:[150,0,12,"Partia",1],leniwe:[120,0,15,"Partia",1],kopytka:[150,0,20,"Partia",1],kluski_slaskie:[150,0,15,"Partia",1],gnocchi:[60,0,25,"Partia",1],pyzy:[1050,0,8,"Partia",1],
  uszka:[120,0,20,"Partia",1],knedle:[330,0,6,"Partia",1],kluski_kladzione:[210,0,15,"Partia",1],placki_ziemniaczane:[210,210,4,"Partia"],placki_twarogowe:[180,180,4,"Partia"],
- paczki_serowe:[270,0,6,"Partia"],bliny:[90,60,4,"Partia"],podplomyki:[90,90,1,"Placek"]};
+ paczki_serowe:[270,0,6,"Partia"],bliny:[90,60,4,"Partia"],podplomyki:[90,90,1,"Placek"],
+ gyoza:[120,0,10,"Partia"],czapati:[60,60,1,"Placek"],placki_dymka:[180,180,1,"Placek"],gozleme:[180,180,1,"Placek"],piadina:[90,90,1,"Placek"],ravioli:[210,0,15,"Partia",1],
+ panzerotti:[120,120,3,"Partia"],bomboloni:[150,150,4,"Partia"],roze_karnawalowe:[60,20,3,"Partia"],placuszki_bananowe:[120,90,4,"Partia"],taralli:[60,0,10,"Partia",1]};
 const FRY_STEP=/smaż|patelni|obgotuj|wrzątk|gotuj partiami/i;
 let fry=null;
 const frN=()=>{const f=FRY[cur.id];return Math.max(1,Math.ceil((cur.pcs||1)/f[2]))};
@@ -878,18 +898,48 @@ document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g
  const _bc=$("bake").onchange;$("bake").onchange=()=>{_bc();go("recipe")}}
 $("goBlend").onclick=()=>{src="pantry";calc();go("recipe")};
 // Kategorie na ekranie startowym
-const CAT_ICON=['<circle cx="12" cy="12" r="8"/><circle cx="9.5" cy="10" r="1"/><circle cx="14" cy="14" r="1"/><circle cx="14.5" cy="9" r="1"/>',
- '<path d="M4 12a8 5.5 0 0 1 16 0v7H4z"/><path d="M9 9.5l1 2M13.5 8.5l1 2"/>','<circle cx="8" cy="13" r="4"/><circle cx="16" cy="13" r="4"/>',
- '<path d="M12 12m-1 0a1 1 0 1 0 2 0a3 3 0 1 0-6 0a5 5 0 1 0 10 0a7 7 0 1 0-14 0"/>','<path d="M3 15a9 9 0 0 1 18 0z"/><path d="M6 15l1-2M10 15l1-2M14 15l1-2M18 15l-1-2"/>',
- '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16M4 15h16M10 4v16M15 4v16"/>','<circle cx="12" cy="12" r="8"/><path d="M9 9h.01M14 10h.01M10 14h.01M15 15h.01"/>',
- '<path d="M3 18h18M5 18V11l7-5 7 5v7"/><path d="M5 13h14"/>'];
-let openCat=-1;
-function renderCats(){$("cats").innerHTML=CATEGORIES.map((c,i)=>{const n=BAKES.filter(b=>b.category===c).length;
- return `<button type="button" class="cat" data-cat="${i}" aria-expanded="${openCat===i}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[i]||CAT_ICON[1]}</svg><span>${c}</span><small>${n} przepisów</small></button>`}).join("");
- const box=$("catList");if(openCat<0){box.hidden=true;return}
- box.hidden=false;box.innerHTML=`<h3>${CATEGORIES[openCat]}</h3><div class="pills">`+BAKES.filter(b=>b.category===CATEGORIES[openCat]).map(b=>`<button type="button" class="pill" data-pick="${b.id}">${b.name}</button>`).join("")+"</div>"}
-$("cats").addEventListener("click",e=>{const c=e.target.closest("[data-cat]");if(!c)return;const i=+c.dataset.cat;openCat=openCat===i?-1:i;renderCats();
- if(openCat>=0)$("catList").scrollIntoView({behavior:"smooth",block:"nearest"})});
+// Kategorie (rodzaj wypieku) + tematy (okazja, kuchnia) na ekranie startowym. Ikony w kolejności CATEGORIES.
+const CAT_ICON=['<path d="M4 12a8 5.5 0 0 1 16 0v7H4z"/><path d="M9 9.5l1 2M13.5 8.5l1 2"/>',
+ '<circle cx="8" cy="13" r="4"/><circle cx="16" cy="13" r="4"/>',
+ '<circle cx="12" cy="12" r="8"/><circle cx="9.5" cy="10" r="1"/><circle cx="14" cy="14" r="1"/><circle cx="14.5" cy="9" r="1"/>',
+ '<path d="M12 12m-1 0a1 1 0 1 0 2 0a3 3 0 1 0-6 0a5 5 0 1 0 10 0a7 7 0 1 0-14 0"/>',
+ '<path d="M3 15c3-7 15-7 18 0"/><path d="M7 15c1-4 9-4 10 0M10 15l1-6M14 15l-1-6"/>',
+ '<path d="M3 15a9 9 0 0 1 18 0z"/><path d="M6 15l1-2M10 15l1-2M14 15l1-2M18 15l-1-2"/>',
+ '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16M4 15h16M10 4v16M15 4v16"/>',
+ '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+ '<circle cx="12" cy="12" r="8"/><path d="M9 9h.01M14 10h.01M10 14h.01M15 15h.01"/>',
+ '<path d="M3 18h18M5 18V11l7-5 7 5v7"/><path d="M5 13h14"/>',
+ '<path d="M6 20l3-16M11 20l2-16M16 20l1-16"/>',
+ '<circle cx="10" cy="13" r="6"/><path d="M16 13h6"/>'];
+const TH=(ids)=>ids.split(" ");
+const THEMES=[
+ ["Kuchnia włoska",TH("pizza_neapol pizza_blacha pizza_patelnia focaccia ciabatta grissini calzone pinsa panzerotti piadina bomboloni taralli cantucci crostata torta_caprese ravioli lasagne gnocchi makaron biszkopty_tiramisu")],
+ ["Kuchnie świata",TH("gyoza bao czapati placki_dymka gozleme naan pita tortilla pide croissant bagietka english_muffin bajgle precle scones clafoutis crumble cookies brownie pancakes tempura gougeres bliny cynamonki langosz banana_bread marchewkowe brioche biscoff lava_cake")],
+ ["Święta i okazje",TH("uszka lamance pierniczki piernik strucla_makowa paska baranek babka mazurek sernik faworki roze_karnawalowe paczki rogale_marcinskie biszkopt biszkopt_kakaowy chalka szarlotka tartaletki rolada")],
+ ["Śniadanie",TH("pancakes placuszki_bananowe gofry_bialkowe scones bliny nalesniki placki_twarogowe chleb_proteinowy chleb_owsiany english_muffin bulki_ziarniste kajzerki buleczki_maslane brioche croissant drozdzowki banana_bread muffinki")],
+ ["Na obiad",TH("pierogi uszka knedle kopytka kluski_slaskie kluski_kladzione kluski_lane leniwe gnocchi pyzy placki_ziemniaczane ravioli lasagne gyoza makaron panierka beszamel tempura quiche pampuchy gozleme calzone pierogi_drozdzowe")],
+ ["Przekąski i do pudełka",TH("pizzerinki paluszki_serowe muffinki_wytrawne krakersy taralli grissini paszteciki gougeres paluchy_francuskie precle bulki_czosnkowe gofry_pizzowe cebularze piadina pide")],
+ ["Bez piekarnika",TH("pampuchy bao gyoza czapati placki_dymka gozleme piadina podplomyki tortilla naan english_muffin nalesniki pancakes gofry gofry_bialkowe gofry_ziemniaczane gofry_pizzowe racuchy placki_ziemniaczane placki_twarogowe bliny placuszki_bananowe paczki bomboloni oponki faworki roze_karnawalowe paczki_serowe langosz panzerotti pierogi uszka knedle kopytka kluski_slaskie leniwe gnocchi pyzy kluski_lane kluski_kladzione ravioli makaron tempura beszamel panierka")],
+ ["Bez drożdży (szybciej)",null]];
+const plural=(n,a,b,c)=>n===1?a:(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?b:c;
+const byName=(a,b)=>a.name.localeCompare(b.name,"pl");
+let openCat=-1,openTheme=-1;
+function themeBakes(i){const t=THEMES[i][1];return (t?BAKES.filter(b=>t.includes(b.id)):BAKES.filter(b=>b.family==="pastry"))}
+function pillsHtml(list){return `<div class="pills">${list.sort(byName).map(b=>`<button type="button" class="pill" data-pick="${b.id}">${b.name}${b.family==="yeast"?' <small>· drożdżowe</small>':""}</button>`).join("")}</div>`}
+function renderCats(){
+ $("themes").innerHTML=THEMES.map((t,i)=>`<button type="button" class="theme" data-theme="${i}" aria-pressed="${openTheme===i}">${t[0]}</button>`).join("");
+ $("cats").innerHTML=CATEGORIES.map((c,i)=>{const n=BAKES.filter(b=>b.category===c).length;
+ return `<button type="button" class="cat" data-cat="${i}" aria-expanded="${openCat===i}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[i]||CAT_ICON[0]}</svg><span>${c}</span><small>${n} ${plural(n,"przepis","przepisy","przepisów")}</small></button>`}).join("");
+ const box=$("catList");
+ if(openTheme>=0){const list=themeBakes(openTheme);box.hidden=false;
+  box.innerHTML=`<h3>${THEMES[openTheme][0]} <small>(${list.length})</small></h3>`+CATEGORIES.map(c=>{const l=list.filter(b=>b.category===c);return l.length?`<div class="subcat">${c}</div>`+pillsHtml(l):""}).join("");return}
+ if(openCat<0){box.hidden=true;return}
+ const l=BAKES.filter(b=>b.category===CATEGORIES[openCat]);box.hidden=false;
+ box.innerHTML=`<h3>${CATEGORIES[openCat]}</h3>`+pillsHtml(l)}
+$("themes").addEventListener("click",e=>{const t=e.target.closest("[data-theme]");if(!t)return;const i=+t.dataset.theme;openTheme=openTheme===i?-1:i;openCat=-1;renderCats();
+ if(openTheme>=0)$("catList").scrollIntoView({behavior:"smooth",block:"start"})});
+$("cats").addEventListener("click",e=>{const c=e.target.closest("[data-cat]");if(!c)return;const i=+c.dataset.cat;openCat=openCat===i?-1:i;openTheme=-1;renderCats();
+ if(openCat>=0)$("catList").scrollIntoView({behavior:"smooth",block:"start"})});
 function renderStart(){const h=new Date().getHours();$("hello").textContent=h<5||h>=18?"Dobry wieczór":h<12?"Dzień dobry":"Miłego popołudnia";
  const b=BAKES.find(x=>x.id===$("bake").value);if(!b){$("lastCard").hidden=true;return}$("lastCard").hidden=false;
  $("lastCard").innerHTML=`<svg class="lcimg" width="170" height="120" viewBox="0 0 170 120" aria-hidden="true"><ellipse cx="90" cy="80" rx="78" ry="40" fill="#E8A33D"/><ellipse cx="90" cy="70" rx="70" ry="34" fill="#F2BF6B"/><path d="M45 62q10-14 20 0M75 56q10-14 20 0M105 60q10-14 20 0" stroke="#C9822A" stroke-width="5" fill="none" stroke-linecap="round"/></svg>

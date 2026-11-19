@@ -48,7 +48,7 @@
     vinegarOrSpirit: WATER,                            // alkohol odparowuje przy smażeniu; ocet ~0 kcal
     spice: N(8, 50, 2, 20, 6), cinnamon: N(1.2, 27, 2, 53, 4), cocoa: N(11, 13, 1, 33, 20, 0.05),
     quark: N(4.7, 3.7, 3.7, 0, 18.7, 0.1), cheesecakeQuark: N(10, 3, 3, 0, 13, 0.1), potatoes: N(0.1, 17, 0.8, 1.8, 1.9, 0.01), rawPotatoes: N(0.1, 17, 0.8, 1.8, 1.9, 0.01),
-    darkChocolate: N(42, 33, 28, 11, 8, 0.02), chocolateChips: N(30, 60, 52, 6, 5), banana: N(0.3, 20, 12, 2.6, 1.1), carrot: N(0.2, 7, 4.7, 2.8, 0.9, 0.1)
+    darkChocolate: N(42, 33, 28, 11, 8, 0.02), chocolateChips: N(30, 60, 52, 6, 5), banana: N(0.3, 20, 12, 2.6, 1.1), carrot: N(0.2, 7, 4.7, 2.8, 0.9, 0.1), cheese: N(28, 1, 0.5, 0, 26, 1.6)
   };
 
   /** Szacunek wartości z białka i błonnika dla mąk bez danych (np. własnych). */
@@ -70,7 +70,11 @@
     biszkopt: [0.1, 0], lava_cake: [0.05, 0], brownie: [0.08, 0], sernik: [0.1, 0],
     muffinki: [0.1, 0], babka_piaskowa: [0.1, 0], banana_bread: [0.12, 0], marchewkowe: [0.1, 0], parzone: [0.25, 0],
     uszka: [0, 0], knedle: [0, 0], kluski_kladzione: [0, 0], placki_ziemniaczane: [0.15, 0.12], placki_twarogowe: [0.1, 0.05], paczki_serowe: [0.08, 0.12], bliny: [0.12, 0.02], podplomyki: [0.12, 0],
-    mazurek: [0.1, 0], tartaletki: [0.1, 0], rogaliki_serowe: [0.12, 0], krakersy: [0.2, 0], crumble: [0.1, 0], murzynek: [0.1, 0], piernik: [0.1, 0], rolada: [0.1, 0], ciasto_jogurtowe: [0.1, 0], biszkopty_tiramisu: [0.12, 0], clafoutis: [0.1, 0]
+    mazurek: [0.1, 0], tartaletki: [0.1, 0], rogaliki_serowe: [0.12, 0], krakersy: [0.2, 0], crumble: [0.1, 0], murzynek: [0.1, 0], piernik: [0.1, 0], rolada: [0.1, 0], ciasto_jogurtowe: [0.1, 0], biszkopty_tiramisu: [0.12, 0], clafoutis: [0.1, 0],
+    piadina: [0.1, 0], taralli: [0.2, 0], cantucci: [0.15, 0], crostata: [0.1, 0], torta_caprese: [0.1, 0], ravioli: [0, 0], lasagne: [0, 0], gyoza: [0.05, 0.05], czapati: [0.12, 0],
+    placki_dymka: [0.1, 0.08], gozleme: [0.1, 0.03], francuskie: [0.15, 0], paluchy_francuskie: [0.15, 0], panierka: [0, 0.1], beszamel: [0.1, 0], lamance: [0.15, 0], baranek: [0.1, 0],
+    roze_karnawalowe: [0.1, 0.2], biszkopt_kakaowy: [0.1, 0], paluszki_serowe: [0.12, 0], muffinki_wytrawne: [0.1, 0], gougeres: [0.25, 0], placuszki_bananowe: [0.12, 0.02],
+    gofry_bialkowe: [0.15, 0], scones: [0.1, 0], gofry_ziemniaczane: [0.15, 0], gofry_pizzowe: [0.15, 0]
   };
   function cookChange(bake) {
     if (bake.family === "pastry") return PASTRY_COOK[bake.id] || [0.1, 0];

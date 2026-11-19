@@ -83,7 +83,8 @@
     darkChocolate: { label: "Czekolada gorzka 64–70%" },
     chocolateChips:{ label: "Czekolada posiekana lub kropelki" },
     banana:        { label: "Dojrzałe banany (rozgniecione)" },
-    carrot:        { label: "Marchewka (drobno starta)" }
+    carrot:        { label: "Marchewka (drobno starta)" },
+    cheese:        { label: "Ser żółty lub parmezan (starty)" }
   };
 
   /**
@@ -656,16 +657,298 @@
         `Mąki (${c.flour}), cukier, cynamon i sól rozetrzyj palcami z zimnym masłem (${c.g("coldButter")}) na grube grudki. Możesz dodać garść płatków owsianych bezglutenowych lub posiekanych orzechów.`,
         "Posyp kruszonką owoce.",
         "Piecz w 180°C 35–40 minut, aż owoce zaczną bulgotać, a kruszonka się zezłoci. Podawaj na ciepło, z lodami lub jogurtem."
+      ] },
+
+    // ===== v2.16 (19.11.2026): kuchnia włoska, kuchnie świata, francuskie, w kuchni, święta, przekąski, śniadania, bez piekarnika =====
+    { id: "piadina", name: "Piadina (włoski placek z patelni)", category: "Pizza, placki i chlebki płaskie", rheologyClass: "RHEO_SCALDED_BOILED_DOUGH",
+      basis: "flour", components: [["hotWater", 60], ["oil", 12], ["psy", 1.2], ["bakingPowder", 1.0], ["salt", 1.8]], prefer: { tap: 0.12 },
+      unitWeight: 120, defaultCount: 5, unit: "piadina", bakeNote: "sucha patelnia, 1–2 min z każdej strony",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}), psyllium, proszek i sól.`,
+        `Wlej gorącą wodę (${c.g("hotWater")}) i olej (tradycyjnie smalec), wymieszaj łyżką, potem zagnieć gładkie ciasto. Odstaw pod przykryciem na 15 minut.`,
+        `Podziel na ${c.pcs} kulek po ok. ${c.pw} g i rozwałkuj między papierem na placki grubości 3 mm (średnica ok. 22 cm).`,
+        "Piecz na suchej, mocno rozgrzanej patelni 1–2 minuty z każdej strony, aż pojawią się brązowe plamki.",
+        "Na ciepło nałóż szynkę parmeńską, rukolę i miękki ser (np. stracchino), złóż na pół."
+      ] },
+    { id: "taralli", name: "Taralli (chrupiące obwarzanki z oliwą)", category: "Przekąski i wytrawne", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["water", 30], ["oil", 28], ["salt", 1.8], ["bakingPowder", 0.6]],
+      unitWeight: 12, defaultCount: 45, unit: "tarallo", bakeNote: "obgotowanie 1 min, potem 190°C 25–30 min",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}), sól, proszek i 1 łyżeczkę kopru włoskiego lub czarnego pieprzu.`,
+        `Dodaj wodę (${c.g("water")}) – tradycyjnie pół na pół z białym winem – i oliwę. Zagnieć gładkie ciasto.`,
+        `Podziel na ${c.pcs} kawałków po ok. ${c.pw} g, rozwałkuj wałeczki długości 10 cm i zlep w kółka.`,
+        "Wrzucaj partiami do wrzątku na 1 minutę, aż wypłyną. Odsącz na ściereczce.",
+        "Piecz w 190°C 25–30 minut, aż będą złote i suche. Chrupią po wystygnięciu."
+      ] },
+    { id: "cantucci", name: "Cantucci (włoskie biscotti z migdałami)", category: "Ciastka i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["sugar", 70], ["eggs", 55], ["softButter", 10], ["bakingPowder", 1.5], ["salt", 0.4]], prefer: { mig: 0.25 },
+      unitWeight: 15, defaultCount: 40, unit: "ciastko", bakeNote: "180°C 25 min, potem 160°C 10–15 min", sweet: true,
+      steps: c => [
+        `Jajka (${c.g("eggs")}) wymieszaj z cukrem, miękkim masłem i skórką z cytryny lub pomarańczy.`,
+        `Wsyp mąki (${c.flour}) z proszkiem i solą, dodaj 150 g całych migdałów. Zagnieć klejące ciasto.`,
+        "Mokrymi dłońmi uformuj 2 wałki szerokości 5 cm na blasze z papierem.",
+        "Piecz w 180°C 25 minut. Wyjmij, odczekaj 10 minut i pokrój ukośnie na kromki 1,5 cm.",
+        `Ułóż kromki płasko i susz w 160°C 10–15 minut, aż będą chrupiące. Wyjdzie ok. ${c.pcs} sztuk.`
+      ] },
+    { id: "crostata", name: "Crostata (włoska tarta z dżemem i kratką)", category: "Ciasta, torty i desery", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["coldButter", 50], ["sugar", 40], ["eggs", 30], ["bakingPowder", 1.0], ["salt", 0.4]],
+      unitWeight: 550, defaultCount: 1, unit: "forma 24 cm", bakeNote: "180°C, 30–35 min", sweet: true,
+      steps: c => [
+        `Mąki (${c.flour}), cukier, proszek, sól i skórkę z cytryny rozetrzyj z zimnym masłem (${c.g("coldButter")}) na kruszonkę.`,
+        `Dodaj jajka (${c.g("eggs")}) i szybko zagnieć. Owiń folią i schłódź 30 minut.`,
+        "2/3 ciasta rozwałkuj między papierem i wyłóż formę z brzegiem 2 cm. Nałóż 350 g gęstego dżemu (morelowy, wiśniowy).",
+        "Z reszty ciasta wytnij paski i ułóż z nich kratkę na dżemie.",
+        "Piecz w 180°C 30–35 minut, aż kratka się zezłoci. Wystudź w formie – na ciepło łatwo pęka."
+      ] },
+    { id: "torta_caprese", masked: true, name: "Torta caprese (czekoladowe z migdałami)", category: "Ciasta, torty i desery", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
+      basis: "flour", components: [["darkChocolate", 100], ["softButter", 90], ["sugar", 75], ["eggs", 125], ["cocoa", 5]], prefer: { mig: 0.6 },
+      unitWeight: 700, defaultCount: 1, unit: "tortownica 22 cm", bakeNote: "170°C, 35–40 min", sweet: true,
+      steps: c => [
+        `Czekoladę (${c.g("darkChocolate")}) roztop z masłem (${c.g("softButter")}). Wystudź.`,
+        `Oddziel białka od żółtek (jajka razem ${c.g("eggs")}). Żółtka utrzyj z połową cukru, połącz z czekoladą.`,
+        `Wsyp mąki (${c.flour}) – najlepiej głównie migdałowej – z kakao i wymieszaj.`,
+        "Białka ubij z resztą cukru na sztywno i delikatnie wmieszaj w 3 porcjach.",
+        "Piecz w 170°C 35–40 minut. Środek ma zostać wilgotny. Wystudź w formie i posyp cukrem pudrem."
+      ] },
+    { id: "ravioli", name: "Ravioli z ricottą i szpinakiem", category: "Pierogi, kluski i makarony", rheologyClass: "RHEO_SCALDED_BOILED_DOUGH",
+      basis: "flour", components: [["eggs", 55], ["yolks", 15], ["oil", 5], ["psy", 1.2], ["salt", 1.5]], prefer: { tap: 0.15 },
+      unitWeight: 15, defaultCount: 40, unit: "raviolo", bakeNote: "gotowanie 3–4 min",
+      steps: c => [
+        `Mąki (${c.flour}), psyllium i sól wymieszaj z jajkami (${c.g("eggs")}), żółtkami i oliwą. Zagnieć gładkie ciasto, owiń folią i odstaw na 20 minut.`,
+        "Farsz: 250 g ricotty, 150 g sparzonego i mocno odciśniętego szpinaku, 40 g startego parmezanu, sól, pieprz, gałka muszkatołowa.",
+        "Rozwałkuj cienko (1,5 mm) porcjami między papierem. Na pas ciasta nakładaj łyżeczki farszu co 4 cm, przykryj drugim pasem, dociśnij wokół farszu i wykrój kwadraty.",
+        `Gotuj partiami w osolonym wrzątku 3–4 minuty. Wyjdzie ok. ${c.pcs} sztuk.`,
+        "Podawaj z masłem szałwiowym albo sosem pomidorowym."
+      ] },
+    { id: "lasagne", name: "Płaty do lasagne (bez gotowania)", category: "Pierogi, kluski i makarony", rheologyClass: "RHEO_SCALDED_BOILED_DOUGH",
+      basis: "flour", components: [["eggs", 55], ["yolks", 15], ["oil", 5], ["psy", 1.2], ["salt", 1.5]], prefer: { tap: 0.15 },
+      unitWeight: 550, defaultCount: 1, unit: "naczynie 20 × 30 cm", bakeNote: "w lasagne: 180°C, 40 min",
+      steps: c => [
+        `Mąki (${c.flour}), psyllium i sól wymieszaj z jajkami (${c.g("eggs")}), żółtkami i oliwą. Zagnieć gładkie ciasto i odstaw pod folią na 20 minut.`,
+        "Podziel na 4 części. Każdą rozwałkuj między papierem na płat grubości 1,5 mm wielkości naczynia.",
+        "Płatów nie trzeba gotować – układaj je od razu warstwami z sosem bolońskim i beszamelem (sosy muszą być dość rzadkie, ciasto wchłonie płyn).",
+        "Ostatnią warstwę pokryj beszamelem i serem. Przykryj folią aluminiową.",
+        "Piecz w 180°C 30 minut pod folią i 10 minut bez, aż ser się zrumieni. Odczekaj 15 minut przed krojeniem."
+      ] },
+    { id: "gyoza", name: "Gyoza (japońskie pierożki smażone)", category: "Pierogi, kluski i makarony", rheologyClass: "RHEO_SCALDED_BOILED_DOUGH",
+      basis: "flour", components: [["hotWater", 80], ["oil", 3], ["psy", 1.2], ["salt", 1.0]], prefer: { tap: 0.2 },
+      unitWeight: 12, defaultCount: 45, unit: "pierożek", bakeNote: "patelnia: smażenie 2 min, potem para 5 min",
+      steps: c => [
+        `Mąki (${c.flour}), psyllium i sól zalej gorącą wodą (${c.g("hotWater")}), dodaj olej. Wymieszaj łyżką, a gdy przestygnie, zagnieć gładkie ciasto. Odstaw pod folią na 15 minut.`,
+        "Farsz: 300 g mielonej wieprzowiny, 150 g drobno posiekanej kapusty pekińskiej (posolonej i odciśniętej), 2 dymki, ząbek czosnku, łyżeczka startego imbiru, 2 łyżki sosu sojowego bezglutenowego (tamari).",
+        `Rozwałkuj cienko porcjami i wykrawaj krążki 8 cm. Nałóż łyżeczkę farszu i zlep, robiąc z jednej strony zakładki. Wyjdzie ok. ${c.pcs} sztuk.`,
+        "Smaż na patelni z olejem płaską stroną w dół 2 minuty, aż spód się zrumieni. Wlej 1/3 szklanki wody, przykryj i gotuj na parze 5 minut, aż woda odparuje.",
+        "Podawaj z sosem: tamari, ocet ryżowy i odrobina oleju chili."
+      ] },
+    { id: "czapati", name: "Czapati / roti (indyjskie placki)", category: "Pizza, placki i chlebki płaskie", rheologyClass: "RHEO_SCALDED_BOILED_DOUGH",
+      basis: "flour", components: [["hotWater", 75], ["oil", 6], ["psy", 1.2], ["salt", 1.5]], prefer: { tap: 0.1, sor: 0.2 },
+      unitWeight: 60, defaultCount: 10, unit: "placek", bakeNote: "sucha patelnia, 1 min z każdej strony",
+      steps: c => [
+        `Mąki (${c.flour}), psyllium i sól zalej gorącą wodą (${c.g("hotWater")}), dodaj olej lub ghee. Wymieszaj, potem zagnieć gładkie ciasto. Odstaw na 15 minut.`,
+        `Podziel na ${c.pcs} kulek po ok. ${c.pw} g. Rozwałkuj między papierem na cienkie placki (2 mm).`,
+        "Piecz na suchej, mocno rozgrzanej patelni ok. 1 minutę z każdej strony, aż pojawią się brązowe plamki.",
+        "Dla nadmuchanych roti: dociśnij placek ściereczką na patelni albo przytrzymaj chwilę nad płomieniem.",
+        "Posmaruj ghee lub masłem, trzymaj pod ściereczką. Podawaj do curry i dal."
+      ] },
+    { id: "placki_dymka", name: "Placki z dymką (chińskie, listkowane)", category: "Pizza, placki i chlebki płaskie", rheologyClass: "RHEO_SCALDED_BOILED_DOUGH",
+      basis: "flour", components: [["hotWater", 78], ["oil", 10], ["psy", 1.2], ["salt", 1.5]], prefer: { tap: 0.15 },
+      unitWeight: 125, defaultCount: 4, unit: "placek", bakeNote: "patelnia z olejem, 3 min z każdej strony",
+      steps: c => [
+        `Mąki (${c.flour}), psyllium i sól zalej gorącą wodą (${c.g("hotWater")}), wymieszaj, potem zagnieć z połową oleju gładkie ciasto. Odstaw na 15 minut.`,
+        `Podziel na ${c.pcs} części. Każdą rozwałkuj cienko między papierem, posmaruj olejem, posyp solą i posiekaną dymką (razem ok. 4 dymki).`,
+        "Zwiń ciasno w rulon, potem rulon zwiń w ślimaka. Spłaszcz dłonią i rozwałkuj delikatnie na placek grubości 5 mm.",
+        "Smaż na patelni z olejem na średnim ogniu, ok. 3 minuty z każdej strony, aż będzie złoty i chrupiący.",
+        "Pokrój na trójkąty. Podawaj z sosem sojowym bezglutenowym."
+      ] },
+    { id: "gozleme", name: "Gözleme (tureckie placki nadziewane z patelni)", category: "Pizza, placki i chlebki płaskie", rheologyClass: "RHEO_SCALDED_BOILED_DOUGH",
+      basis: "flour", components: [["milkOrYogurt", 75], ["oil", 8], ["psy", 1.2], ["bakingPowder", 1.0], ["salt", 1.5]], prefer: { tap: 0.12 },
+      unitWeight: 150, defaultCount: 4, unit: "placek", bakeNote: "patelnia, 3 min z każdej strony",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}), psyllium, proszek i sól. Dodaj jogurt (${c.g("milkOrYogurt")}) i olej, zagnieć gładkie ciasto. Odstaw na 15 minut.`,
+        "Farsz: 200 g sparzonego, odciśniętego szpinaku, 200 g pokruszonej fety, 1 posiekana cebulka, pieprz.",
+        `Podziel na ${c.pcs} części. Każdą rozwałkuj między papierem na prostokąt grubości 2 mm, na połowie rozłóż farsz, przykryj drugą połową i dociśnij brzegi.`,
+        "Smaż na patelni z odrobiną masła ok. 3 minuty z każdej strony, aż będzie złoty.",
+        "Pokrój w kwadraty, podawaj z jogurtem czosnkowym."
+      ] },
+    { id: "francuskie", name: "Ciasto francuskie szybkie (do paluchów, krokietów, tart)", category: "Ciasto francuskie i rogale", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["coldButter", 90], ["iceWater", 45], ["psy", 1.5], ["salt", 1.2]],
+      unitWeight: 600, defaultCount: 1, unit: "porcja (2 arkusze)", bakeNote: "200°C, 20–25 min",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}), psyllium i sól. Zimne masło (${c.g("coldButter")}) pokrój w kostkę 1 cm i wymieszaj z mąką – kawałki masła mają zostać widoczne.`,
+        `Wlej lodowatą wodę (${c.g("iceWater")}) i zbierz ciasto rękami, bez wyrabiania. Owiń folią i schłódź 30 minut.`,
+        "Rozwałkuj na papierze oprószonym mąką ryżową na prostokąt, złóż na trzy jak list, obróć o 90° i znowu rozwałkuj. Złóż na trzy i schłódź 30 minut.",
+        "Powtórz wałkowanie i składanie jeszcze 2 razy (razem 4 złożenia), za każdym razem chłodząc.",
+        "Rozwałkuj na 3–4 mm i użyj do paluchów, tart, krokietów. Piecz w 200°C 20–25 minut, aż będzie złote. Ciasto musi być zimne, gdy trafia do piekarnika."
+      ] },
+    { id: "paluchy_francuskie", name: "Paluchy francuskie z serem", category: "Ciasto francuskie i rogale", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["coldButter", 90], ["iceWater", 45], ["cheese", 40], ["psy", 1.5], ["salt", 1.2]],
+      unitWeight: 25, defaultCount: 24, unit: "paluch", bakeNote: "200°C, 15–18 min",
+      steps: c => [
+        `Zrób szybkie ciasto francuskie: mąki (${c.flour}) z psyllium i solą wymieszaj z zimnym masłem (${c.g("coldButter")}) w kostce, wlej lodowatą wodę (${c.g("iceWater")}) i zbierz bez wyrabiania. Schłódź 30 minut.`,
+        "Rozwałkuj i złóż na trzy, schłódź 30 minut. Powtórz 3 razy.",
+        `Rozwałkuj na prostokąt grubości 4 mm, posmaruj jajkiem i posyp tartym serem (${c.g("cheese")}), papryką i kminkiem. Lekko wciśnij wałkiem.`,
+        `Pokrój na ${c.pcs} pasków szerokości 1,5 cm i skręć każdy w spiralę. Ułóż na blasze z papierem i schłódź 15 minut.`,
+        "Piecz w 200°C 15–18 minut, aż będą złote."
+      ] },
+    { id: "panierka", name: "Panierka do schabowego i kotletów", category: "W kuchni: panierki, sosy, dodatki", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["eggs", 120], ["milkOrWater", 15], ["salt", 1.0]],
+      unitWeight: 600, defaultCount: 1, unit: "porcja na 6–8 kotletów (bez bułki tartej)", bakeNote: "smażenie na oleju, 3–4 min z każdej strony",
+      steps: c => [
+        `Przygotuj trzy talerze: na pierwszym mąki (${c.flour}) z solą i pieprzem, na drugim jajka (${c.g("eggs")}) roztrzepane z mlekiem lub wodą, na trzecim ok. 200 g bezglutenowej bułki tartej (przepis „Chleb na bułkę tartą”) albo pokruszonych płatków kukurydzianych.`,
+        "Rozbite i doprawione kotlety obtocz kolejno w mące (strzepnij nadmiar), w jajku i w bułce tartej. Dociśnij dłonią.",
+        "Odłóż na 5 minut – panierka lepiej się trzyma.",
+        "Smaż na rozgrzanym oleju (warstwa ok. 1 cm) na średnim ogniu, 3–4 minuty z każdej strony, aż będą złote.",
+        "Odsącz na ręczniku papierowym. Mąka ryżowa i skrobia dają bardziej chrupiącą panierkę niż pszenna."
+      ] },
+    { id: "beszamel", name: "Sos beszamelowy (i zasmażka do sosów)", category: "W kuchni: panierki, sosy, dodatki", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["milk", 1000], ["butter", 100], ["salt", 6]], target: { starch: [80, 100], protein: [0, 8], fiber: [0, 3] }, prefer: { ryz: 0.5 },
+      unitWeight: 600, defaultCount: 1, unit: "porcja (do lasagne lub zapiekanki)", bakeNote: "rondel, 5–8 min mieszania",
+      steps: c => [
+        `W rondlu roztop masło (${c.g("butter")}). Wsyp mąki (${c.flour}) i mieszaj na małym ogniu 1–2 minuty – to zasmażka. Do zup i sosów możesz skończyć na tym kroku.`,
+        `Stopniowo wlewaj zimne mleko (${c.g("milk")}), cały czas mieszając trzepaczką, żeby nie było grudek.`,
+        "Gotuj na małym ogniu 5–8 minut, mieszając, aż sos zgęstnieje.",
+        "Dopraw solą, pieprzem i szczyptą gałki muszkatołowej. Mąka ryżowa i skrobia gęstnieją szybciej niż pszenna – jeśli sos jest za gęsty, dolej mleka.",
+        "Do lasagne: sos ma być rzadszy niż zwykle, bo surowe płaty wchłoną płyn."
+      ] },
+    { id: "lamance", name: "Łamańce z makiem (wigilijne)", category: "Ciastka i kruche", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["water", 40], ["oil", 15], ["sugar", 8], ["bakingPowder", 1.0], ["salt", 0.5]],
+      unitWeight: 8, defaultCount: 65, unit: "łamaniec", bakeNote: "190°C, 12–15 min", sweet: true,
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}), cukier, proszek i sól. Dodaj wodę (${c.g("water")}) i olej, zagnieć gładkie ciasto.`,
+        "Rozwałkuj między papierem bardzo cienko (2 mm), pokrój na kwadraty lub romby 3 cm i nakłuj widelcem.",
+        "Piecz w 190°C 12–15 minut, aż będą twarde i lekko złote.",
+        "Do podania: 200 g maku sparz, zmiel, wymieszaj z 3 łyżkami miodu, bakaliami i ciepłym mlekiem (ok. 150 ml).",
+        "Łamańce zalej makiem tuż przed podaniem albo podawaj osobno do maczania."
+      ] },
+    { id: "baranek", name: "Baranek wielkanocny (z formy, ucierany)", category: "Ciasta, torty i desery", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
+      basis: "flour", components: [["softButter", 65], ["sugar", 60], ["eggs", 65], ["lemonMilk", 15], ["bakingPowder", 2.5]], target: { starch: [35, 45] },
+      unitWeight: 600, defaultCount: 1, unit: "forma baranek", bakeNote: "170°C, 40–45 min", sweet: true,
+      steps: c => [
+        "Formę bardzo dokładnie wysmaruj masłem (każde zagłębienie) i oprósz mąką ryżową.",
+        `Miękkie masło (${c.g("softButter")}) utrzyj z cukrem na puszystą masę. Dodawaj po jednym jajku (razem ${c.g("eggs")}), ucierając.`,
+        `Wsyp mąki (${c.flour}) z proszkiem, dodaj mleko lub sok z cytryny i wymieszaj na gładko.`,
+        "Napełnij formę, stuknij nią o blat. Piecz w 170°C 40–45 minut (jeśli forma stoi pionowo, postaw ją na blasze). Patyczek ma być suchy.",
+        "Wystudź 15 minut w formie, potem ostrożnie wyjmij. Posyp cukrem pudrem, zawiąż wstążkę."
+      ] },
+    { id: "roze_karnawalowe", name: "Róże karnawałowe (z konfiturą)", category: "Pączki i słodkie smażone", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["yolks", 28], ["sourCream", 38], ["meltedButter", 8], ["powderedSugar", 5], ["vinegarOrSpirit", 4], ["bakingPowder", 0.5], ["salt", 0.5]],
+      unitWeight: 30, defaultCount: 18, unit: "róża", bakeNote: "smażenie w 175°C, 1–2 min", sweet: true,
+      steps: c => [
+        `Mąki (${c.flour}) wymieszaj z cukrem pudrem, proszkiem i solą. Dodaj żółtka (${c.g("yolks")}), śmietanę, roztopione masło i spirytus lub ocet. Zagnieć gładkie ciasto i odstaw pod folią na 20 minut.`,
+        "Rozwałkuj między papierem bardzo cienko (1–2 mm). Wykrawaj krążki w 3 rozmiarach (8, 6 i 4 cm), nacinaj każdy brzeg 5 razy w stronę środka.",
+        `Złóż po jednym krążku z każdego rozmiaru (od największego), sklejając środek kroplą białka i mocno dociskając palcem. Wyjdzie ok. ${c.pcs} róż.`,
+        "Smaż w oleju rozgrzanym do 175°C, najpierw stroną z płatkami w dół, 1–2 minuty, aż płatki się rozchylą i zezłocą. Obróć na chwilę.",
+        "Odsącz, posyp cukrem pudrem, na środek nałóż konfiturę różaną lub żurawinę."
+      ] },
+    { id: "biszkopt_kakaowy", masked: true, name: "Biszkopt kakaowy (na tort urodzinowy)", category: "Ciasta, torty i desery", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
+      basis: "flour", components: [["eggs", 200], ["sugar", 95], ["cocoa", 15], ["bakingPowder", 1.5]], target: { starch: [45, 55] }, prefer: { szi: 0.4 },
+      unitWeight: 650, defaultCount: 1, unit: "tortownica 24 cm", bakeNote: "170°C, 30–35 min", sweet: true,
+      steps: c => [
+        `Jajka (${c.g("eggs")}) w temperaturze pokojowej. Białka ubij ze szczyptą soli na sztywno, dodając stopniowo cukier. Wmiksuj po jednym żółtku.`,
+        `Mąki (${c.flour}) przesiej z kakao i proszkiem. Wmieszaj delikatnie łopatką w 3 porcjach.`,
+        "Przelej do tortownicy wyłożonej papierem tylko na dnie (boki nie smarowane). Piecz w 170°C 30–35 minut.",
+        "Po upieczeniu upuść formę z wysokości 30 cm na blat (biszkopt mniej opadnie) i wystudź do góry dnem.",
+        "Dla większej tortownicy (26 cm) zwiększ ilość o 20%. Przekrój na 3 blaty dopiero następnego dnia, nasącz i przełóż kremem."
+      ] },
+    { id: "paluszki_serowe", name: "Paluszki serowe (kruche, do pudełka)", category: "Przekąski i wytrawne", rheologyClass: "RHEO_SHORTCRUST_COOKIE_CRISP",
+      basis: "flour", components: [["coldButter", 60], ["cheese", 70], ["eggs", 20], ["salt", 1.0], ["bakingPowder", 0.8]],
+      unitWeight: 15, defaultCount: 40, unit: "paluszek", bakeNote: "190°C, 15 min",
+      steps: c => [
+        `Mąki (${c.flour}), sól, proszek i szczyptę papryki rozetrzyj z zimnym masłem (${c.g("coldButter")}) na kruszonkę.`,
+        `Dodaj starty ser (${c.g("cheese")}) i jajko, zagnieć ciasto. Schłódź 20 minut.`,
+        `Rozwałkuj między papierem na 5 mm i pokrój na ${c.pcs} pasków 1 × 10 cm. Posmaruj jajkiem, posyp sezamem lub kminkiem.`,
+        "Piecz w 190°C ok. 15 minut, aż będą złote. Studź na blasze."
+      ] },
+    { id: "muffinki_wytrawne", name: "Muffinki wytrawne (ser, warzywa, szynka)", category: "Przekąski i wytrawne", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
+      basis: "flour", components: [["milkOrYogurt", 80], ["oil", 35], ["eggs", 45], ["cheese", 45], ["bakingPowder", 3.0], ["salt", 1.2]],
+      unitWeight: 65, defaultCount: 12, unit: "muffinka", bakeNote: "190°C, 20–22 min",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}), proszek, sól, pieprz i zioła.`,
+        `W drugiej misce roztrzep jajka (${c.g("eggs")}), mleko lub jogurt (${c.g("milkOrYogurt")}) i olej.`,
+        `Połącz krótko łyżką. Dodaj starty ser (${c.g("cheese")}) i ok. 200 g dodatków pokrojonych w kostkę: szynka, papryka, kukurydza, suszone pomidory, szpinak.`,
+        `Nakładaj do papilotek po ok. ${c.pw} g. Piecz w 190°C 20–22 minuty, aż patyczek będzie suchy.`,
+        "Dobre na zimno do pracy i szkoły; można mrozić."
+      ] },
+    { id: "gougeres", name: "Ptysie serowe (gougères, przekąska)", category: "Przekąski i wytrawne", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
+      basis: "flour", components: [["milkOrWater", 155], ["butter", 65], ["eggs", 160], ["cheese", 70], ["salt", 1.5]],
+      unitWeight: 20, defaultCount: 30, unit: "ptyś", bakeNote: "200°C 15 min, potem 180°C 10 min",
+      steps: c => [
+        `W garnku zagotuj wodę lub mleko (${c.g("milkOrWater")}) z masłem i solą. Zdejmij z ognia i wsyp od razu mąki (${c.flour}), energicznie mieszając.`,
+        "Postaw z powrotem na małym ogniu i mieszaj 1–2 minuty, aż ciasto odejdzie od ścianek. Studź 5–10 minut.",
+        `Wbijaj jajka po jednym (razem do ${c.g("eggs")}), miksując. Wmieszaj starty ser (${c.g("cheese")}) – najlepiej gruyère lub dojrzały żółty – i szczyptę pieprzu.`,
+        `Nakładaj łyżeczką lub rękawem ${c.pcs} kulek na blachę z papierem. Posyp odrobiną sera.`,
+        "Piecz w 200°C 15 minut, potem 180°C 10 minut. Nie otwieraj piekarnika przez pierwsze 15 minut."
+      ] },
+    { id: "placuszki_bananowe", name: "Placuszki bananowe (śniadaniowe)", category: "Naleśniki, placki i gofry", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["banana", 110], ["milk", 70], ["eggs", 50], ["bakingPowder", 2.5], ["salt", 0.3]], prefer: { ows: 0.4 },
+      unitWeight: 45, defaultCount: 13, unit: "placuszek", bakeNote: "patelnia, 2 min z każdej strony", sweet: true,
+      steps: c => [
+        `Rozgnieć banany (${c.g("banana")}) widelcem na gładko. Dodaj jajka (${c.g("eggs")}) i mleko, wymieszaj.`,
+        `Wsyp mąki (${c.flour}) – najlepiej owsianej – z proszkiem i solą. Wymieszaj na gęste ciasto. Cukier nie jest potrzebny.`,
+        `Smaż na lekko natłuszczonej patelni na średnim ogniu, po ok. ${c.pw} g, 2 minuty z każdej strony.`,
+        "Podawaj z jogurtem, owocami i masłem orzechowym."
+      ] },
+    { id: "gofry_bialkowe", name: "Gofry białkowe (z twarogiem lub skyrem)", category: "Naleśniki, placki i gofry", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["quark", 110], ["milk", 60], ["eggs", 70], ["oil", 10], ["bakingPowder", 2.5], ["salt", 0.4]], prefer: { ows: 0.3, cie: 0.1 },
+      unitWeight: 90, defaultCount: 7, unit: "gofr", bakeNote: "gofrownica, 4–5 min",
+      steps: c => [
+        `Twaróg lub skyr (${c.g("quark")}) zmiksuj z jajkami (${c.g("eggs")}), mlekiem i olejem na gładko.`,
+        `Dodaj mąki (${c.flour}) z proszkiem i solą. Zmiksuj krótko. Możesz dodać łyżkę ksylitolu lub erytrytolu.`,
+        `Nakładaj po ok. ${c.pw} g do nagrzanej, natłuszczonej gofrownicy i piecz 4–5 minut.`,
+        "Podawaj z owocami i jogurtem. Wytrawna wersja: bez słodzika, z ziołami i serem."
+      ] },
+    { id: "scones", name: "Scones (bułeczki śniadaniowe bez drożdży)", category: "Bułki i bułeczki", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
+      basis: "flour", components: [["coldButter", 30], ["milkOrYogurt", 55], ["eggs", 18], ["sugar", 12], ["bakingPowder", 4.0], ["salt", 0.8]],
+      unitWeight: 65, defaultCount: 9, unit: "bułeczka", bakeNote: "210°C, 14–16 min", sweet: true,
+      steps: c => [
+        `Mąki (${c.flour}), cukier, proszek i sól rozetrzyj z zimnym masłem (${c.g("coldButter")}) na drobną kruszonkę.`,
+        `Wlej jajko (${c.g("eggs")}) roztrzepane z mlekiem lub jogurtem i zbierz ciasto widelcem, bez wyrabiania. Możesz dodać rodzynki lub żurawinę.`,
+        `Spłaszcz na grubość 2,5 cm i wykrawaj szklanką ${c.pcs} bułeczek (nie przekręcaj szklanki – rosną wyżej).`,
+        "Posmaruj mlekiem i piecz w 210°C 14–16 minut, aż będą złote.",
+        "Podawaj ciepłe z masłem, dżemem i bitą śmietaną."
+      ] },
+    { id: "gofry_ziemniaczane", name: "Gofry ziemniaczane (z gofrownicy)", category: "Naleśniki, placki i gofry", rheologyClass: "RHEO_CURD_POTATO_DUMPLINGS",
+      basis: "total", flourPct: 15, components: [["potatoes", 65], ["eggs", 12], ["meltedButter", 6], ["salt", 1.0], ["bakingPowder", 1.0]], target: { starch: [55, 80] },
+      unitWeight: 90, defaultCount: 7, unit: "gofr", bakeNote: "gofrownica, 6–8 min",
+      steps: c => [
+        `Ugotuj ziemniaki, przeciśnij przez praskę i wystudź. Potrzebujesz ${c.g("potatoes")}.`,
+        `Dodaj jajka (${c.g("eggs")}), roztopione masło, mąki (${c.flour}), proszek, sól i pieprz. Możesz dodać szczypiorek i starty ser.`,
+        `Nakładaj po ok. ${c.pw} g do mocno nagrzanej, natłuszczonej gofrownicy.`,
+        "Piecz 6–8 minut, aż będą złote i chrupiące – nie otwieraj wcześniej, bo się rozerwą.",
+        "Podawaj z jajkiem sadzonym, łososiem lub kwaśną śmietaną."
+      ] },
+    { id: "gofry_pizzowe", name: "Pizza z gofrownicy (gofry pizzowe)", category: "Pizza, placki i chlebki płaskie", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["milk", 90], ["eggs", 60], ["cheese", 60], ["oil", 15], ["bakingPowder", 3.0], ["salt", 1.0]],
+      unitWeight: 95, defaultCount: 6, unit: "gofr", bakeNote: "gofrownica, 5–6 min",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}), proszek, sól i 1 łyżeczkę oregano.`,
+        `Dodaj mleko (${c.g("milk")}), jajka (${c.g("eggs")}) i olej, wymieszaj na gęste ciasto. Wmieszaj starty ser (${c.g("cheese")}) i drobno pokrojone salami lub szynkę.`,
+        `Nakładaj po ok. ${c.pw} g do nagrzanej, natłuszczonej gofrownicy i piecz 5–6 minut.`,
+        "Podawaj z sosem pomidorowym do maczania."
       ] }
+
 
   ];
 
   // ---------- Kategorie i drzewo wyboru ----------
-  const CATEGORIES = [
+  // Stare kategorie (indeksy w YEAST_CATEGORY i pola `category` starszych przepisów) – przemapowane niżej na nowy układ.
+  const OLD_CATEGORIES = [
     "Pizza i płaskie", "Chleby", "Bułki i precle", "Nadziewane i słodkie drożdżowe",
     "Pierogi, kluski i makarony (bez drożdży)", "Naleśniki, gofry i panierki",
     "Ciastka, pierniczki i kruche", "Ciasta, biszkopty i desery"
   ];
+  // Układ kategorii v2.16 – wg rodzaju wypieku (kolejność = kolejność kafelków w aplikacji).
+  const CATEGORIES = [
+    "Chleby", "Bułki i bułeczki", "Pizza, placki i chlebki płaskie", "Słodkie drożdżowe", "Ciasto francuskie i rogale",
+    "Pierogi, kluski i makarony", "Naleśniki, placki i gofry", "Pączki i słodkie smażone", "Ciastka i kruche",
+    "Ciasta, torty i desery", "Przekąski i wytrawne", "W kuchni: panierki, sosy, dodatki"
+  ];
+  const CAT_FROM_OLD = { "Pizza i płaskie": 2, "Chleby": 0, "Bułki i precle": 1, "Nadziewane i słodkie drożdżowe": 3,
+    "Pierogi, kluski i makarony (bez drożdży)": 5, "Naleśniki, gofry i panierki": 6, "Ciastka, pierniczki i kruche": 8, "Ciasta, biszkopty i desery": 9 };
+  const CAT_BY_ID = { calzone: 2, langosz: 2, paszteciki: 10, pierogi_drozdzowe: 5, grissini: 10, precle: 10, bajgle: 1,
+    paczki: 7, oponki: 7, faworki: 7, paczki_serowe: 7, bomboloni: 7, quiche: 10, tarta: 9, szarlotka: 9, tempura: 11, bulka_tarta: 11,
+    croissant: 4, rogale_marcinskie: 4, bao: 1, pampuchy: 5, pinsa: 2, panzerotti: 2, paska: 3, pizzerinki: 10, chleb_proteinowy: 0,
+    bulki_czosnkowe: 1, biszkopty_tiramisu: 8, cebularze: 1, tortilla: 2, krakersy: 10 };
   /** Kategorie wypieków drożdżowych */
   const YEAST_CATEGORY = {
     pizza_neapol: 0, pizza_blacha: 0, pizza_patelnia: 0, focaccia: 0, pita: 0, naan: 0, langosz: 0,
@@ -674,9 +957,14 @@
     calzone: 3, paszteciki: 3, pierogi_drozdzowe: 3, chalka: 3, babka: 3, drozdzowki: 3, cynamonki: 3, buleczki_maslane: 3, paczki: 3, placek_kruszonka: 3,
     chleb_ziarnisty: 1, chleb_owsiany: 1, bulki_ziarniste: 2, cebularze: 2, pide: 2, bulki_czosnkowe: 2, szneki: 3, jagodzianki: 3, strucla_makowa: 3, rogaliki_drozdzowe: 3, pampuchy: 3
   };
-  for (const b of BAKES) { b.category = CATEGORIES[YEAST_CATEGORY[b.id] ?? 3]; b.family = "yeast"; }
+  for (const b of BAKES) { b.category = OLD_CATEGORIES[YEAST_CATEGORY[b.id] ?? 3]; b.family = "yeast"; }
   for (const b of PASTRY_BAKES) b.family = "pastry";
   const ALL_BAKES = BAKES.concat(PASTRY_BAKES);
+  for (const b of ALL_BAKES) {
+    const i = CAT_BY_ID[b.id] ?? CAT_FROM_OLD[b.category];
+    if (i !== undefined) b.category = CATEGORIES[i];
+    else if (!CATEGORIES.includes(b.category)) b.category = CATEGORIES[3];
+  }
 
   // ---------- Solver trybu cukierniczego / zaparzanego ----------
   const STEP = 0.05;
