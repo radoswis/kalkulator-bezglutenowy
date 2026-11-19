@@ -1,6 +1,7 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.16.2", d: "19.11.2026", t: ["Przepis: tło na całą szerokość ekranu i większy margines przy tekście. Aplikacja ma własny tryb ciemny, więc przeglądarka (np. Samsung Internet) nie przyciemnia jej już po swojemu."] },
   { v: "2.16.1", d: "19.11.2026", t: ["Wybrana opcja w przełącznikach (sztuki/gramy, zestaw mąk, smak, wyrastanie, psyllium) ma pełny kolor i znaczek ✓ – czytelne także w trybie ciemnym."] },
   { v: "2.16.0", d: "19.11.2026", t: ["Nowy porządek przepisów: 12 rodzajów wypieku (m.in. Pączki i słodkie smażone, Ciasto francuskie i rogale, Przekąski i wytrawne, W kuchni: panierki i sosy) oraz tematy: Kuchnia włoska, Kuchnie świata, Święta i okazje, Śniadanie, Na obiad, Przekąski i do pudełka, Bez piekarnika, Bez drożdży. Przepisy na listach alfabetycznie.",
     "37 nowych przepisów (razem 129). Kuchnia włoska: pinsa, piadina, panzerotti, bomboloni, taralli, cantucci, crostata, torta caprese, ravioli, płaty do lasagne.",

@@ -6,6 +6,7 @@
 <title>Kalkulator ciast bezglutenowych</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1F4D3A">
+<meta name="color-scheme" content="light dark">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
@@ -279,6 +280,9 @@ details.prefs .inner{display:grid;gap:10px}
 .seg button[aria-pressed="false"]{background:transparent;color:var(--fg);opacity:.75}
 :root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#10140f}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#10140f}}
+/* v2.16.2: jasny pas pod przepisem na całą szerokość ekranu (tekst nie dochodzi do krawędzi tła) */
+.sheet{margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+:root{color-scheme:light dark}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
