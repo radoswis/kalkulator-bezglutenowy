@@ -287,9 +287,9 @@ details.prefs .inner{display:grid;gap:10px}
 :root[data-theme="light"]{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
 .themepick{flex-basis:100%;display:grid;gap:6px}.themepick .seg{max-width:460px}
 .ovencard{display:flex;gap:14px;align-items:flex-start;background:var(--accent-soft);border:2px solid var(--accent);border-radius:18px;padding:14px}
-.ovencard>img{flex:none;border-radius:10px;background:#d6d6d6}
+.ovencard>img{flex:none;border-radius:10px;background:#fff}
 .ovencard>div{display:grid;gap:6px}.ovencard b{font-family:var(--display);font-size:1.05rem}.ovencard small{color:var(--muted);font-size:.9rem;line-height:1.45}
-.ovencard img.inl{vertical-align:middle;border-radius:4px;background:#d6d6d6}
+.ovencard img.inl{vertical-align:middle;border-radius:4px;background:#fff}
 .devlabel{font-weight:700;font-size:.95rem;margin-bottom:-6px}
 .devseg{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.devseg::-webkit-scrollbar{display:none}
 .devseg .dev{flex:none;font:inherit;display:grid;justify-items:center;gap:2px;min-width:92px;min-height:76px;padding:8px 10px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;font-size:.88rem;font-weight:600}
@@ -312,6 +312,38 @@ details.prefs .inner{display:grid;gap:10px}
 :root[data-theme="dark"] .dd[aria-pressed="true"],:root[data-theme="dark"] .dd[aria-pressed="true"] svg,:root[data-theme="dark"] .dd[aria-pressed="true"] small{color:#10140f}
 .partlist{margin-top:8px}.partlist summary{font-weight:600;color:var(--warn)}
 .manrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.manimg{border-radius:10px;background:#fff;height:auto;max-width:100%}.manimg.wide{width:100%}
+/* v2.21: grafiki urządzeń w stylu aplikacji */
+.ovencard>div{min-width:0}.ovencard{overflow:hidden}
+.drow{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center}
+.dial{flex:none;width:112px;height:112px;border-radius:50%;background:#2C2C2A;box-shadow:0 0 0 6px var(--line);display:grid;place-items:center;text-align:center;color:#F1EFE8}
+.dial small{display:block;font-size:.72rem;color:#D3D1C7}.dial b{display:block;font-family:var(--display);font-size:1.7rem;line-height:1.1}.dial em{font-style:normal;font-size:.82rem;color:#FAC775}
+.dsteps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:6px;font-size:.92rem;min-width:0;flex:1 1 170px}.dsteps li>span{min-width:0;overflow-wrap:anywhere}
+.dsteps li{counter-increment:s;display:flex;gap:8px;align-items:flex-start;line-height:1.35}
+.dsteps li::before{content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:.78rem;font-weight:700}
+:root[data-theme="dark"] .dsteps li::before{color:#10140f}
+.layers{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.layers>div{border:1.5px solid var(--line);border-radius:12px;padding:8px;display:grid;justify-items:center;gap:2px;font-size:.8rem;color:var(--muted)}
+.layers svg{width:90px;height:34px;fill:var(--line);stroke:var(--muted);stroke-width:2}.layers rect{fill:none}
+.layers .on{border-color:var(--accent);color:var(--accent);font-weight:700}.layers .on svg{stroke:var(--accent)}.layers .on circle{fill:var(--gold)}
+.pilldark{display:inline-block;padding:1px 8px;border-radius:999px;background:#2C2C2A;color:#F1EFE8;font-size:.82rem}
+.optipanel{background:#2C2C2A;border-radius:14px;padding:12px 14px;color:#F1EFE8;display:grid;gap:8px}
+.op1,.op2{display:flex;justify-content:space-between;font-size:.75rem;color:#D3D1C7}.optipanel b{font-family:var(--display);font-size:1.9rem;line-height:1}
+.opbar{position:relative;height:8px;border-radius:4px;background:linear-gradient(90deg,#378ADD,#EF9F27,#E24B4A);margin:0 8px}
+.opbar i{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#fff;border:3px solid #2C2C2A}
+.accs{display:flex;gap:6px;flex-wrap:wrap}.accs span{font-size:.8rem;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.accs .on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}:root[data-theme="dark"] .accs .on{color:#10140f}
+.facts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.facts>span:not(.batch){font-size:.8rem;padding:3px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.frygauge{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.frygauge svg{width:130px;height:auto;overflow:visible}
+.frygauge .gbg,.frygauge .gval{fill:none;stroke-width:10;stroke-linecap:round}.frygauge .gbg{stroke:var(--line)}.frygauge .gval{stroke:var(--gold)}
+.frygauge .gt{font-family:var(--display);font-size:20px;font-weight:700;fill:var(--fg)}.frygauge .gs{font-size:10px;fill:var(--muted)}
+.oil{display:flex;gap:8px;align-items:flex-end}.oil small{font-size:.78rem;color:var(--muted);line-height:1.5}
+.tube{position:relative;width:28px;height:66px;border:2px solid var(--muted);border-radius:6px;overflow:hidden}.tube i{position:absolute;left:0;right:0;bottom:0;height:76%;background:var(--gold-soft)}
+.tube u{position:absolute;left:0;right:0;border-top:2px dashed var(--warn)}.tube .mx{bottom:82%}.tube .mn{bottom:70%}
+.batch{display:inline-flex;gap:3px}.batch i{width:12px;height:12px;border-radius:50%;border:2px solid var(--gold)}
+.itile{flex:none;width:64px;height:64px;border-radius:16px;background:#fff;border:1px solid var(--line);display:grid;place-items:center}
+.itile img{width:44px;height:auto}.inl2{width:24px;height:auto;vertical-align:middle;border-radius:5px;background:#fff;padding:2px}
+.ovsvg{flex:none;width:104px;height:72px}.ovsvg .ob{fill:var(--surface);stroke:var(--muted);stroke-width:2}.ovsvg .sh{fill:var(--line)}.ovsvg .sh.on{fill:var(--accent)}
+.ovsvg .sn{font-size:9px;fill:var(--muted)}.ovsvg .wt{fill:#85B7EB}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -1041,13 +1073,17 @@ function gorNote(note,b){if(curDev==="air"&&!b.device&&devFit(b,"air").ok!=="no"
  return `tryb „${m.name}”, ${n}`}
 function gorCard(b){if(!isGor())return "";const m=gorMode(b);
  if(!m)return `<div class="ovencard"><div><b>Gorenje</b><span>Ten przepis nie używa piekarnika (patelnia, garnek, gofrownica lub para).</span></div></div>`;
- const hot=GOR_HOT[b.id];
- return `<div class="ovencard"><img src="gorenje/${m.img}.png" alt="" width="64" height="58"><div><b>Ustaw: ${m.name}</b>
- <span>${m.lvl} · ${hot||"temperatura i czas jak w przepisie"}</span>
- ${m.steam?`<small>Para: zanim włączysz piekarnik, wstaw na 1. poziom zimną, płytką blachę i wlej na nią najwyżej 2 dl wody. Ciasto piecz na 2. poziomie. Nie otwieraj drzwi i nie dolewaj wody w trakcie.</small>`:""}
- ${GOR_MULTI.has(b.id)?`<small>Dwie blachy naraz: tryb „Gorące powietrze” <img src="gorenje/gp.png" alt="" width="28" height="25" class="inl">, temperatura o 20°C niższa, poziomy 1 i 3.</small>`:""}
- ${b.id==="lasagne"||b.id==="quiche"?`<small>Na koniec 3–5 min „Duży grill” <img src="gorenje/grill.png" alt="" width="28" height="25" class="inl"> do zrumienienia sera.</small>`:""}
- <small>${m.steam?"Nagrzewaj od razu w tym trybie, razem z blachą z wodą (bez „Szybkiego podgrzewania”).":"Rozgrzewanie: możesz użyć „Szybkiego podgrzewania”, ale przed włożeniem ciasta przełącz na tryb powyżej."}</small></div></div>`}
+ const hot=GOR_HOT[b.id],T=tOf(b.bakeNote),lv=m.lvl.startsWith("1.")?1:2;
+ const shelves=[4,3,2,1].map(n=>`<rect x="14" y="${8+(4-n)*14}" width="72" height="3" rx="1.5" class="${n===lv?"sh on":"sh"}"/><text x="92" y="${11+(4-n)*14}" class="sn">${n}</text>`).join("")+(m.steam?`<rect x="18" y="45" width="64" height="5" rx="2" class="wt"/>`:"");
+ const oven=`<svg viewBox="0 0 104 72" class="ovsvg" role="img" aria-label="Poziom ${lv}${m.steam?", blacha z wodą na poziomie 1":""}"><rect x="4" y="2" width="86" height="66" rx="8" class="ob"/>${shelves}</svg>`;
+ const st=[`Pokrętło trybu: <img src="gorenje/${m.img}.png" alt="" class="inl2"> <b>${m.name}</b>`,`Temperatura: <b>${hot?hot.match(/\d{3}°C/)[0]:T?T+"°C":"jak w przepisie"}</b>`,`Blacha: <b>${m.lvl}</b>`];
+ if(m.steam)st.splice(0,0,"Na 1. poziom zimna, płytka blacha z max 2 dl wody – przed włączeniem");
+ return `<div class="ovencard"><span class="itile"><img src="gorenje/${m.img}.png" alt="" width="52" height="47"></span><div><b>Ustaw: ${m.name}</b>
+ <div class="drow">${oven}${STEPS(st)}</div>
+ ${hot?`<small>${hot}</small>`:""}
+ ${m.steam?`<small>Ciasto piecz na 2. poziomie. Nie otwieraj drzwi i nie dolewaj wody w trakcie. Nagrzewaj od razu w tym trybie (bez „Szybkiego podgrzewania”).</small>`:`<small>Rozgrzewanie: możesz użyć „Szybkiego podgrzewania”, ale przed włożeniem ciasta przełącz na tryb powyżej.</small>`}
+ ${GOR_MULTI.has(b.id)?`<small>Dwie blachy naraz: <img src="gorenje/gp.png" alt="" class="inl2"> „Gorące powietrze”, temperatura o 20°C niższa, poziomy 1 i 3.</small>`:""}
+ ${b.id==="lasagne"||b.id==="quiche"?`<small>Na koniec 3–5 min <img src="gorenje/grill.png" alt="" class="inl2"> „Duży grill” do zrumienienia sera.</small>`:""}</div></div>`}
 // Urządzenie „na czym dziś?” – zapamiętane na tym telefonie (znajomi bez ustawień = Uniwersalnie, przepisy bez zmian)
 let curDev="uni";try{curDev=localStorage.getItem("gf_dev")||"uni"}catch(e){}
 function setDev(k){curDev=k;try{localStorage.setItem("gf_dev",k)}catch(e){}}
@@ -1110,25 +1146,33 @@ function devFit(b,k){
   return{ok:"no",why:"Frytkownica olejowa służy tylko do smażenia w głębokim tłuszczu."}}
  return{ok:"no"}}
 const VB=()=>curDev==="uni"?BAKES:BAKES.filter(b=>devFit(b,curDev).ok!=="no");
+// Karty urządzeń (v2.21): grafiki rysowane w stylu aplikacji, z wartościami z przepisu (zamiast wycinków z instrukcji).
+const STEPS=a=>`<ol class="dsteps">${a.map(x=>`<li><span>${x}</span></li>`).join("")}</ol>`;
+const airDial=(t,m)=>`<div class="dial" role="img" aria-label="Wyświetlacz: Ręczne, ${t} stopni, ${m}"><div><small>Ręczne</small><b>${t}°</b><em>${m}</em></div></div>`;
+const airLayers=two=>`<div class="layers"><div class="${two?"":"on"}"><svg viewBox="0 0 90 34" aria-hidden="true"><rect x="6" y="22" width="78" height="6" rx="3"/><circle cx="22" cy="15" r="6"/><circle cx="45" cy="15" r="6"/><circle cx="68" cy="15" r="6"/></svg><span>1 warstwa${two?"":" – tak"}</span></div><div class="${two?"on":""}"><svg viewBox="0 0 90 34" aria-hidden="true"><rect x="6" y="26" width="78" height="5" rx="2.5"/><rect x="6" y="13" width="78" height="5" rx="2.5" stroke-dasharray="4 3"/><circle cx="30" cy="7" r="5"/><circle cx="60" cy="7" r="5"/></svg><span>2 warstwy – z kratką</span></div></div>`;
+function optiPanel(t,acc){const p=Math.max(0,Math.min(100,(t-120)/1.2));const A=[["plate","Płyty grillowe"],["waffle","Płyty do gofrów"],["tray","Brytfanka"]];
+ return `<div class="optipanel" role="img" aria-label="Tryb ręczny ${t} stopni"><div class="op1"><span>Manual mode</span><span>${A.find(a=>a[0]===acc)?.[1]||""}</span></div><b>${t}°C</b><div class="opbar"><i style="left:${p}%"></i></div><div class="op2"><span>120</span><span>160</span><span>200</span><span>240</span></div></div>
+ <div class="accs">${A.map(([k2,n])=>`<span class="${k2===acc?"on":""}">${n}</span>`).join("")}</div>`}
+function fryGauge(t){const p=Math.max(2,Math.min(100,(t-150)/40*100));
+ return `<div class="frygauge"><svg viewBox="0 0 120 80" role="img" aria-label="Termostat ${t} stopni"><path d="M15 66 A45 45 0 0 1 105 66" pathLength="100" class="gbg"/><path d="M15 66 A45 45 0 0 1 105 66" pathLength="100" class="gval" stroke-dasharray="${p} 100"/><text x="60" y="62" text-anchor="middle" class="gt">${t}°</text><text x="12" y="79" class="gs">150</text><text x="108" y="79" text-anchor="end" class="gs">190</text></svg>
+ <div class="oil" role="img" aria-label="Olej między MIN 1,6 l a MAX 1,8 l"><div class="tube"><i></i><u class="mx"></u><u class="mn"></u></div><small>MAX 1,8 l<br>MIN 1,6 l</small></div></div>`}
+const batch=n=>`<span class="batch">${'<i></i>'.repeat(Math.min(n,8))}</span>`;
 function devCard(b){const k=curDev;if(k==="uni"||k==="stove")return "";if(k==="gorenje")return gorCard(b);
  const f=devFit(b,k),d=DEVS[k],note=b.bakeNote||"",T=tOf(note),mm=minOf(note);
  if(f.ok==="no")return `<div class="ovencard no">${devIcon(k,40)}<div><b>${d.short}: nie polecam do tego przepisu</b><span>${f.why}</span><small>Wybierz inne urządzenie powyżej.</small></div></div>`;
  let body="";
- const IMG=(f,a,w)=>`<img src="urzadzenia/${f}.png" alt="${a}" width="${w}" class="manimg">`;
- if(k==="air"){const done=b.device==="air"||/^frytkownica beztłuszczowa/.test(note),t=done?T:Math.min(200,T?T-20:180),m=mm?(done?mm:[Math.round(mm[0]*.7),Math.round(mm[1]*.7)]):null;
-  body=`<span>Tryb ręczny (Manual): <b>${t}°C</b>${m?`, ok. <b>${m[0]}–${m[1]} min</b>`:", czas o ok. 30% krótszy niż w przepisie"} · temperatura o 20°C niższa niż w piekarniku</span>
-  <small>Rozgrzej pustą frytkownicę 3–5 min. Ciasto na papierze perforowanym lub w foremce silikonowej, nie wyżej niż do linii MAX, z odstępami. Gdy pojawi się „Please shake the food”, nie potrząsaj ciasta – tylko sprawdź kolor. Sprawdzaj kilka minut przed końcem.</small>
-  <div class="manrow">${IMG("air_reczne","Ekran: Ręczne",72)}${IMG("air_potrzasnij","Ekran: Potrząśnij",72)}</div><small>Z instrukcji: pokrętłem wybierz „Ręczne”, naciśnij – ustaw temperaturę, naciśnij – ustaw czas, naciśnij – start. „Potrząśnij” pojawia się przy czasie ponad 8 min.</small>
-  ${/bułk|bułecz|ciastk|pączek|rogalik|donut|pizzerin/i.test(b.unit||"")?`${IMG("air_warstwy","Pojedyncza i podwójna warstwa",210)}<small>Dwie warstwy tylko z grillem (kratką) – inaczej dolna warstwa się nie upiecze.</small>`:""}`}
- if(k==="opti"){const t=b.device==="opti"&&T?T:f.acc==="waffle"?200:f.acc==="plate"?240:OPTI_T.reduce((a,c)=>Math.abs(c-(T||180))<Math.abs(a-(T||180))?c:a,190);
-  const scr=[120,160,200,240].reduce((a,c)=>Math.abs(c-t)<Math.abs(a-t)?c:a,200);
-  body=f.acc==="waffle"?`<span>Płyty do gofrów · tryb ręczny <b>${t}°C</b> · ok. 5–7 min</span><small>Załóż płyty do gofrów, zamknij i rozgrzej w trybie ręcznym (sygnał po 4–7 min). Wlej ciasto do połowy wysokości wgłębień, zamknij i nie otwieraj przez pierwsze 4 minuty.</small>`
-  :f.acc==="plate"?`<span>Płyty grillowe · tryb ręczny <b>${t}°C</b> · ok. 2–4 min</span><small>Rozgrzej zamknięty grill (sygnał po 4–7 min). Kładź placki pojedynczo lub po dwa, zamknij pokrywę; obracać nie trzeba – piecze z obu stron naraz. Po wyjęciu trzymaj pod ściereczką.</small>`
-  :`<span>Brytfanka Snacking & Baking · tryb ręczny <b>${t}°C</b>${mm?` · ok. ${mm[0]}–${mm[1]} min`:""}</span><small>Ciasto włóż do zimnej brytfanki, wymień dolną płytę na brytfankę, zamknij grill i wybierz tryb ręczny – grill zapiszczy po nagrzaniu i zacznie piec. Brytfanka to nie forma do piekarnika i nie do smażenia na tłuszczu.</small>`;
-  body+=`<div class="manrow">${IMG("opti_"+scr,"Ekran trybu ręcznego",80)}<small>Z instrukcji: wybierz tryb ręczny (Manual mode), przyciskami ustaw ${t}°C, potwierdź OK i poczekaj na koniec nagrzewania.${t!==scr?` Na rysunku ${scr}°C – ustaw ${t}°C.`:""}</small></div>`}
- if(k==="fry"){const t=Math.max(150,Math.min(190,T||175));const row=b.id==="jablka_w_ciescie"?"fry_jablka":b.id==="krazki_cebulowe"?"fry_krazki":"";
-  body=`<span>Termostat <b>${t}°C</b> · smaż partiami po 3–4 sztuki</span><small>Olej (ok. 1,8 l) zawsze między kreską MIN i MAX. Opuszczaj kosz dopiero, gdy zgaśnie kontrolka grzania. Nie przepełniaj kosza – olej za bardzo stygnie. Odsącz na podniesionym koszu, potem na ręczniku papierowym. Nigdy nie wkładaj mokrego ani oszronionego ciasta.</small>
-  <div class="manrow">${IMG("fry_olej","Olej: MIN 1,6 l, MAX 1,8 l",100)}</div>${row?`<img src="urzadzenia/${row}.png" alt="Tabela z instrukcji" class="manimg wide">`:""}${row?"<small>Temperatura i czas z tabeli w instrukcji frytkownicy.</small>":""}`}
+ if(k==="air"){const done=b.device==="air"||/^frytkownica beztłuszczowa/.test(note),t=done?T:Math.min(200,T?T-20:180),m=mm?(done?mm:[Math.round(mm[0]*.7),Math.round(mm[1]*.7)]):null,ms=m?`${m[0]}–${m[1]} min`:"krócej o 30%";
+  const two=/bułk|bułecz|ciastk|pączek|rogalik|donut|pizzerin/i.test(b.unit||"");
+  body=`<div class="drow">${airDial(t,ms)}${STEPS(["Pokrętłem wybierz „Ręczne”",`Naciśnij, ustaw <b>${t}°C</b>`,`Naciśnij, ustaw <b>${ms}</b>`,"Naciśnij – start"])}</div>
+  ${two?airLayers(false):""}
+  <small>Rozgrzej pustą frytkownicę 3–5 min. Ciasto na papierze perforowanym lub w foremce silikonowej, z odstępami, nie wyżej niż do linii MAX. Napis <span class="pilldark">Potrząśnij</span> przy cieście zignoruj – sprawdź tylko kolor.${done?"":" Temperatura o 20°C niższa i czas krótszy niż w piekarniku."}</small>`}
+ if(k==="opti"){const t=b.device==="opti"&&T?T:f.acc==="waffle"?200:f.acc==="plate"?240:OPTI_T.reduce((a,c)=>Math.abs(c-(T||180))<Math.abs(a-(T||180))?c:a,190),acc=f.acc||"tray";
+  const tm=acc==="waffle"?(mm?`${mm[0]}–${mm[1]} min`:"5–7 min"):acc==="plate"?(b.device?`${mm?mm[0]+"–"+mm[1]:"8–10"} min`:"2–4 min"):(mm?`${mm[0]}–${mm[1]} min`:"wg przepisu");
+  body=`${optiPanel(t,acc)}<div class="facts"><span>${tm}</span><span>${acc==="waffle"?"2 gofry naraz":acc==="plate"?"bez obracania":"warstwa do 3 cm"}</span><span>czekaj na sygnał</span></div>
+  ${STEPS(acc==="tray"?["Ciasto do zimnej brytfanki","Wymień dolną płytę na brytfankę, zamknij",`Tryb ręczny, ustaw <b>${t}°C</b>, OK`,"Piecze po sygnale nagrzania"]:[acc==="waffle"?"Załóż płyty do gofrów":"Załóż płyty grillowe","Zamknij, wybierz tryb ręczny",`Ustaw <b>${t}°C</b>, OK – czekaj na sygnał (4–7 min)`,acc==="waffle"?"Wlej ciasto do połowy wgłębień, zamknij":"Połóż placki, zamknij pokrywę"])}`}
+ if(k==="fry"){const t=Math.max(150,Math.min(190,T||175)),n=(FRY[b.id]&&FRY[b.id][2])||4;
+  body=`${fryGauge(t)}<div class="facts">${batch(n)}<span>${n} w partii</span>${mm?`<span>${mm[0]}–${mm[1]} min</span>`:""}${b.device==="fry"?"<span>wg tabeli producenta</span>":""}</div>
+  <small>Opuszczaj kosz dopiero, gdy zgaśnie kontrolka grzania. Nie przepełniaj kosza – olej za bardzo stygnie. Odsącz na podniesionym koszu, potem na ręczniku. Nigdy nie wkładaj mokrego ani oszronionego ciasta.</small>`}
  return `<div class="ovencard${f.ok==="part"?" part":""}">${devIcon(k,40)}<div><b>${d.short}${f.ok==="part"?": da się, ale…":""}</b>${f.ok==="part"?`<span>${f.why}</span>`:""}${body}</div></div>`}
 function renderDevSeg(b){const box=$("devSeg");if(!box||!b)return;const fits=DEV_ORDER.filter(k=>k===curDev||devFit(b,k).ok!=="no");
  box.innerHTML=fits.map(k=>{const f=devFit(b,k);return `<button type="button" data-oven="${k}" aria-pressed="${curDev===k}" class="dev ${f.ok}">${devIcon(k,22)}<span>${k==="uni"?"Uniwersalnie":DEVS[k].short}</span>${f.ok==="no"?"<small>nie do tego</small>":f.ok==="part"?"<small>da się, ale…</small>":""}</button>`}).join("")}

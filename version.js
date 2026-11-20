@@ -1,6 +1,9 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.21.0", d: "20.11.2026", t: ["Nowe grafiki urządzeń w stylu aplikacji, z wartościami z przepisu: wyświetlacz air fryera („Ręczne”, temperatura, czas) i układanie w warstwach, panel OptiGrilla z temperaturą na skali i wybranym akcesorium, termostat frytkownicy na łuku 150–190°C z poziomem oleju MIN/MAX i liczbą sztuk w partii.",
+    "Gorenje: schemat piekarnika z zaznaczonym poziomem blachy i blachą z wodą przy parze, ponumerowane kroki (tryb z symbolem z pokrętła, temperatura, poziom). Symbole z instrukcji oczyszczone z szarego tła.",
+    "Poprawki: tekst w kartach urządzeń nie wychodzi już poza ekran, pasek temperatury frytkownicy nie wychodzi poza skalę."] },
   { v: "2.20.1", d: "20.11.2026", t: ["Start: lista przepisów pokazuje się pod kafelkami „Rodzaj wypieku” (najpierw wybór, potem lista)."] },
   { v: "2.20.0", d: "20.11.2026", t: ["Grafiki z instrukcji w kartach urządzeń: ekrany „Ręczne” i „Potrząśnij” oraz układanie w 1 lub 2 warstwach (air fryer Xiaomi), ekran trybu ręcznego z temperaturą (OptiGrill Elite), poziom oleju MIN/MAX i wiersze tabeli produktów (frytkownica Tefal).",
     "8 przepisów dedykowanych urządzeniom (razem 137): air fryer – pączki pieczone, donuty w foremkach; OptiGrill – gofry czekoladowe, gofry kukurydziane z serem, arepy; frytkownica – jabłka w cieście, krążki cebulowe (lub kalmary), pieczarki w cieście (temperatury i czasy z tabeli w instrukcji Tefal).",
