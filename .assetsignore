@@ -11,3 +11,6 @@ node_modules
 node_modules/**
 tests
 tests/**
+.gitignore
+.vapid-private.json
+.vapid-public.txt

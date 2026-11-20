@@ -1,0 +1,4 @@
+.vapid-private.json
+.vapid-public.txt
+.wrangler/
+node_modules/

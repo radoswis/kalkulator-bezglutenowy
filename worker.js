@@ -203,11 +203,102 @@ async function handleLabel(req, env) {
   });
 }
 
+// ===== Minutniki przy zamkniętej aplikacji: Web Push (VAPID, bez treści) =====
+// Telefon zapisuje swoje minutniki (PUT /api/timers). Cron co minutę bierze te, które kończą się w tej minucie,
+// czeka do sekundy końca i wysyła push; service worker telefonu pokazuje powiadomienie z opisem.
+// Konfiguracja: vars.VAPID_PUBLIC (wrangler.jsonc) + sekret VAPID_PRIVATE_JWK. Bez sekretu funkcja jest wyłączona.
+// KV: "push:index" = lista urządzeń (zmienia się rzadko), "push:dev:<id>" = {endpoint, timers:[{id,end}]}.
+// Cron czyta tylko te klucze (bez list), więc mieści się w darmowych limitach.
+const PUSH_INDEX = "push:index", PUSH_DEV = "push:dev:";
+const MAX_TIMERS = 20, MISSED_MS = 10 * 60_000;
+const b64u = bytes => btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const devId = async endpoint => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(endpoint)))].slice(0, 12).map(b => b.toString(16).padStart(2, "0")).join("");
+const pushReady = env => !!(env.VAPID_PUBLIC && env.VAPID_PRIVATE_JWK);
+
+async function handleTimers(req, env, url) {
+  if (!codeOk(req, env)) return needCode();
+  if (url.pathname === "/api/timers/key") return pushReady(env) ? json({ key: env.VAPID_PUBLIC }) : json({ error: "Powiadomienia nie są włączone na serwerze." }, 503);
+  if (url.pathname !== "/api/timers") return json({ error: "Nie ma takiego adresu." }, 404);
+  if (req.method !== "PUT") return json({ error: "Metoda niedozwolona." }, 405);
+  if (!pushReady(env)) return json({ error: "Powiadomienia nie są włączone na serwerze." }, 503);
+  let body;
+  try { body = JSON.parse(await req.text()); } catch { return json({ error: "Nieprawidłowe dane." }, 400); }
+  const endpoint = body && body.sub && body.sub.endpoint;
+  if (typeof endpoint !== "string" || !/^https:\/\//.test(endpoint) || endpoint.length > 1000) return json({ error: "Brak subskrypcji powiadomień." }, 400);
+  const now = Date.now();
+  const timers = (Array.isArray(body.timers) ? body.timers : []).slice(0, MAX_TIMERS)
+    .filter(t => t && typeof t.id === "string" && t.id.length <= 40 && Number.isFinite(t.end) && t.end > now && t.end < now + 2 * 864e5)
+    .map(t => ({ id: t.id, end: Math.round(t.end) }));
+  const id = await devId(endpoint), key = PUSH_DEV + id;
+  if (timers.length) {
+    await env.DATA.put(key, JSON.stringify({ endpoint, timers }), { expirationTtl: 3 * 86400 });
+    const idx = JSON.parse((await env.DATA.get(PUSH_INDEX)) || "[]");
+    if (!idx.includes(id)) await env.DATA.put(PUSH_INDEX, JSON.stringify(idx.concat(id).slice(-50)));
+  } else if (await env.DATA.get(key)) await env.DATA.delete(key);
+  return json({ ok: true, scheduled: timers.length });
+}
+
+let vapidKey = null;
+async function vapidJwt(env, aud) {
+  vapidKey = vapidKey || await crypto.subtle.importKey("jwk", JSON.parse(env.VAPID_PRIVATE_JWK), { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+  const enc = o => b64u(new TextEncoder().encode(JSON.stringify(o)));
+  const data = enc({ typ: "JWT", alg: "ES256" }) + "." + enc({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: "https://github.com/radoswis/kalkulator-bezglutenowy" });
+  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, vapidKey, new TextEncoder().encode(data));
+  return data + "." + b64u(sig);
+}
+/** Pusty push (bez treści) – wystarczy, żeby obudzić service worker telefonu. @returns {Promise<number>} kod HTTP */
+async function sendPush(env, endpoint) {
+  const jwt = await vapidJwt(env, new URL(endpoint).origin);
+  const r = await fetch(endpoint, { method: "POST", headers: { Authorization: `vapid t=${jwt}, k=${env.VAPID_PUBLIC}`, TTL: "600", Urgency: "high", "Content-Length": "0" } });
+  return r.status;
+}
+
+/** Cron co minutę. Okno tej minuty: [T, T+60 s); spóźnione (z poprzednich okien, do 10 min) – od razu. */
+async function runPush(env, T) {
+  if (!pushReady(env)) return;
+  const idx = JSON.parse((await env.DATA.get(PUSH_INDEX)) || "[]");
+  if (!idx.length) return;
+  const inWindow = t => t.end < T + 60_000 && (t.end >= T || (t.end < T - 60_000 && t.end > T - MISSED_MS));
+  const live = [];
+  const jobs = idx.map(async id => {
+    const raw = await env.DATA.get(PUSH_DEV + id);
+    if (!raw) return;
+    live.push(id);
+    const dev = JSON.parse(raw);
+    const due = dev.timers.filter(inWindow).sort((a, b) => a.end - b.end);
+    if (!due.length) return;
+    for (const t of due) {
+      const wait = t.end - Date.now();
+      if (wait > 0) await sleep(wait);
+      // telefon mógł w międzyczasie anulować minutnik
+      const cur = JSON.parse((await env.DATA.get(PUSH_DEV + id)) || "null");
+      if (!cur || !cur.timers.some(x => x.id === t.id && x.end === t.end)) continue;
+      const status = await sendPush(env, dev.endpoint).catch(() => 0);
+      if (status === 404 || status === 410) { await env.DATA.delete(PUSH_DEV + id); live.splice(live.indexOf(id), 1); return; } // subskrypcja wygasła
+      const left = cur.timers.filter(x => !(x.id === t.id && x.end === t.end));
+      if (left.length) await env.DATA.put(PUSH_DEV + id, JSON.stringify({ ...cur, timers: left }), { expirationTtl: 3 * 86400 });
+      else await env.DATA.delete(PUSH_DEV + id);
+    }
+  });
+  await Promise.all(jobs);
+  if (live.length === idx.length) return;
+  // przed usunięciem z listy sprawdź jeszcze raz – telefon mógł właśnie ustawić nowy minutnik
+  const dead = [];
+  for (const id of idx) if (!live.includes(id) && !(await env.DATA.get(PUSH_DEV + id))) dead.push(id);
+  const now = JSON.parse((await env.DATA.get(PUSH_INDEX)) || "[]");
+  if (dead.length) await env.DATA.put(PUSH_INDEX, JSON.stringify(now.filter(i => !dead.includes(i))));
+}
+
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runPush(env, event.scheduledTime));
+  },
   async fetch(req, env) {
     const url = new URL(req.url);
     try {
       if (url.pathname === "/api/state" || url.pathname.startsWith("/api/state/")) return await handleState(req, env, url);
+      if (url.pathname === "/api/timers" || url.pathname.startsWith("/api/timers/")) return await handleTimers(req, env, url);
       if (url.pathname === "/api/off") return await handleOff(url);
       if (url.pathname === "/api/label") return codeOk(req, env) ? await handleLabel(req, env) : needCode();
       if (url.pathname.startsWith("/api/")) return json({ error: "Nie ma takiego adresu." }, 404);

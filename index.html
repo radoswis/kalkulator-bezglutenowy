@@ -902,7 +902,7 @@ function closeCook(){$("cook").hidden=true;document.body.style.overflow="";try{w
 function beep(){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();for(let i=0;i<3;i++){const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=880;o.connect(g);g.connect(audio.destination);const t=audio.currentTime+i*0.45;g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);o.start(t);o.stop(t+0.36)}}catch(e){}
  try{navigator.vibrate&&navigator.vibrate([400,200,400,200,400])}catch(e){}}
 function startTimer(sec){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
- timers.push({label:`${cur?cur.title+": ":""}${fmtDur(sec)}`,end:Date.now()+sec*1000,done:false});renderTimers()}
+ timers.push({id:"t"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),label:`${cur?cur.title+": ":""}${fmtDur(sec)}`,end:Date.now()+sec*1000,done:false});renderTimers();timersChanged()}
 
 // ===== Licznik smażenia / gotowania partiami: strona 1 → sygnał „odwróć” → strona 2 → sygnał „zdejmij” → następna partia =====
 // [strona 1 (s), strona 2 (s, 0 = bez odwracania), sztuk w partii, nazwa, od wypłynięcia]
@@ -920,7 +920,7 @@ let fry=null;
 const frN=()=>{const f=FRY[cur.id];return Math.max(1,Math.ceil((cur.pcs||1)/f[2]))};
 function fryStart(){const f=FRY[cur.id],k=1+((calib[cur.id]&&calib[cur.id].time)||0)/100;fry={title:cur.title,a:Math.round(f[0]*k),b:Math.round(f[1]*k),word:f[3],float:!!f[4],n:frN(),i:1,phase:f[4]?0:1,end:f[4]?0:Date.now()+f[0]*1000,left:0};renderTimers()}
 function fryTick(now){if(!fry||fry.left||!fry.end||now<fry.end)return;
- if(fry.phase===1&&fry.b){fry.phase=2;fry.end=now+fry.b*1000;beep()}else{fry.phase=3;fry.end=0;beep()}}
+ if(fry.phase===1&&fry.b){fry.phase=2;fry.end=now+fry.b*1000;beep()}else{fry.phase=3;fry.end=0;beep()}timersChanged()}
 function fryHtml(now){if(!fry)return"";const f=fry,rem=f.left||Math.max(0,Math.ceil((f.end-now)/1000));
  const head=`${f.word} ${f.i} z ${f.n}`;
  const big=f.phase===0?"Start, gdy wypłyną":f.phase===3?(f.float?"WYJMUJ":"ZDEJMIJ")+(f.i<f.n?" – nakładaj następną":" – koniec"):(f.phase===2?"Strona 2 · ":f.b?"Strona 1 · ":"")+fmtT(rem);
@@ -937,12 +937,39 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-fry],[data
  else if(a==="flip"){fry.phase=2;fry.end=now+fry.b*1000}
  else if(a==="plus"){if(fry.left)fry.left+=15;else fry.end+=15000}
  else if(a==="pause"){if(fry.left){fry.end=now+fry.left*1000;fry.left=0}else{fry.left=Math.max(1,Math.ceil((fry.end-now)/1000))}}
- renderTimers()});
+ renderTimers();timersChanged()});
 function renderTimers(){const now=Date.now();fryTick(now);
  for(const t of timers)if(!t.done&&t.end<=now){t.done=true;beep()}
- const html=timers.map((t,i)=>`<div class="timer${t.done?" done":""}"><span>${t.label}</span><b>${t.done?"Gotowe!":fmtT(Math.ceil((t.end-now)/1000))}</b><button type="button" class="linkbtn" data-timerdel="${i}">${t.done?"OK":"Anuluj"}</button></div>`).join("");
+ const html=timers.map((t,i)=>`<div class="timer${t.done?" done":""}"><span>${t.label}</span><b>${t.done?(now-t.end>90000?"Gotowe o "+new Date(t.end).toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"}):"Gotowe!"):fmtT(Math.ceil((t.end-now)/1000))}</b><button type="button" class="linkbtn" data-timerdel="${i}">${t.done?"OK":"Anuluj"}</button></div>`).join("");
  const all=fryHtml(now)+html;$("cookTimers").innerHTML=all;$("timerBadge").innerHTML=all;$("timerBadge").hidden=!all||!$("cook").hidden}
 setInterval(()=>{if(timers.length||fry)renderTimers()},1000);
+// ===== Minutniki przy zamkniętej aplikacji (v2.26) =====
+// 1) Minutnik to godzina końca, zapisana od razu w osobnym kluczu – po zamknięciu i ponownym otwarciu liczy się dalej.
+// 2) Powiadomienie: serwer (worker.js, co minutę) wysyła push o czasie końca, service worker pokazuje je nawet przy zamkniętej aplikacji.
+const TIMER_KEY="gf_timers_v1";
+function saveTimers(){try{localStorage.setItem(TIMER_KEY,JSON.stringify({timers,fry}))}catch(e){}}
+(function restoreTimers(){let u;try{u=JSON.parse(localStorage.getItem(TIMER_KEY)||"null")}catch(e){}
+ if(!u)return;(u.timers||[]).forEach(t=>{if(!t.id)t.id="t"+t.end;if(!timers.some(x=>x.id===t.id))timers.push(t)});if(u.fry&&!fry)fry=u.fry})();
+let pushSub=null,pushOff=false,pushSent=null;
+const b64uBytes=s=>{const b=atob(s.replace(/-/g,"+").replace(/_/g,"/")+"==".slice(0,(4-s.length%4)%4));return Uint8Array.from(b,c=>c.charCodeAt(0))};
+async function pushEnsure(){if(pushSub||pushOff)return pushSub;
+ if(!swReg||!("PushManager" in window)||!("Notification" in window)){pushOff=true;return null}
+ try{if(Notification.permission==="default")await Notification.requestPermission();
+  if(Notification.permission!=="granted"){pushOff=true;return null}
+  pushSub=await swReg.pushManager.getSubscription();
+  if(!pushSub){const r=await fetch("/api/timers/key",{headers:apiHeaders()});const j=await r.json().catch(()=>({}));if(!r.ok||!j.key){pushOff=true;return null}
+   pushSub=await swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uBytes(j.key)})}}
+ catch(e){pushOff=true;return null}
+ return pushSub}
+// Lista do powiadomień: minutniki i bieżąca faza smażenia, które jeszcze się nie skończyły (z opisem do treści powiadomienia)
+function pushList(){const now=Date.now(),l=timers.filter(t=>!t.done&&t.end>now).map(t=>({id:t.id,end:t.end,label:t.label}));
+ if(fry&&fry.end&&!fry.left&&fry.end>now&&fry.phase!==3)l.push({id:"fry"+fry.i+"_"+fry.phase,end:fry.end,label:`${fry.title}: ${fry.phase===1&&fry.b?"odwróć":fry.float?"wyjmuj":"zdejmij"} (${fry.word.toLowerCase()} ${fry.i} z ${fry.n})`});
+ return l}
+async function timersChanged(){saveTimers();const l=pushList(),sig=JSON.stringify(l);if(sig===pushSent)return;pushSent=sig;
+ try{navigator.serviceWorker&&navigator.serviceWorker.controller&&navigator.serviceWorker.controller.postMessage({timers:l})}catch(e){}
+ const sub=l.length?await pushEnsure():pushSub; // o zgodę pytamy dopiero przy pierwszym minutniku
+ if(!sub)return;
+ try{await fetch("/api/timers",{method:"PUT",headers:apiHeaders({"content-type":"application/json"}),body:JSON.stringify({sub:sub.toJSON(),timers:l.map(({id,end})=>({id,end}))})})}catch(e){pushSent=null}}
 document.addEventListener("click",e=>{const t=e.target;
  if(t.closest("[data-cook]")){openCook();renderTimers()}
  else if(t.closest("[data-cookclose]")){closeCook();renderTimers()}
@@ -950,7 +977,7 @@ document.addEventListener("click",e=>{const t=e.target;
  else if(t.closest("[data-cookprev]")){ci--;showStep()}
  else if(t.closest("[data-cooking]")){$("cookIng").hidden=!$("cookIng").hidden}
  else if(t.closest("[data-timer]")){startTimer(+t.closest("[data-timer]").dataset.timer)}
- else if(t.closest("[data-timerdel]")){timers.splice(+t.closest("[data-timerdel]").dataset.timerdel,1);renderTimers()}});
+ else if(t.closest("[data-timerdel]")){timers.splice(+t.closest("[data-timerdel]").dataset.timerdel,1);renderTimers();timersChanged()}});
 document.addEventListener("keydown",e=>{if($("cook").hidden)return;if(e.key==="ArrowRight"){ci++;showStep()}if(e.key==="ArrowLeft"){ci--;showStep()}if(e.key==="Escape")closeCook()});
 let tx=null;$("cook").addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
 $("cook").addEventListener("touchend",e=>{if(tx==null)return;const dx=e.changedTouches[0].clientX-tx;tx=null;if(Math.abs(dx)>60){ci+=dx<0?1:-1;showStep()}},{passive:true});
@@ -973,7 +1000,7 @@ $("chgBody").innerHTML=self.APP_CHANGELOG.map(c=>`<h3>${c.v} · ${c.d}</h3><ul>$
 $("chgBtn").onclick=()=>{const d=$("chgList");d.hidden=false;d.open=!d.open;if(d.open)d.scrollIntoView({behavior:"smooth",block:"start"})};
 let swReg=null,reloading=false;
 const applyUpdate=()=>{const w=swReg&&swReg.waiting;if(w){w.postMessage("skipWaiting")}else{saveUI();location.reload()}};
-function watchReg(reg){swReg=reg;const show=()=>{if(reg.waiting&&navigator.serviceWorker.controller)$("newVer").hidden=false};show();
+function watchReg(reg){swReg=reg;if(timers.length||fry){pushSent=null;timersChanged()}const show=()=>{if(reg.waiting&&navigator.serviceWorker.controller)$("newVer").hidden=false};show();
  reg.addEventListener("updatefound",()=>{const n=reg.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed")show()})})}
 $("newVerBtn").onclick=applyUpdate;
 $("updBtn").onclick=async()=>{const m=$("updMsg");m.textContent="Sprawdzam…";
@@ -1014,7 +1041,7 @@ function restoreUI(){let u;try{u=JSON.parse(localStorage.getItem(UI_KEY)||"null"
  $("count").value=u.count;$("portion").value=u.portion;$("grams").value=u.grams;
  mode=u.mode||"pcs";$("mPcs").setAttribute("aria-pressed",mode==="pcs");$("mGr").setAttribute("aria-pressed",mode==="gr");
  $("lblCount").hidden=$("lblPortion").hidden=mode!=="pcs";$("lblGrams").hidden=mode==="pcs";
- (u.timers||[]).forEach(t=>timers.push(t));fry=u.fry||null;doneIng=new Set(u.done||[]);doneSig=u.doneSig||"";calc();
+ (u.timers||[]).forEach(t=>{if(!t.id)t.id="t"+t.end;if(!timers.some(x=>x.id===t.id))timers.push(t)});fry=fry||u.fry||null;doneIng=new Set(u.done||[]);doneSig=u.doneSig||"";calc();
  if(u.cook&&cur){openCook();ci=u.ci||0;showStep();$("cookIng").hidden=!u.ing}
  renderTimers();const y=u.y||0;window.scrollTo(0,y);setTimeout(()=>window.scrollTo(0,y),300);return y}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveUI()});

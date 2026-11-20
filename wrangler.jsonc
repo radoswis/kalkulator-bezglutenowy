@@ -12,5 +12,9 @@
     { "binding": "DATA", "id": "99f7470fa33844b5873a554820150ab6" }
   ],
   "ai": { "binding": "AI" },
+  // Minutniki przy zamkniętej aplikacji: co minutę wysyłka powiadomień (worker.js runPush).
+  // Klucz publiczny VAPID jest jawny; prywatny to sekret VAPID_PRIVATE_JWK (Cloudflare → Settings → Variables and Secrets).
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": { "VAPID_PUBLIC": "BEa53Esx8tSQ6hFePBlDOiq4H7MzoLXtbvkRxaCPlL5cxk9WCKxkRLaC1h_W0HhyezoPbO8PBaNzr69JJ4reL_Y" },
   "observability": { "enabled": true }
 }
