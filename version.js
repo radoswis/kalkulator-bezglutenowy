@@ -1,6 +1,7 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.21.1", d: "20.11.2026", t: ["Aplikacja zainstalowana na telefonie: treść i tryb gotowania zaczynają się niżej, pod paskiem stanu Androida (napisy nie są już zasłonięte)."] },
   { v: "2.21.0", d: "20.11.2026", t: ["Nowe grafiki urządzeń w stylu aplikacji, z wartościami z przepisu: wyświetlacz air fryera („Ręczne”, temperatura, czas) i układanie w warstwach, panel OptiGrilla z temperaturą na skali i wybranym akcesorium, termostat frytkownicy na łuku 150–190°C z poziomem oleju MIN/MAX i liczbą sztuk w partii.",
     "Gorenje: schemat piekarnika z zaznaczonym poziomem blachy i blachą z wodą przy parze, ponumerowane kroki (tryb z symbolem z pokrętła, temperatura, poziom). Symbole z instrukcji oczyszczone z szarego tła.",
     "Poprawki: tekst w kartach urządzeń nie wychodzi już poza ekran, pasek temperatury frytkownicy nie wychodzi poza skalę."] },

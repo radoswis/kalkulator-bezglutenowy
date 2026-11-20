@@ -344,6 +344,12 @@ details.prefs .inner{display:grid;gap:10px}
 .itile img{width:44px;height:auto}.inl2{width:24px;height:auto;vertical-align:middle;border-radius:5px;background:#fff;padding:2px}
 .ovsvg{flex:none;width:104px;height:72px}.ovsvg .ob{fill:var(--surface);stroke:var(--muted);stroke-width:2}.ovsvg .sh{fill:var(--line)}.ovsvg .sh.on{fill:var(--accent)}
 .ovsvg .sn{font-size:9px;fill:var(--muted)}.ovsvg .wt{fill:#85B7EB}
+/* v2.21.1: w zainstalowanej aplikacji (PWA) treść zaczyna się pod paskiem stanu Androida */
+@media (display-mode: standalone), (display-mode: fullscreen){
+ body{padding-top:max(40px,calc(env(safe-area-inset-top,0px) + 16px))!important}
+ .cook,.scan,.insthelp{padding-top:max(44px,calc(env(safe-area-inset-top,0px) + 16px))!important}
+ .hero{margin-top:-24px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
