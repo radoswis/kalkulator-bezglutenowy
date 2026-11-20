@@ -1035,7 +1035,7 @@ const NO_OVEN=/smaż|patelni|^gotowanie|na parze|gofrownic|rondel|^olej/i;
 const isGor=()=>curDev==="gorenje";
 function gorMode(b){return NO_OVEN.test(b.bakeNote||"")?null:GOR[GOR_ID[b.id]||"gd"]}
 // Tekst kroków drożdżowych (ovenPlan) w wersji pod Gorenje
-function gorNote(note,b){if(curDev==="air"&&!b.device&&devFit(b,"air").ok!=="no"){const T=tOf(note),mm=minOf(note);return `frytkownica beztłuszczowa Xiaomi, tryb ręczny ${Math.min(200,T?T-20:180)}°C${mm?`, ok. ${Math.round(mm[0]*.75)}–${Math.round(mm[1]*.75)} min`:""} (sprawdzaj wcześniej)`}
+function gorNote(note,b){if(curDev==="air"&&!b.device&&devFit(b,"air").ok!=="no"){const T=tOf(note),mm=minOf(note);return `frytkownica beztłuszczowa Xiaomi, tryb ręczny ${Math.min(200,T?T-20:180)}°C${mm?`, ok. ${Math.round(mm[0]*.7)}–${Math.round(mm[1]*.7)} min`:""} (sprawdzaj wcześniej)`}
  if(!isGor())return note;const m=gorMode(b);if(!m)return note;
  let n=note.replace(/, góra–dół bez termoobiegu/,"").replace(/środkowa półka/,m.lvl).replace(/, z parą przez pierwsze 10 min \(naczynie z wrzątkiem na dnie piekarnika\)/,"").replace(/, z parą na początku/,"");
  return `tryb „${m.name}”, ${n}`}
