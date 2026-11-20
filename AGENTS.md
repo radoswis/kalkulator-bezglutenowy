@@ -80,3 +80,5 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - Limity misy `MUM_LIM` (hak 1600 g, Flexi 2200 g, ubijanie 1500 g) liczone z „ciasta wyjdzie” w `.hyd`.
 - Nowy przepis: sprawdź, czy jego klasa daje sensowną kartę MUM5; wyjątki dopisz do MUM_HAND/MUM_LAM.
 - Tryb gotowania: `cookView(cur)` buduje `cur.view` z `cur.steps` + kroki MUM5 (narzędzie i „płyny najpierw” przed mieszaniem, czasy po kroku wyrabiania) + ustawienia/wskazówki z karty urządzenia (Gorenje przed nagrzewaniem, reszta przed ostatnim krokiem pieczenia). Karta urządzenia to źródło – zmieniaj ją, nie cookView.
+- Audyt 2.23: /tmp-owe skrypty sprawdzały 1644 kombinacji (przepis × urządzenie × MUM5) regułami kolejności: brak mieszania po pieczeniu, MUM przed pieczeniem, ustawienia urządzenia przed pierwszym pieczeniem, brak „piekarnik” w air/opti/fry, brak pustych wartości. Po zmianach w krokach powtórz taki test.
+- preferFlour jest prawie twardy: brak mąki z nazwy = kara 80 w blendCost.

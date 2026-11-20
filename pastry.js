@@ -1205,7 +1205,7 @@
     const fmt = g => (Number.isInteger(g) ? String(g) : g.toFixed(1).replace(".", ","));
     const eggWord = (n, yolk) => yolk ? (n === 1 ? "żółtko" : n < 5 ? "żółtka" : "żółtek") : (n === 1 ? "jajko" : n < 5 ? "jajka" : "jajek");
     const g = k => {
-      const l = byKey[k]; if (!l) return "0 g";
+      const l = byKey[k]; if (!l || l.grams < 0.5) return "szczypta";
       const e = COMPONENTS[k] && COMPONENTS[k].egg;
       if (e) { const n = Math.max(1, Math.round(l.grams / e)); return `${fmt(l.grams)} g, ok. ${n} ${eggWord(n, e < 30)}`; }
       return `${fmt(l.grams)} g`;

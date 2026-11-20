@@ -484,7 +484,7 @@
     for (const [id, want] of Object.entries((bake && bake.preferFlour) || {})) {
       if (!blend.some(([i]) => i.id === id) && !(bake._avail || new Set()).has(id)) continue;
       const hit = blend.find(([i]) => i.id === id);
-      c += (((hit ? hit[1] : 0) - want) / 0.05) ** 2 * 0.5;
+      c += (((hit ? hit[1] : 0) - want) / 0.05) ** 2 * 3 + (hit ? 0 : 80); // brak mąki „z nazwy” = poważny błąd
     }
     return c;
   }
