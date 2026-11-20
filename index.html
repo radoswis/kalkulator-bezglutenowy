@@ -795,13 +795,32 @@ function findTimes(t){const out=[];let m;
 const fmtDur=s=>s<60?s+" s":s<7200?(s%60?fmtT(s)+" min":s/60+" min"):Math.round(s/3600)+" godz.";
 async function keepAwake(){try{if("wakeLock" in navigator&&!$("cook").hidden)wake=await navigator.wakeLock.request("screen")}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")keepAwake()});
-function showStep(){const n=cur.steps.length;ci=Math.max(0,Math.min(n-1,ci));
- $("cookNum").textContent=`Krok ${ci+1} z ${n}`;$("cookText").textContent=cur.steps[ci];
- const fr=FRY[cur.id],isFry=fr&&FRY_STEP.test(cur.steps[ci]);
+function showStep(){const n=cur.view.length;ci=Math.max(0,Math.min(n-1,ci));
+ $("cookNum").textContent=`Krok ${ci+1} z ${n}`;$("cookText").textContent=cur.view[ci];
+ const fr=FRY[cur.id],isFry=fr&&FRY_STEP.test(cur.view[ci]);
  $("cookTimerBtns").innerHTML=(isFry?`<button type="button" class="btn" data-frystart>▶ Licznik ${fr[4]?"gotowania":"smażenia"}: ${frN()} ${fr[2]>1?"partii":"szt."} (${fr[1]?"odwróć po "+fmtDur(fr[0])+", gotowe po "+fmtDur(fr[1]):fmtDur(fr[0])})</button>`:"")
-  +findTimes(cur.steps[ci]).map(m=>`<button type="button" class="chip" data-timer="${m}">Minutnik ${fmtDur(m)}</button>`).join("");
+  +findTimes(cur.view[ci]).map(m=>`<button type="button" class="chip" data-timer="${m}">Minutnik ${fmtDur(m)}</button>`).join("");
  document.querySelector("[data-cookprev]").disabled=ci===0;const nx=document.querySelector("[data-cooknext]");nx.textContent=ci===n-1?"Koniec":"Dalej →"}
-function openCook(){if(!cur)return;ci=0;$("cookTitle").textContent=cur.title;
+// Tryb gotowania (v2.22.1): kroki uzupełnione o MUM5 i wybrane urządzenie
+const txt=h=>{const d=document.createElement("div");d.innerHTML=h;d.querySelectorAll("svg").forEach(x=>x.remove());return d.textContent.replace(/\s+/g," ").trim()};
+function cookView(c){const b=BAKES.find(x=>x.id===c.id);let s=[...c.steps];if(!b)return s;
+ if(useMum){const m=mumSpec(b);if(m&&m.tool!=="hand"){const late=/SCALDED|FOAM/.test(b.rheologyClass||"");let i=s.findIndex(x=>(late?/wyrabiaj|zagnieć|mikser|ubij|utrzyj|zmiksuj/i:/wyrabiaj|zagnieć|mikser|ubij|utrzyj|zmiksuj|misk|wymieszaj|połącz|roztrzep/i).test(x));if(i<0)i=0;
+  s=s.map(x=>x.replace(/ręką lub mikserem|mikserem lub ręką|mikserem/gi,"w MUM5"));const ms=m.steps.map(x=>"MUM5 – "+MUM_T[m.tool]+": "+txt(x));let K=s.findIndex((x,j)=>j>=i&&/wyrabiaj|zagnieć|ubij|utrzyj|zmiksuj|połącz|na gładko|w MUM5/i.test(x));if(K<0)K=i;
+  const fr=ms.filter((x,j)=>j===0||/Najpierw|Zaparz/.test(x)),rs=ms.filter(x=>!fr.includes(x));s.splice(K+1,0,...rs);s.splice(i,0,...fr)}}
+ const k=curDev;if(k==="uni"||k==="stove")return s.map(x=>x.charAt(0).toUpperCase()+x.slice(1));const f=k==="gorenje"?{ok:"yes"}:devFit(b,k),h=devCard(b);if(!h)return s;
+ const d=document.createElement("div");d.innerHTML=h;const card=d.querySelector(".ovencard"),body=card&&card.querySelector(":scope>div:last-child");if(!body)return s;
+ const name=k==="gorenje"?"Gorenje":DEVS[k].short;
+ if(f.ok==="no"){s.unshift(`Uwaga – ${name}: ${txt(body.innerHTML)}`);return s}
+ const li=[...body.querySelectorAll("li")].map(x=>txt(x.innerHTML)),facts=[...body.querySelectorAll(".facts span")].map(x=>x.textContent.trim()).filter(Boolean),why=[...body.querySelectorAll(":scope>span")].map(x=>txt(x.innerHTML)),tip=[...body.querySelectorAll(":scope>small")].map(x=>txt(x.innerHTML));
+ if(!li.length&&!facts.length&&!tip.length)return s;
+ const gT=body.querySelector(".frygauge svg"),ft=gT?"termostat "+tOf((gT.getAttribute("aria-label")||"").replace(/(\d{3}) stopni/,"$1°C"))+"°C, ":"";const set=[`${name} – ustawienia: ${ft}${li.join(". ")}${li.length?". ":""}${facts.join(", ")}`.trim()];if(why.length)set.unshift(`${name}: ${why.join(" ")}`);if(tip.length)set.push(`${name} – wskazówki: ${tip.join(" ")}`);
+ if(k!=="gorenje"){const w=k==="fry"?"nagrzej olej we frytkownicy":k==="air"?"włącz air fryer":"włącz OptiGrill";s=s.map(x=>x.replace(/(włącz|nagrzej|rozgrzej) piekarnik( do \d{3}\s*°C)?/gi,w).replace(/przygotuj olej lub patelnię/gi,k==="fry"?"nagrzej olej we frytkownicy":k==="air"?"przygotuj air fryer":"przygotuj OptiGrill"))}
+ const PRE=/(włącz|nagrzej|rozgrzej) (air fryer|optigrill|olej|piekarnik|gofrownic|patelni)|przygotuj (air|optigrill)/i;let L=-1;for(let j=s.length-1;j>=0;j--)if(/piecz|smaż|na koniec|gofrownic|grill|°C|odsmaż/i.test(s[j])){L=j;break}
+ let i;if(k==="gorenje"){i=s.findIndex(x=>PRE.test(x));if(i<0)i=L<0?s.length:L}else{i=L<0?s.length:L;if(L>0&&PRE.test(s[L-1]))i=L-1}
+ if(why.some(x=>/\d{3}°C/.test(x)))set.splice(why.length,1);
+ if(k!=="gorenje")for(let j=i;j<s.length;j++)if(/°C/.test(s[j])&&!/^Na koniec/.test(s[j])&&!s[j].startsWith(name)){s[j]=`${name}: ustaw jak w kroku „ustawienia” – temperatury z tego kroku są do piekarnika. `+s[j];break}
+ s.splice(i,0,...set);return s.map(x=>x.charAt(0).toUpperCase()+x.slice(1))}
+function openCook(){if(!cur)return;ci=0;cur.view=cookView(cur);$("cookTitle").textContent=cur.title;
  $("cookIng").innerHTML="<table>"+cur.lines.map(l=>`<tr data-ing="${l.label}"${l.sub?' class="sub"':""}><td>${l.label}</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("")+"</table>";
  $("cookIng").hidden=true;$("cook").hidden=false;document.body.style.overflow="hidden";showStep();keepAwake()}
 function closeCook(){$("cook").hidden=true;document.body.style.overflow="";try{wake&&wake.release()}catch(e){}wake=null}
@@ -1180,7 +1199,7 @@ function devCard(b){const k=curDev;if(k==="uni"||k==="stove")return "";if(k==="g
  const f=devFit(b,k),d=DEVS[k],note=b.bakeNote||"",T=tOf(note),mm=minOf(note);
  if(f.ok==="no")return `<div class="ovencard no">${devIcon(k,40)}<div><b>${d.short}: nie polecam do tego przepisu</b><span>${f.why}</span><small>Wybierz inne urządzenie powyżej.</small></div></div>`;
  let body="";
- if(k==="air"){const done=b.device==="air"||/^frytkownica beztłuszczowa/.test(note),t=done?T:Math.min(200,T?T-20:180),m=mm?(done?mm:[Math.round(mm[0]*.7),Math.round(mm[1]*.7)]):null,ms=m?`${m[0]}–${m[1]} min`:"krócej o 30%";
+ if(k==="air"){const wt=f.ok==="part"?tOf(f.why):0,wm=wt?minOf(f.why):null,done=b.device==="air"||/^frytkownica beztłuszczowa/.test(note),t=wt||(done?T:Math.min(200,T?T-20:180)),m=wm||(mm?(done?mm:[Math.round(mm[0]*.7),Math.round(mm[1]*.7)]):null),ms=m?`${m[0]}–${m[1]} min`:"krócej o 30%";
   const two=/bułk|bułecz|ciastk|pączek|rogalik|donut|pizzerin/i.test(b.unit||"");
   body=`<div class="drow">${airDial(t,ms)}${STEPS(["Pokrętłem wybierz „Ręczne”",`Naciśnij, ustaw <b>${t}°C</b>`,`Naciśnij, ustaw <b>${ms}</b>`,"Naciśnij – start"])}</div>
   ${two?airLayers(false):""}
