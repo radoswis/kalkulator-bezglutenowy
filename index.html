@@ -806,12 +806,12 @@ const txt=h=>{const d=document.createElement("div");d.innerHTML=h;d.querySelecto
 function cookView(c){const b=BAKES.find(x=>x.id===c.id);let s=[...c.steps];if(!b)return s;const cap=a=>a.filter(x=>x&&x.trim()).map(x=>(x.charAt(0).toUpperCase()+x.slice(1)).replace(/([^\d])\. ([a-ząćęłńóśźż])/g,(_,a,c)=>a+". "+c.toUpperCase()));
  const plM=n=>n==1?"minutę":(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?"minuty":"minut";
  // --- MUM5: wplecione w istniejące kroki zamiast osobnych
- if(useMum){const m=mumSpec(b);if(m&&m.tool!=="hand"){const T=MUM_T[m.tool],late=/SCALDED|FOAM/.test(b.rheologyClass||""),plain=m.steps.map(x=>txt(x).replace(/\s*Czas odliczaj timerem.*$/,""));
+ if(useMum){const m=mumSpec(b);if(m&&m.tool!=="hand"){const T=MUM_T[m.tool],late=/SCALDED|FOAM/.test(b.rheologyClass||""),plain=m.steps.map(x=>txt(x).replace(/\s*Czasy odliczysz minutnikiem.*$/,""));
   s=s.map(x=>x.replace(/ręką lub mikserem|mikserem lub ręką/gi,"w MUM5").replace(/\bmikserem\b/gi,"w MUM5"));
   let i=s.findIndex(x=>(late?/wyrabiaj|zagnieć|mikser|ubij|utrzyj|zmiksuj/i:/wyrabiaj|zagnieć|mikser|ubij|utrzyj|zmiksuj|misk|wymieszaj|połącz|roztrzep/i).test(x));if(i<0)i=0;
   const dm=s.findIndex(x=>/^Do dużej miski/i.test(x));if(dm>=0&&!late)i=dm;
   let K=s.findIndex((x,j)=>j>=i&&/wyrabiaj|zagnieć|ubij|utrzyj|zmiksuj|w MUM5/i.test(x));if(K<0)K=s.findIndex((x,j)=>j>=i&&/połącz|na gładko/i.test(x));if(K<0)K=i;
-  const head=`MUM5: załóż ${{hak:"hak do zagniatania",flexi:"końcówkę Profi Flexi",whisk:"końcówkę do ubijania"}[m.tool]}. Składniki odważ wcześniej na dokładnej wadze (co 1 g). Czasy mieszania odliczaj timerem MUM5.`;
+  const head=`MUM5: załóż ${{hak:"hak do zagniatania",flexi:"końcówkę Profi Flexi",whisk:"końcówkę do ubijania"}[m.tool]}. Składniki odważ wcześniej na dokładnej wadze (co 1 g).`;
   if(m.tool==="hak"){const tm=plain.find(x=>/30 s na 1/.test(x))||"",extra=plain.filter(x=>/masło dodawaj|Laminowanie|Wkładanie masła|klei się do ścianek/i.test(x));
    if(dm>=0&&!late)s[dm]=s[dm].replace(/^Do dużej miski/i,"Do misy MUM5");
    const kn=tm.replace(/^.*?(30 s na 1)/,"$1").replace(/\.$/,"");
@@ -819,7 +819,10 @@ function cookView(c){const b=BAKES.find(x=>x.id===c.id);let s=[...c.steps];if(!b
    if(extra.length)s[K]+=" "+extra.join(" ");s.splice(i,0,head)}
   else{const tips=plain.slice(1).filter(x=>!/^Najpierw płyny/.test(x)||!s.some(y=>/płyn|mleko|wod/i.test(y)));
    s[K]=s[K].replace(/(^|\s)(łyżką|ręką|widelcem|trzepaczką)(?=[\s,.]|$)/i,"$1w MUM5").replace(/\s*\(najwyżej \d+ ruchów\)/,"");
-   s.splice(i,0,head+(tips.length?" W kolejnych krokach: "+tips.map(x=>x.replace(/\.$/,"")).join("; ")+".":""))}}}
+   const FB=s.findIndex(x=>/\bpiecz(?!eni)|\bsmaż|gotuj partiami|nakładaj|przelej|wylej do/i.test(x)),end=FB<0?s.length:FB,left=[];
+   const KEY=[[/^Białka/i,/białk/i],[/^Żółtka/i,/żółtk/i],[/^Mąki/i,/mąk|skrobi/i],[/^(Ser|Masa)/i,/twaróg|\bser|mas[ęa]/i],[/^Mokre|^Dodaj suche/i,/połącz|wymieszaj|zmiksuj/i],[/^Najpierw płyny/i,/mlek|wod|płyn|jajk/i],[/^Wszystkie składniki/i,/utrzyj|zmiksuj|wymieszaj|połącz/i],[/^Bakalie/i,/bakali|czekolad|owoc|rodzyn/i],[/^Zimne masło/i,/masło/i],[/^Jajko lub płyn/i,/jajk|żółtk|wod|śmietan/i],[/^Przed użyciem/i,/odstaw/i],[/^Masło z cukrem/i,/utrzyj|ucier/i],[/^Jajka i płyny/i,/mąk/i],[/^Zaparz/i,/zaparz|garn/i],[/^Jajka dodawaj/i,/jajk/i],[/^Skończ/i,/jajk/i]];
+   for(const t of tips){const kw=(KEY.find(([a])=>a.test(t))||[])[1];let j=-1;if(kw){for(let x=i;x<end;x++)if(kw.test(s[x])){j=x;break}if(j<0)continue}else if(K>=i&&K<end)j=K;if(j<0){left.push(t);continue}s[j]=s[j].replace(/\s*$/,"")+" MUM5: "+t.replace(/\.$/,"")+"."}
+   s.splice(i,0,head+(left.length?" "+left.map(x=>x.replace(/\.$/,"")).join("; ")+".":""))}}}
  const k=curDev;if(k==="uni"||k==="stove")return cap(s);const f=k==="gorenje"?{ok:"yes"}:devFit(b,k),h=devCard(b);if(!h)return cap(s);
  const d=document.createElement("div");d.innerHTML=h;const card=d.querySelector(".ovencard"),body=card&&card.querySelector(":scope>div:last-child");if(!body)return cap(s);
  const name=k==="gorenje"?"Gorenje":DEVS[k].short;
@@ -1242,7 +1245,7 @@ const MUM_T={hak:"Hak do zagniatania",flexi:"Końcówka Profi Flexi",whisk:"Koń
 const MUM_LIM={hak:1600,flexi:2200,whisk:1500};
 const MUM_HAND=new Set(["leniwe","kopytka","kluski_slaskie","gnocchi","pyzy","knedle","beszamel","panierka"]);
 const MUM_LAM=new Set(["croissant","rogale_marcinskie","francuskie","paluchy_francuskie","lamance"]);
-function mumSpec(b){const c=b.rheologyClass||"",id=b.id,W="Składniki odważ wcześniej na dokładnej wadze kuchennej (co 1 g) – waga w MUM5 mierzy co 5 g, za mało precyzyjnie do drożdży, soli i psyllium.",T="Czas odliczaj timerem na wyświetlaczu (przycisk zegara).";
+function mumSpec(b){const c=b.rheologyClass||"",id=b.id,W="Składniki odważ wcześniej na dokładnej wadze kuchennej (co 1 g) – waga w MUM5 mierzy co 5 g, za mało precyzyjnie do drożdży, soli i psyllium.",T="Czasy odliczysz minutnikiem w „Gotuj krok po kroku”.";
  if(MUM_HAND.has(id))return{tool:"hand",sp:[0,0],steps:[id==="beszamel"?"Beszamel gotujesz w rondlu – MUM5 nie jest tu potrzebny.":id==="panierka"?"Panierkę wymieszasz widelcem w misce – MUM5 nie jest potrzebny.":"To ciasto zagnieć ręcznie: w misce MUM5 robi się klejące i za rzadkie."]};
  if(/^RHEO_(POURABLE|FREE_STANDING|TENSILE|LAMINATED|STIFF|ENRICHED)/.test(c)){const pour=/POURABLE/.test(c),rich=/ENRICHED/.test(c),min=pour?4:rich?5:/STIFF/.test(c)?6:5;
   const s=["Załóż <b>hak do zagniatania</b>. "+W,"Najpierw wlej <b>płyny</b> (woda, mleko, jajka), potem mąki, psyllium i drożdże – instrukcja Bosch zaleca płyny jako pierwsze przy mokrych ciastach drożdżowych.",`<b>30 s na 1</b>, potem <b>${min} min na ${pour?"2":"2–3"}</b>. ${T}`];
@@ -1256,10 +1259,10 @@ function mumSpec(b){const c=b.rheologyClass||"",id=b.id,W="Składniki odważ wcz
   return{tool:"flexi",sp:[1,2],main:2,steps:["Załóż <b>Profi Flexi</b>. "+W,"Zimne masło w kostce, mąki i cukier: <b>30–60 s na 2</b>, aż powstanie kruszonka.",`Jajko lub płyn dodaj na 1 i mieszaj <b>najwyżej 30 s</b>, tylko do połączenia. Resztę zagnieć ręką w kulę. ${T}`]}}
  if(/FOAM/.test(c)){if(/sernik|brownie|lava/.test(id))return{tool:"flexi",sp:[1,3],main:2,steps:["Załóż <b>Profi Flexi</b>. "+W,`${id==="sernik"?"Ser z cukrem":"Masa"}: <b>1 min na 2</b>, potem jajka po jednym, każde ok. 20 s na 2.`,`Mąki na końcu: <b>15 s na 1</b> – nie napowietrzaj za mocno. ${T}`]};
   return{tool:"whisk",sp:[4,7],main:7,steps:["Załóż <b>końcówkę do ubijania</b>. Miska i końcówka muszą być czyste i suche. "+W,`Białka: <b>3–4 min na 7</b>, cukier dosypuj łyżką przez otwór w pokrywie. ${T}`,"Żółtka dodawaj po jednym na 4.","Mąki wmieszaj ręcznie szpatułką albo Profi Flexi <b>10–15 s na 1</b>."]}}
- if(/BATTER/.test(c))return{tool:"flexi",sp:[1,3],main:3,steps:["Załóż <b>Profi Flexi</b>. "+W,"Najpierw płyny i jajka, potem mąki.",`<b>30 s na 1</b>, potem <b>1 min na 3</b>, aż bez grudek. ${T}`,"Odstaw na 10 min, żeby mąki napęczniały; przed użyciem 10 s na 2."]};
+ if(/BATTER/.test(c))return{tool:"flexi",sp:[1,3],main:3,steps:["Załóż <b>Profi Flexi</b>. "+W,"Najpierw płyny i jajka, potem mąki.",`<b>30 s na 1</b>, potem <b>1 min na 3</b>, aż bez grudek. ${T}`,"Przed użyciem zmiksuj jeszcze 10 s na 2."]};
  if(/CHEM/.test(c)){if(/parzone|gougeres/.test(id))return{tool:"flexi",sp:[2,3],main:2,steps:["Zaparz masę w garnku i przestudź 5 min w misce MUM5.","Załóż <b>Profi Flexi</b>, ustaw <b>2</b>. Jajka dodawaj po jednym przez otwór, każde ok. 30 s.","Skończ, gdy masa jest lśniąca i opada z łyżki w kształt litery V."]};
   if(/muffin|banana|scones|donuty|marchew/.test(id))return{tool:"flexi",sp:[1,2],main:1,steps:["Załóż <b>Profi Flexi</b>. "+W,`Mokre składniki <b>30 s na 2</b>, potem dodaj suche i mieszaj <b>tylko 20–30 s na 1</b> – przemieszane wyjdą zbite. ${T}`]};
-  return{tool:"flexi",sp:[1,5],main:5,steps:["Załóż <b>Profi Flexi</b>. "+W,"Wszystkie składniki oprócz bakalii i czekolady.",`<b>30 s na 1</b>, potem <b>3–5 min na 5</b> – tak jak w przepisie z instrukcji Bosch. ${T}`,"Bakalie lub czekoladę dodaj na końcu: <b>30–60 s na 2</b>."]}}
+  return{tool:"flexi",sp:[1,5],main:5,steps:["Załóż <b>Profi Flexi</b>. "+W,`Masło z cukrem ucieraj <b>3–5 min na 5</b> (prędkość z instrukcji Bosch). ${T}`,"Jajka i płyny dodawaj na 3, mąki na 1 – tylko do połączenia, ok. 30 s.","Bakalie lub czekoladę dodaj na końcu: <b>30–60 s na 2</b>."]}}
  return null}
 const MUM_ICO={hak:'<path d="M30 6v26c0 14-15 16-16 6-1-7 8-9 10-3"/><path d="M24 6h12"/>',flexi:'<path d="M22 6h16M30 6v8"/><path d="M18 14h24l-4 30H22z"/><path d="M30 14v30" opacity=".6"/><path d="M18 14c-3 10-2 22 4 30" stroke-dasharray="2 3"/>',whisk:'<path d="M30 4v12"/><path d="M30 16c-12 6-10 30 0 34 10-4 12-28 0-34z"/><path d="M30 16c-5 8-4 26 0 34M30 16c5 8 4 26 0 34"/>',hand:'<path d="M20 30V14a3 3 0 0 1 6 0v12M26 26V10a3 3 0 0 1 6 0v16M32 26V12a3 3 0 0 1 6 0v16M38 28v-8a3 3 0 0 1 6 0v12c0 10-7 18-15 18s-12-6-14-12l-4-8a3 3 0 0 1 5-3l4 5"/>'};
 function mumDial(sp,main){const a=i=>(-135+i*270/7)*Math.PI/180;let t="";for(let i=0;i<=7;i++){const on=i>=sp[0]&&i<=sp[1],x=50+Math.sin(a(i))*36,y=50-Math.cos(a(i))*36,x2=50+Math.sin(a(i))*28,y2=50-Math.cos(a(i))*28;
