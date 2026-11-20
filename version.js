@@ -1,6 +1,9 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.18.0", d: "20.11.2026", t: ["Nowa zakładka „Sprzęt”: zaznacz urządzenia domu – Gorenje, frytkownica beztłuszczowa Xiaomi 3,5 l, Tefal OptiGrill Elite (płyty grillowe, do gofrów, brytfanka), frytkownica olejowa Tefal Uno M.",
+    "W przepisie „Czym robisz?”: wybór urządzenia z oznaczeniem, czy przepis się nadaje („da się, ale…”, „nie do tego” z wyjaśnieniem). Karta z ustawieniami pod wybrane urządzenie: tryb, temperatura, czas, akcesorium, wielkość partii.",
+    "Air fryer: temperatura o 20°C niższa, czas o ok. 25% krótszy, wskazówki do foremek i porcji. OptiGrill: tryb ręczny, płyty do placków i gofrów, brytfanka do płaskich ciast. Frytkownica: termostat 150–190°C, partie po 3–4 sztuki."] },
   { v: "2.17.0", d: "19.11.2026", t: ["Nowy przełącznik w przepisie: „Piekarnik uniwersalny” (przepisy bez zmian) albo „Piekę w Gorenje” (kuchnia Gorenje MEKS5141X).",
     "W trybie Gorenje każdy przepis pokazuje, jaki system ustawić – z ikoną z instrukcji – poziom blachy i obsługę pary: pieczywo z parą (górna i dolna grzałka + para), pizza i tarty na „gorące powietrze i dolna grzałka”, pizza neapolitańska 300°C, placek z kruszonką na „grzałka dolna i wentylator”, ciastka na 2 blachach na „gorące powietrze” −20°C.",
     "Kroki przepisów drożdżowych podają od razu tryb Gorenje i poziom. Przepisy z patelni, garnka i gofrownicy są oznaczone jako niewymagające piekarnika."] },

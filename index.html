@@ -290,6 +290,21 @@ details.prefs .inner{display:grid;gap:10px}
 .ovencard>img{flex:none;border-radius:10px;background:#d6d6d6}
 .ovencard>div{display:grid;gap:6px}.ovencard b{font-family:var(--display);font-size:1.05rem}.ovencard small{color:var(--muted);font-size:.9rem;line-height:1.45}
 .ovencard img.inl{vertical-align:middle;border-radius:4px;background:#d6d6d6}
+.devlabel{font-weight:700;font-size:.95rem;margin-bottom:-6px}
+.devseg{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.devseg::-webkit-scrollbar{display:none}
+.devseg .dev{flex:none;font:inherit;display:grid;justify-items:center;gap:2px;min-width:92px;min-height:76px;padding:8px 10px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;font-size:.88rem;font-weight:600}
+.devseg .dev small{font-size:.72rem;font-weight:400;color:var(--muted)}
+.devseg .dev.no{opacity:.55}.devseg .dev.part small{color:var(--warn)}
+.devseg .dev[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;opacity:1}.devseg .dev[aria-pressed="true"] small{color:#ffffffcc}
+:root[data-theme="dark"] .devseg .dev[aria-pressed="true"]{color:#10140f}
+.ovencard>svg{flex:none;color:var(--accent)}
+.ovencard.part{border-color:var(--gold);background:var(--warn-soft)}.ovencard.no{border-color:var(--line);background:var(--surface)}
+.ovencard span{line-height:1.45}
+.devlist{display:grid;gap:10px}
+.devitem{display:grid;grid-template-columns:28px 40px 1fr;gap:12px;align-items:start;background:var(--surface);border:1.5px solid var(--line);border-radius:20px;padding:14px;cursor:pointer}
+.devitem input{width:24px;height:24px;margin-top:6px;accent-color:var(--accent)}
+.devitem .di{color:var(--accent)}.devitem .dt{display:grid;gap:4px}.devitem small{color:var(--muted);font-size:.9rem;line-height:1.45}
+.tabbar button{min-width:64px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -350,7 +365,8 @@ details.prefs .inner{display:grid;gap:10px}
 <button type="button" class="back" data-go="start" aria-label="Wróć do przepisów"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button></div>
 <div class="sheet">
 <h1 class="rtitle" id="rTitle"></h1>
-<div class="seg ovenseg" role="group" aria-label="Piekarnik"><button type="button" data-oven="uni">Piekarnik uniwersalny</button><button type="button" data-oven="gorenje">Piekę w Gorenje</button></div>
+<div class="devlabel">Czym robisz?</div>
+<div class="devseg" id="devSeg" role="group" aria-label="Urządzenie"></div>
 <section class="qty"><h2>Ile ciasta?</h2>
 <div class="seg" role="group" aria-label="Tryb ilości"><button id="mPcs" aria-pressed="true" type="button">Sztuki</button><button id="mGr" aria-pressed="false" type="button">Gramy ciasta</button></div>
 <div class="row">
@@ -363,10 +379,17 @@ details.prefs .inner{display:grid;gap:10px}
 <div class="about"><div class="note" id="bakeInfo"></div><div class="sim" id="simInfo"></div></div>
 </div>
 </div>
+<div class="view" id="vDevices" hidden>
+<h1 class="vt">Mój sprzęt</h1>
+<p class="lead">Zaznacz urządzenia, które masz. W każdym przepisie wybierzesz, czym go robisz – ustawienia, czas i temperatura dopasują się do urządzenia, a jeśli przepis się nie nadaje, zobaczysz dlaczego.</p>
+<div class="devlist" id="devList"></div>
+<p class="note">Piekarnik uniwersalny jest zawsze dostępny – przepisy w nim są bez zmian.</p>
+</div>
 </main>
 <nav class="tabbar" aria-label="Główne">
 <button type="button" data-go="start"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"/></svg>Start</button>
 <button type="button" data-go="pantry"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18H6zM6 9h12M6 15h12"/></svg>Spiżarnia</button>
+<button type="button" data-go="devices"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="4"/><rect x="7" y="12" width="10" height="6" rx="1.5"/><circle cx="12" cy="7.5" r="2"/></svg>Sprzęt</button>
 <button type="button" data-go="recipe"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M9 8h6M9 12h6"/></svg>Przepis</button>
 </nav>
 <footer class="appfoot">
@@ -907,10 +930,10 @@ $("labelFile").onchange=async e=>{const file=e.target.files&&e.target.files[0];e
  catch(err){m.textContent=(err.message||"Błąd")+" Możesz wpisać dane z etykiety ręcznie."}};
 
 // ===== Układ 3.0: zakładki Start / Spiżarnia / Przepis (jak w makiecie). Logika obliczeń bez zmian – tylko przełączanie widoków. =====
-const VIEWS={start:"vStart",pantry:"vPantry",recipe:"vRecipe"};let view="start";
+const VIEWS={start:"vStart",pantry:"vPantry",recipe:"vRecipe",devices:"vDevices"};let view="start";
 function go(v,keepScroll){if(!VIEWS[v])v="start";view=v;for(const k in VIEWS)$(VIEWS[k]).hidden=k!==v;
  document.querySelectorAll(".tabbar [data-go]").forEach(b=>b.setAttribute("aria-current",b.dataset.go===v?"page":"false"));
- try{localStorage.setItem("gf_view",v)}catch(e){}if(!keepScroll)window.scrollTo(0,0);if(v==="start")renderStart()}
+ try{localStorage.setItem("gf_view",v)}catch(e){}if(!keepScroll)window.scrollTo(0,0);if(v==="start")renderStart();if(v==="devices")renderDevices()}
 document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g)go(g.dataset.go)});
 // wybór przepisu (wyszukiwarka, kategorie, lista) → od razu ekran przepisu
 {const _pick=pickBake;pickBake=id=>{_pick(id);go("recipe")};
@@ -966,7 +989,7 @@ function renderStart(){const h=new Date().getHours();$("hello").textContent=h<5|
 // Wynik przepisu: pasek proporcji mąk (kolory jak w legendzie), licznik spiżarni. Dodawane po każdym przeliczeniu.
 const BLEND_COL=["#1F4D3A","#E8A33D","#7FA88F","#C9B9A3","#8FA9C4","#D98E73","#B9A0C9"];
 let prefsOpen=false;
-function decorateOut(){const out=$("out");ovenSeg();if(isGor()&&!out.querySelector(".ovencard")){const bb=BAKES.find(x=>x.id===$("bake").value),hy=out.querySelector(".hyd");if(bb&&hy)hy.insertAdjacentHTML("afterend",gorCard(bb))}const h=out.querySelector(":scope > h3");if(h)$("rTitle").textContent=h.textContent;
+function decorateOut(){const out=$("out");const bb=BAKES.find(x=>x.id===$("bake").value);renderDevSeg(bb);if(!out.querySelector(".ovencard")){const hy=out.querySelector(".hyd");if(bb&&hy)hy.insertAdjacentHTML("afterend",devCard(bb))}const h=out.querySelector(":scope > h3");if(h)$("rTitle").textContent=h.textContent;
  const ps=[...out.querySelectorAll(":scope > .seg:not(.srcbar)")];if(ps.length&&!out.querySelector("details.prefs")){const d=document.createElement("details");d.className="prefs";d.open=prefsOpen;d.innerHTML="<summary>Ustawienia przepisu: smak, wyrastanie, psyllium</summary>";ps[0].before(d);const w=document.createElement("div");w.className="inner";ps.forEach(x=>w.appendChild(x));d.appendChild(w);d.ontoggle=()=>prefsOpen=d.open}
 $("pantryCount").textContent=`Zaznaczono: ${sel.size}`;if(view==="start")renderStart();
  if(out.querySelector(".blendbar"))return;const rows=[...out.querySelectorAll("tr.sub")];if(!rows.length)return;
@@ -1009,7 +1032,8 @@ const NO_OVEN=/smaż|patelni|^gotowanie|na parze|gofrownic|rondel|^olej/i;
 const isGor=()=>prefs.oven==="gorenje";
 function gorMode(b){return NO_OVEN.test(b.bakeNote||"")?null:GOR[GOR_ID[b.id]||"gd"]}
 // Tekst kroków drożdżowych (ovenPlan) w wersji pod Gorenje
-function gorNote(note,b){if(!isGor())return note;const m=gorMode(b);if(!m)return note;
+function gorNote(note,b){if(prefs.oven==="air"&&devFit(b,"air").ok!=="no"){const T=tOf(note),mm=minOf(note);return `frytkownica beztłuszczowa Xiaomi, tryb ręczny ${Math.min(200,T?T-20:180)}°C${mm?`, ok. ${Math.round(mm[0]*.75)}–${Math.round(mm[1]*.75)} min`:""} (sprawdzaj wcześniej)`}
+ if(!isGor())return note;const m=gorMode(b);if(!m)return note;
  let n=note.replace(/, góra–dół bez termoobiegu/,"").replace(/środkowa półka/,m.lvl).replace(/, z parą przez pierwsze 10 min \(naczynie z wrzątkiem na dnie piekarnika\)/,"").replace(/, z parą na początku/,"");
  return `tryb „${m.name}”, ${n}`}
 function gorCard(b){if(!isGor())return "";const m=gorMode(b);
@@ -1023,6 +1047,80 @@ function gorCard(b){if(!isGor())return "";const m=gorMode(b);
  <small>${m.steam?"Nagrzewaj od razu w tym trybie, razem z blachą z wodą (bez „Szybkiego podgrzewania”).":"Rozgrzewanie: możesz użyć „Szybkiego podgrzewania”, ale przed włożeniem ciasta przełącz na tryb powyżej."}</small></div></div>`}
 function ovenSeg(){document.querySelectorAll("[data-oven]").forEach(x=>x.setAttribute("aria-pressed",(prefs.oven||"uni")===x.dataset.oven))}
 document.addEventListener("click",e=>{const o=e.target.closest("[data-oven]");if(!o)return;prefs.oven=o.dataset.oven;save();ovenSeg();calc()});
+
+// ===== Moja kuchnia (v2.18): urządzenia domu i dopasowanie przepisów. prefs.oven = wybrane urządzenie przepisu, prefs.devs = posiadane. =====
+// Dane z instrukcji/kart producentów: Xiaomi Mi Smart Air Fryer 3,5 l (MAF02, 40–200°C, przypomnienie o potrząśnięciu >8 min poza „ciastem”),
+// Tefal OptiGrill Elite GC750 (12 programów, tryb ręczny, rozgrzewanie 4–7 min, max 4 cm; akcesorium Snacking & Baking: 110/150/165/190/205/230/255/270°C),
+// Tefal Uno M FF215D30 (olej 1,8 l, kosz 1 kg, termostat 150–190°C).
+const DEVS={
+ uni:{name:"Piekarnik uniwersalny",short:"Uniwersalny"},
+ gorenje:{name:"Kuchnia Gorenje MEKS5141X",short:"Gorenje"},
+ air:{name:"Frytkownica beztłuszczowa Xiaomi Mi Smart Air Fryer 3,5 l",short:"Air fryer"},
+ opti:{name:"Tefal OptiGrill Elite (płyty grillowe, płyty do gofrów, brytfanka)",short:"OptiGrill"},
+ fry:{name:"Frytkownica olejowa Tefal Uno M FF215D30",short:"Frytkownica"}};
+const DEV_SVG={air:'<rect x="5" y="3" width="14" height="18" rx="4"/><rect x="7" y="12" width="10" height="6" rx="1.5"/><circle cx="12" cy="7.5" r="2"/>',
+ opti:'<path d="M3 15h18l-2 4H5z"/><path d="M4 13l16-6"/><path d="M8 17h8"/>',
+ fry:'<path d="M4 9h16v9a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M8 9V6h8v3M2 12h2M20 12h2"/>',
+ gorenje:'<rect x="3" y="3" width="18" height="18" rx="2"/><rect x="6" y="8" width="12" height="9" rx="1"/><path d="M6 5.5h2M10 5.5h2"/>',
+ uni:'<rect x="3" y="3" width="18" height="18" rx="2"/><rect x="6" y="8" width="12" height="9" rx="1"/>'};
+const devIcon=(k,s=28)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${DEV_SVG[k]}</svg>`;
+const L=s=>new Set(s.split(" "));
+const AIR_YES=L("kajzerki hamburger subway bulki_ziarniste bajgle precle drozdzowki cynamonki szneki jagodzianki rogaliki_drozdzowe buleczki_maslane bulki_czosnkowe croissant rogale_marcinskie pizzerinki paszteciki pierogi_drozdzowe pide cebularze english_muffin naan pita grissini cookies kruche_ciastka biscoff pierniczki krakersy lamance taralli cantucci rogaliki_serowe paluszki_serowe paluchy_francuskie tartaletki muffinki muffinki_wytrawne scones parzone gougeres brownie lava_cake crumble clafoutis");
+const AIR_PART={
+ bread:[L("chleb_jasny chleb_gryczany chleb_ziarnisty chleb_proteinowy chleb_owsiany bagietka ciabatta bulka_tarta chalka brioche babka"),"Tylko mały bochenek lub keks: połowa porcji (do ok. 450 g ciasta), forma do 16 cm. Po 15 minutach przykryj wierzch folią, żeby się nie przypalił."],
+ pizza:[L("pizza_patelnia pizza_blacha pizza_neapol pinsa focaccia calzone"),"Jeden placek do 18 cm średnicy naraz, na papierze perforowanym. Dodatki dopiero na podpieczony spód (po 4–5 min)."],
+ cake:[L("banana_bread babka_piaskowa marchewkowe ciasto_jogurtowe murzynek piernik placek_kruszonka quiche tarta szarlotka crostata mazurek francuskie lasagne"),"Połowa porcji w foremce 16–18 cm. Wierzch szybko się rumieni – po 10 minutach przykryj folią."],
+ fried:[L("paczki bomboloni oponki panzerotti paczki_serowe langosz panierka"),"Wersja pieczona zamiast smażonej: posmaruj lub spryskaj olejem, układaj w jednej warstwie z odstępami. Wyjdą mniej puszyste i mniej rumiane niż z oleju."],
+ boiled:[L("pierogi kopytka gnocchi placki_ziemniaczane"),"Najpierw zrób jak w przepisie (ugotuj lub uformuj), potem odsmaż bez tłuszczu: posmaruj olejem, 200°C, 8–12 min, w połowie obróć."]};
+const AIR_NO=[[L("biszkopt biszkopt_kakaowy rolada biszkopty_tiramisu torta_caprese sernik"),"Silny nawiew i mała komora: biszkopt opadnie, a sernik upiecze się nierówno."],
+ [L("nalesniki pancakes racuchy bliny placuszki_bananowe placki_twarogowe gofry gofry_bialkowe gofry_ziemniaczane gofry_pizzowe"),"Ciasto lejące – potrzebna patelnia albo gofrownica (gofry: OptiGrill z płytami do gofrów)."],
+ [L("faworki roze_karnawalowe tempura"),"Za lekkie i cienkie – nawiew je porwie, a bez oleju nie zrobią się chrupiące. Użyj frytkownicy olejowej."],
+ [L("bao pampuchy"),"To ciasto gotowane na parze."],
+ [L("tortilla czapati piadina placki_dymka gozleme podplomyki"),"Placki z suchej patelni – na patelni albo w OptiGrillu wyjdą lepiej."],
+ [L("strucla_makowa paska chleb_tostowy"),"Za duże na komorę 3,5 l (forma się nie zmieści)."]];
+const OPTI_PLATE=L("piadina tortilla czapati podplomyki naan pita gozleme placki_dymka english_muffin");
+const OPTI_WAFFLE=L("gofry gofry_bialkowe gofry_ziemniaczane gofry_pizzowe");
+const OPTI_TRAY=L("brownie ciasto_jogurtowe placek_kruszonka crumble clafoutis pizza_patelnia focaccia quiche lasagne cookies murzynek");
+const OPTI_PART=L("placki_ziemniaczane placki_twarogowe");
+const FRY_YES=L("paczki bomboloni oponki faworki roze_karnawalowe paczki_serowe panzerotti langosz racuchy tempura panierka parzone");
+const FRY_PART=L("pierogi placki_ziemniaczane");
+const OPTI_T=[110,150,165,190,205,230,255,270];
+const tOf=n=>{const t=[...String(n||"").matchAll(/(\d{3})°C/g)].map(m=>+m[1]);return t.length?t[t.length-1]:0};
+const minOf=n=>{const m=[...String(n||"").matchAll(/(\d+)–(\d+) min/g)];return m.length?[+m[m.length-1][1],+m[m.length-1][2]]:null};
+function devFit(b,k){
+ if(k==="uni")return{ok:"yes"};
+ if(k==="gorenje")return gorMode(b)?{ok:"yes"}:{ok:"no",why:"Ten przepis nie używa piekarnika."};
+ if(k==="air"){if(AIR_YES.has(b.id))return{ok:"yes"};for(const g in AIR_PART)if(AIR_PART[g][0].has(b.id))return{ok:"part",why:AIR_PART[g][1]};
+  for(const [s,w] of AIR_NO)if(s.has(b.id))return{ok:"no",why:w};return{ok:"no",why:"Ten przepis nie nadaje się do frytkownicy beztłuszczowej."}}
+ if(k==="opti"){if(OPTI_PLATE.has(b.id))return{ok:"yes",acc:"plate"};if(OPTI_WAFFLE.has(b.id))return{ok:"yes",acc:"waffle"};if(OPTI_TRAY.has(b.id))return{ok:"part",acc:"tray",why:"Na brytfance Snacking & Baking: połowa porcji, warstwa ciasta do ok. 3 cm."};
+  if(OPTI_PART.has(b.id))return{ok:"part",acc:"plate",why:"Na płytach grillowych posmarowanych olejem – placki wyjdą płaskie, z paskami z grilla."};
+  return{ok:"no",why:"OptiGrill dociska płytami (wysokość do 4 cm) – wyrośnięte ciasto, chleb i ciasta lejące się nie upieką."}}
+ if(k==="fry"){if(FRY_YES.has(b.id))return{ok:"yes"};if(FRY_PART.has(b.id))return{ok:"part",why:b.id==="pierogi"?"Pierogi smażone: najpierw ugotuj, osusz, potem 2–3 min w 180°C.":"Placki w głębokim oleju: 170°C, nakładaj łyżką, 3–4 min."};
+  return{ok:"no",why:"Frytkownica olejowa służy tylko do smażenia w głębokim tłuszczu."}}
+ return{ok:"no"}}
+const owned=()=>["uni",...(prefs.devs||["gorenje","air","opti","fry"])];
+function devCard(b){const k=prefs.oven||"uni";if(k==="uni")return "";if(k==="gorenje")return gorCard(b);
+ const f=devFit(b,k),d=DEVS[k],note=b.bakeNote||"",T=tOf(note),mm=minOf(note);
+ if(f.ok==="no")return `<div class="ovencard no">${devIcon(k,40)}<div><b>${d.short}: nie polecam do tego przepisu</b><span>${f.why}</span><small>Wybierz inne urządzenie powyżej.</small></div></div>`;
+ let body="";
+ if(k==="air"){const done=/^frytkownica beztłuszczowa/.test(note),t=done?T:Math.min(200,T?T-20:180),m=mm?(done?mm:[Math.round(mm[0]*.75),Math.round(mm[1]*.75)]):null;
+  body=`<span>Tryb ręczny (Manual): <b>${t}°C</b>${m?`, ok. <b>${m[0]}–${m[1]} min</b>`:", czas o ok. 25% krótszy niż w przepisie"} · temperatura o 20°C niższa niż w piekarniku</span>
+  <small>Rozgrzej pustą frytkownicę 3–5 min. Ciasto na papierze perforowanym lub w foremce silikonowej, nie wyżej niż do linii MAX, z odstępami. Gdy pojawi się „Please shake the food”, nie potrząsaj ciasta – tylko sprawdź kolor. Sprawdzaj kilka minut przed końcem.</small>`}
+ if(k==="opti"){const t=f.acc==="waffle"?205:f.acc==="plate"?230:OPTI_T.reduce((a,c)=>Math.abs(c-(T||180))<Math.abs(a-(T||180))?c:a,190);
+  body=f.acc==="waffle"?`<span>Płyty do gofrów · tryb ręczny <b>${t}°C</b> · ok. 5–7 min</span><small>Załóż płyty do gofrów, zamknij i rozgrzej w trybie ręcznym (sygnał po 4–7 min). Wlej ciasto do połowy wysokości wgłębień, zamknij i nie otwieraj przez pierwsze 4 minuty.</small>`
+  :f.acc==="plate"?`<span>Płyty grillowe · tryb ręczny <b>${t}°C</b> · ok. 2–4 min</span><small>Rozgrzej zamknięty grill (sygnał po 4–7 min). Kładź placki pojedynczo lub po dwa, zamknij pokrywę; obracać nie trzeba – piecze z obu stron naraz. Po wyjęciu trzymaj pod ściereczką.</small>`
+  :`<span>Brytfanka Snacking & Baking · tryb ręczny <b>${t}°C</b>${mm?` · ok. ${mm[0]}–${mm[1]} min`:""}</span><small>Ciasto włóż do zimnej brytfanki, wymień dolną płytę na brytfankę, zamknij grill i wybierz tryb ręczny – grill zapiszczy po nagrzaniu i zacznie piec. Brytfanka to nie forma do piekarnika i nie do smażenia na tłuszczu.</small>`}
+ if(k==="fry"){const t=Math.max(150,Math.min(190,T||175));
+  body=`<span>Termostat <b>${t}°C</b> · smaż partiami po 3–4 sztuki</span><small>Olej (ok. 1,8 l) zawsze między kreską MIN i MAX. Opuszczaj kosz dopiero, gdy zgaśnie kontrolka grzania. Nie przepełniaj kosza – olej za bardzo stygnie. Odsącz na podniesionym koszu, potem na ręczniku papierowym. Nigdy nie wkładaj mokrego ani oszronionego ciasta.</small>`}
+ return `<div class="ovencard${f.ok==="part"?" part":""}">${devIcon(k,40)}<div><b>${d.short}${f.ok==="part"?": da się, ale…":""}</b>${f.ok==="part"?`<span>${f.why}</span>`:""}${body}</div></div>`}
+function renderDevSeg(b){const box=$("devSeg");if(!box||!b)return;let cur=prefs.oven||"uni";const own=owned();if(!own.includes(cur))cur=prefs.oven="uni";
+ box.innerHTML=own.map(k=>{const f=devFit(b,k);return `<button type="button" data-oven="${k}" aria-pressed="${cur===k}" class="dev ${f.ok}" title="${f.why||""}">${devIcon(k,22)}<span>${DEVS[k].short}</span>${f.ok==="no"?"<small>nie do tego</small>":f.ok==="part"?"<small>da się, ale…</small>":""}</button>`}).join("")}
+function renderDevices(){const own=new Set(prefs.devs||["gorenje","air","opti","fry"]);
+ const INFO={gorenje:"Systemy przyrządzania z instrukcji, para (max 2 dl wody na blasze na 1. poziomie), pizza do 300°C.",air:"Komora 3,5 l, 40–200°C, tryb ręczny, przypomnienie o potrząśnięciu przy czasie ponad 8 min (poza ciastem). Do małych wypieków, bułek, ciastek, pieczonych pączków.",
+  opti:"Tryb ręczny, rozgrzewanie 4–7 min, jedzenie do 4 cm grubości. Płyty grillowe: placki i chlebki płaskie. Płyty do gofrów: gofry. Brytfanka Snacking & Baking: płaskie ciasta, brownie, zapiekanki.",fry:"Olej 1,8 l, kosz do 1 kg, termostat 150–190°C. Pączki, faworki, róże, oponki, panzerotti, tempura, panierowane."};
+ $("devList").innerHTML=["gorenje","air","opti","fry"].map(k=>{const n=BAKES.filter(b=>devFit(b,k).ok!=="no").length;
+  return `<label class="devitem"><input type="checkbox" data-dev="${k}" ${own.has(k)?"checked":""}><span class="di">${devIcon(k,34)}</span><span class="dt"><b>${DEVS[k].name}</b><small>${INFO[k]}</small><small>Przepisy: ${n} z ${BAKES.length}</small></span></label>`}).join("")}
+document.addEventListener("change",e=>{const c=e.target.closest("[data-dev]");if(!c)return;const s=new Set(prefs.devs||["gorenje","air","opti","fry"]);c.checked?s.add(c.dataset.dev):s.delete(c.dataset.dev);prefs.devs=[...s];save();renderDevices()});
 
 renderPantry();setDefaults();const ry=restoreUI();if(ry===false)calc();
 loadShared().then(()=>{if(ry)window.scrollTo(0,ry)});
