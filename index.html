@@ -313,6 +313,17 @@ details.prefs .inner{display:grid;gap:10px}
 .partlist{margin-top:8px}.partlist summary{font-weight:600;color:var(--warn)}
 .manrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.manimg{border-radius:10px;background:#fff;height:auto;max-width:100%}.manimg.wide{width:100%}
 /* v2.21: grafiki urządzeń w stylu aplikacji */
+.mumrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}.mumrow>span{font-weight:700;font-size:.95rem}
+.mumseg{display:flex;gap:6px;background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:4px}
+.mumseg button{font:inherit;display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--fg);padding:8px 14px;border-radius:999px;font-weight:600;font-size:.9rem;cursor:pointer;min-height:44px}
+.mumseg button[aria-pressed="true"]{background:var(--accent);color:#fff}:root[data-theme="dark"] .mumseg button[aria-pressed="true"]{color:#10140f}
+.mumcard{flex-wrap:wrap}.mumviz{display:flex;gap:18px;align-items:center;justify-content:center;flex:1 1 100%}
+.mumtool{display:grid;justify-items:center;gap:2px;width:84px;text-align:center;color:var(--accent)}.mumtool small{font-size:.7rem;color:var(--fg);line-height:1.15}
+.mumdial{width:96px;height:96px}.mumdial .knob{fill:var(--surface);stroke:var(--line);stroke-width:2}.mumdial line{stroke:var(--line);stroke-width:3;stroke-linecap:round}.mumdial line.on{stroke:var(--accent)}
+.mumdial text{font-size:9px;fill:var(--muted);font-weight:600}.mumdial text.on{fill:var(--accent);font-weight:800}.mumdial .ptr{stroke:var(--fg);stroke-width:4}
+.mumcard>div:last-child{flex:1 1 200px}.mumcard>div:last-child>b{display:block;margin-bottom:8px}
+.mumwarn{margin-top:10px;padding:8px 10px;border-radius:12px;background:var(--surface);border-left:4px solid var(--warn);font-size:.9rem}
+li.mumli{color:var(--accent)}
 .ovencard>div{min-width:0}.ovencard{overflow:hidden}
 .drow{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center}
 .dial{flex:none;width:112px;height:112px;border-radius:50%;background:#2C2C2A;box-shadow:0 0 0 6px var(--line);display:grid;place-items:center;text-align:center;color:#F1EFE8}
@@ -366,6 +377,7 @@ details.prefs .inner{display:grid;gap:10px}
 <h1 class="vt">Co dziś<br>pieczemy?</h1>
 <h2 class="sh">Na czym dziś?</h2>
 <div class="daydevs" id="dayDevs" role="group" aria-label="Urządzenie"></div>
+<div class="mumrow"><span>Czym mieszasz?</span><div class="mumseg" role="group" aria-label="Czym mieszasz"></div></div>
 <div class="combo"><input id="bakeSearch" type="search" placeholder="Szukaj przepisu, np. pierogi, pizza, gofry" autocomplete="off" aria-label="Szukaj przepisu" aria-controls="bakeSuggest" aria-expanded="false">
 <div id="bakeSuggest" class="suggest" role="listbox" hidden></div></div>
 <div class="msg" id="bakeSearchMsg" hidden></div>
@@ -414,6 +426,7 @@ details.prefs .inner{display:grid;gap:10px}
 <h1 class="rtitle" id="rTitle"></h1>
 <div class="devlabel">Zrób w innym urządzeniu</div>
 <div class="devseg" id="devSeg" role="group" aria-label="Urządzenie"></div>
+<div class="mumrow"><span>Czym mieszasz?</span><div class="mumseg" role="group" aria-label="Czym mieszasz"></div></div>
 <section class="qty"><h2>Ile ciasta?</h2>
 <div class="seg" role="group" aria-label="Tryb ilości"><button id="mPcs" aria-pressed="true" type="button">Sztuki</button><button id="mGr" aria-pressed="false" type="button">Gramy ciasta</button></div>
 <div class="row">
@@ -1032,7 +1045,7 @@ function renderStart(){const h=new Date().getHours();$("hello").textContent=h<5|
 // Wynik przepisu: pasek proporcji mąk (kolory jak w legendzie), licznik spiżarni. Dodawane po każdym przeliczeniu.
 const BLEND_COL=["#1F4D3A","#E8A33D","#7FA88F","#C9B9A3","#8FA9C4","#D98E73","#B9A0C9"];
 let prefsOpen=false;
-function decorateOut(){const out=$("out");const bb=BAKES.find(x=>x.id===$("bake").value);renderDevSeg(bb);if(!out.querySelector(".ovencard")){const hy=out.querySelector(".hyd");if(bb&&hy)hy.insertAdjacentHTML("afterend",devCard(bb))}const h=out.querySelector(":scope > h3");if(h)$("rTitle").textContent=h.textContent;
+function decorateOut(){const out=$("out");const bb=BAKES.find(x=>x.id===$("bake").value);renderDevSeg(bb);if(!out.querySelector(".ovencard")){const hy=out.querySelector(".hyd");if(bb&&hy)hy.insertAdjacentHTML("afterend",devCard(bb))}mumDecor(bb);const h=out.querySelector(":scope > h3");if(h)$("rTitle").textContent=h.textContent;
  const ps=[...out.querySelectorAll(":scope > .seg:not(.srcbar)")];if(ps.length&&!out.querySelector("details.prefs")){const d=document.createElement("details");d.className="prefs";d.open=prefsOpen;d.innerHTML="<summary>Ustawienia przepisu: smak, wyrastanie, psyllium</summary>";ps[0].before(d);const w=document.createElement("div");w.className="inner";ps.forEach(x=>w.appendChild(x));d.appendChild(w);d.ontoggle=()=>prefsOpen=d.open}
 $("pantryCount").textContent=`Zaznaczono: ${sel.size}`;if(view==="start")renderStart();
  if(out.querySelector(".blendbar"))return;const rows=[...out.querySelectorAll("tr.sub")];if(!rows.length)return;
@@ -1182,12 +1195,53 @@ function devCard(b){const k=curDev;if(k==="uni"||k==="stove")return "";if(k==="g
  return `<div class="ovencard${f.ok==="part"?" part":""}">${devIcon(k,40)}<div><b>${d.short}${f.ok==="part"?": da się, ale…":""}</b>${f.ok==="part"?`<span>${f.why}</span>`:""}${body}</div></div>`}
 function renderDevSeg(b){const box=$("devSeg");if(!box||!b)return;const fits=DEV_ORDER.filter(k=>k===curDev||devFit(b,k).ok!=="no");
  box.innerHTML=fits.map(k=>{const f=devFit(b,k);return `<button type="button" data-oven="${k}" aria-pressed="${curDev===k}" class="dev ${f.ok}">${devIcon(k,22)}<span>${k==="uni"?"Uniwersalnie":DEVS[k].short}</span>${f.ok==="no"?"<small>nie do tego</small>":f.ok==="part"?"<small>da się, ale…</small>":""}</button>`}).join("")}
+// Bosch MUM5 (v2.22): osobny wybór „czym mieszasz”, karta z końcówką, prędkością i czasem
+let useMum=false;try{useMum=localStorage.getItem("gf_mum")==="1"}catch(e){}
+const MUM_T={hak:"Hak do zagniatania",flexi:"Końcówka Profi Flexi",whisk:"Końcówka do ubijania",hand:"Ręcznie"};
+const MUM_LIM={hak:1600,flexi:2200,whisk:1500};
+const MUM_HAND=new Set(["leniwe","kopytka","kluski_slaskie","gnocchi","pyzy","knedle","beszamel","panierka"]);
+const MUM_LAM=new Set(["croissant","rogale_marcinskie","francuskie","paluchy_francuskie","lamance"]);
+function mumSpec(b){const c=b.rheologyClass||"",id=b.id,W="Postaw miskę na MUM5, wyzeruj wagę (tara) i waż składniki prosto do miski – tarę rób przed każdym kolejnym.",T="Czas odliczaj timerem na wyświetlaczu (przycisk zegara).";
+ if(MUM_HAND.has(id))return{tool:"hand",sp:[0,0],steps:[id==="beszamel"?"Beszamel gotujesz w rondlu – MUM5 nie jest tu potrzebny.":id==="panierka"?"Panierkę wymieszasz widelcem w misce – MUM5 nie jest potrzebny.":"To ciasto zagnieć ręcznie: w misce MUM5 robi się klejące i za rzadkie.","Waga MUM5 i tak się przyda: "+W.charAt(0).toLowerCase()+W.slice(1)]};
+ if(/^RHEO_(POURABLE|FREE_STANDING|TENSILE|LAMINATED|STIFF|ENRICHED)/.test(c)){const pour=/POURABLE/.test(c),rich=/ENRICHED/.test(c),min=pour?4:rich?5:/STIFF/.test(c)?6:5;
+  const s=["Załóż <b>hak do zagniatania</b>. "+W,"Najpierw wlej <b>płyny</b> (woda, mleko, jajka), potem mąki, psyllium i drożdże – instrukcja Bosch zaleca płyny jako pierwsze przy mokrych ciastach drożdżowych.",`<b>30 s na 1</b>, potem <b>${min} min na ${pour?"2":"2–3"}</b>. ${T}`];
+  if(rich)s.push("Miękkie masło dodawaj po kawałku przez otwór w pokrywie, na 2.");
+  if(MUM_LAM.has(id))s.push("Laminowanie (wkładanie masła i składanie) rób ręcznie – MUM5 tylko do ciasta bazowego.");
+  s.push(pour?"Ciasto będzie luźne i lepkie – tak ma być. Wylej je szpatułką.":"Bez glutenu nie trzeba długo wyrabiać: wystarczy gładkie, jednolite ciasto.");
+  return{tool:"hak",sp:[1,pour?2:3],main:2,steps:s}}
+ if(/SCALDED/.test(c))return{tool:"hak",sp:[1,2],main:2,steps:["Zaparz mąkę jak w przepisie i przestudź ok. 5 min.","Załóż <b>hak</b>. "+W,`<b>30 s na 1</b>, potem <b>3 min na 2</b>, aż ciasto zbierze się w kulę. ${T}`,"Jeśli klei się do ścianek, dosyp łyżkę skrobi i zmiksuj 20 s na 2."]};
+ if(/CURD_POTATO/.test(c))return{tool:"flexi",sp:[1,2],main:1,steps:["Załóż <b>Profi Flexi</b>. "+W,`Mieszaj tylko <b>30–60 s na 1–2</b>, do połączenia – dłużej i masa zrobi się rzadka. ${T}`]};
+ if(/SHORTCRUST/.test(c)){if(MUM_LAM.has(id))return{tool:"hak",sp:[1,2],main:2,steps:["Załóż <b>hak</b>. "+W,"Ciasto bazowe: <b>30 s na 1, potem 2 min na 2</b>. "+T,"Wkładanie masła i składanie rób ręcznie."]};
+  return{tool:"flexi",sp:[1,2],main:2,steps:["Załóż <b>Profi Flexi</b>. "+W,"Zimne masło w kostce, mąki i cukier: <b>30–60 s na 2</b>, aż powstanie kruszonka.",`Jajko lub płyn dodaj na 1 i mieszaj <b>najwyżej 30 s</b>, tylko do połączenia. Resztę zagnieć ręką w kulę. ${T}`]}}
+ if(/FOAM/.test(c)){if(/sernik|brownie|lava/.test(id))return{tool:"flexi",sp:[1,3],main:2,steps:["Załóż <b>Profi Flexi</b>. "+W,`${id==="sernik"?"Ser z cukrem":"Masa"}: <b>1 min na 2</b>, potem jajka po jednym, każde ok. 20 s na 2.`,`Mąki na końcu: <b>15 s na 1</b> – nie napowietrzaj za mocno. ${T}`]};
+  return{tool:"whisk",sp:[4,7],main:7,steps:["Załóż <b>końcówkę do ubijania</b>. Miska i końcówka muszą być czyste i suche. "+W,`Białka: <b>3–4 min na 7</b>, cukier dosypuj łyżką przez otwór w pokrywie. ${T}`,"Żółtka dodawaj po jednym na 4.","Mąki wmieszaj ręcznie szpatułką albo Profi Flexi <b>10–15 s na 1</b>."]}}
+ if(/BATTER/.test(c))return{tool:"flexi",sp:[1,3],main:3,steps:["Załóż <b>Profi Flexi</b>. "+W,"Najpierw płyny i jajka, potem mąki.",`<b>30 s na 1</b>, potem <b>1 min na 3</b>, aż bez grudek. ${T}`,"Odstaw na 10 min, żeby mąki napęczniały; przed użyciem 10 s na 2."]};
+ if(/CHEM/.test(c)){if(/parzone|gougeres/.test(id))return{tool:"flexi",sp:[2,3],main:2,steps:["Zaparz masę w garnku i przestudź 5 min w misce MUM5.","Załóż <b>Profi Flexi</b>, ustaw <b>2</b>. Jajka dodawaj po jednym przez otwór, każde ok. 30 s.","Skończ, gdy masa jest lśniąca i opada z łyżki w kształt litery V."]};
+  if(/muffin|banana|scones|donuty|marchew/.test(id))return{tool:"flexi",sp:[1,2],main:1,steps:["Załóż <b>Profi Flexi</b>. "+W,"Mokre składniki: <b>30 s na 2</b>.",`Dodaj suche i mieszaj <b>tylko 20–30 s na 1</b> – przemieszane wyjdą zbite. ${T}`]};
+  return{tool:"flexi",sp:[1,5],main:5,steps:["Załóż <b>Profi Flexi</b>. "+W,"Wszystkie składniki oprócz bakalii i czekolady.",`<b>30 s na 1</b>, potem <b>3–5 min na 5</b> – tak jak w przepisie z instrukcji Bosch. ${T}`,"Bakalie lub czekoladę dodaj na końcu: <b>30–60 s na 2</b>."]}}
+ return null}
+const MUM_ICO={hak:'<path d="M30 6v26c0 14-15 16-16 6-1-7 8-9 10-3"/><path d="M24 6h12"/>',flexi:'<path d="M22 6h16M30 6v8"/><path d="M18 14h24l-4 30H22z"/><path d="M30 14v30" opacity=".6"/><path d="M18 14c-3 10-2 22 4 30" stroke-dasharray="2 3"/>',whisk:'<path d="M30 4v12"/><path d="M30 16c-12 6-10 30 0 34 10-4 12-28 0-34z"/><path d="M30 16c-5 8-4 26 0 34M30 16c5 8 4 26 0 34"/>',hand:'<path d="M20 30V14a3 3 0 0 1 6 0v12M26 26V10a3 3 0 0 1 6 0v16M32 26V12a3 3 0 0 1 6 0v16M38 28v-8a3 3 0 0 1 6 0v12c0 10-7 18-15 18s-12-6-14-12l-4-8a3 3 0 0 1 5-3l4 5"/>'};
+function mumDial(sp,main){const a=i=>(-135+i*270/7)*Math.PI/180;let t="";for(let i=0;i<=7;i++){const on=i>=sp[0]&&i<=sp[1],x=50+Math.sin(a(i))*36,y=50-Math.cos(a(i))*36,x2=50+Math.sin(a(i))*28,y2=50-Math.cos(a(i))*28;
+ t+=`<line x1="${x2.toFixed(1)}" y1="${y2.toFixed(1)}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" class="${on?"on":""}"/><text x="${(50+Math.sin(a(i))*45).toFixed(1)}" y="${(53-Math.cos(a(i))*45).toFixed(1)}" text-anchor="middle" class="${on?"on":""}">${i}</text>`}
+ const px=50+Math.sin(a(main))*22,py=50-Math.cos(a(main))*22;
+ return `<svg class="mumdial" viewBox="0 0 100 100" role="img" aria-label="Pokrętło: prędkość ${sp[0]===sp[1]?sp[0]:sp[0]+"–"+sp[1]}"><circle cx="50" cy="50" r="20" class="knob"/>${t}<line x1="50" y1="50" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" class="ptr"/></svg>`}
+const mumIco=(t,s)=>`<svg width="${s}" height="${s}" viewBox="0 0 60 56" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MUM_ICO[t]}</svg>`;
+function mumCard(b){const m=mumSpec(b);if(!m)return "";const hy=$("out").querySelector(".hyd");let tot=0;if(hy){const d=[...hy.querySelectorAll("div")].find(x=>/ciasta wyjdzie/.test(x.textContent));if(d)tot=parseFloat(d.querySelector("b").textContent.replace(/\s/g,"").replace(",","."))||0}
+ const lim=MUM_LIM[m.tool],n=lim&&tot>lim?Math.ceil(tot/lim):0;
+ const warn=n?`<div class="mumwarn"><b>Za dużo naraz:</b> ok. ${Math.round(tot)} g ciasta, a MUM5 przerobi bezpiecznie ok. ${lim} g (instrukcja: max 2× porcja przepisu). Zrób w ${n} partiach.</div>`:"";
+ return `<div class="ovencard mumcard"><div class="mumviz"><div class="mumtool">${mumIco(m.tool,46)}<small>${MUM_T[m.tool]}</small></div>${m.tool==="hand"?"":mumDial(m.sp,m.main)}</div><div><b>${m.tool==="hand"?"Bosch MUM5: tym razem ręcznie":"Bosch MUM5 – "+MUM_T[m.tool]}</b>${STEPS(m.steps)}${warn}</div></div>`}
+function mumDecor(b){const out=$("out"),old=out.querySelector(".mumcard");if(!useMum||!b){if(old)old.remove();out.querySelectorAll("li.mumli").forEach(x=>x.remove());return}
+ if(old)return;const html=mumCard(b);if(!html)return;const ol=out.querySelector("ol.steps"),nt=ol&&ol.closest(".note");
+ if(nt){nt.insertAdjacentHTML("beforebegin",html);const m=mumSpec(b);ol.insertAdjacentHTML("afterbegin",`<li class="mumli"><b>MUM5:</b> ${m.tool==="hand"?"to ciasto zrób ręcznie":"mieszaj według karty powyżej ("+MUM_T[m.tool]+")"}.</li>`)}
+ else{const a=out.querySelector(".ovencard")||out.querySelector(".hyd");if(a)a.insertAdjacentHTML("afterend",html)}}
+function renderMum(){document.querySelectorAll(".mumseg").forEach(box=>{box.innerHTML=[["0","hand","Ręcznie"],["1","flexi","Bosch MUM5"]].map(([v,ic,l])=>`<button type="button" data-mum="${v}" aria-pressed="${(useMum?"1":"0")===v}">${mumIco(ic,22)}<span>${l}</span></button>`).join("")})}
+document.addEventListener("click",e=>{const d=e.target.closest("[data-mum]");if(!d)return;useMum=d.dataset.mum==="1";try{localStorage.setItem("gf_mum",useMum?"1":"0")}catch(x){}renderMum();const out=$("out");out.querySelectorAll(".mumcard,li.mumli").forEach(x=>x.remove());decorateOut()});
 // Start: „Na czym dziś?” – filtr przepisów
 function renderDayDevs(){$("dayDevs").innerHTML=DEV_ORDER.map(k=>{const n=k==="uni"?BAKES.length:BAKES.filter(b=>devFit(b,k).ok!=="no").length;
  return `<button type="button" class="dd" data-day="${k}" aria-pressed="${curDev===k}">${devIcon(k,26)}<span>${k==="uni"?"Uniwersalnie":DEVS[k].short}</span><small>${n}</small></button>`}).join("")}
 document.addEventListener("click",e=>{const d=e.target.closest("[data-day]");if(!d)return;setDev(d.dataset.day);openCat=-1;openTheme=-1;renderDayDevs();renderCats();calc()});
 
-renderDayDevs();renderCats();
+renderDayDevs();renderCats();renderMum();
 {let v="start";try{v=localStorage.getItem("gf_view")||"start"}catch(e){}go(v,true)}
 
 renderPantry();setDefaults();const ry=restoreUI();if(ry===false)calc();
