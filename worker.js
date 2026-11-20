@@ -1,17 +1,58 @@
 /**
  * Worker kalkulatora: serwuje aplikację i małe API.
  *  GET  /api/state       – wspólne dane domu (spiżarnia, własne mąki, kalibracje)
- *  PUT  /api/state       – zapis wspólnych danych (JSON, do 100 KB)
+ *  PUT  /api/state       – zapis wspólnych danych (JSON, do 100 KB); nagłówek x-base-version → 409 przy nowszej wersji
+ *  GET  /api/state/backups, POST /api/state/restore {at} – kopie zapasowe (najwyżej 1 na godzinę, 60 dni)
+ *  Opcjonalny sekret HOME_CODE → wymagany nagłówek x-home-code (stan i etykiety)
  *  GET  /api/off?q=…     – wyszukiwanie mąki w Open Food Facts (nazwa lub kod kreskowy)
  *  POST /api/label       – zdjęcie etykiety → Workers AI odczytuje skład i wartości odżywcze (brakujące szacuje)
  * Wszystko w darmowym limicie Cloudflare (KV: 1000 zapisów/dzień, zapisy w aplikacji są grupowane).
  */
 const STATE_KEY = "state:v1";
+const BACKUP_PREFIX = "state:bak:";
+const BACKUP_TTL = 60 * 24 * 3600; // kopie zapasowe trzymane 60 dni
 const MAX_BODY = 100_000;
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
 
-async function handleState(req, env) {
+// Kod domowy (opcjonalny): gdy ustawiony sekret HOME_CODE (npx wrangler secret put HOME_CODE),
+// zapis i odczyt danych domu oraz odczyt etykiet wymagają nagłówka x-home-code. Bez sekretu – jak dotąd, bez kodu.
+const codeOk = (req, env) => !env.HOME_CODE || req.headers.get("x-home-code") === env.HOME_CODE;
+const needCode = () => json({ error: "Podaj kod domowy, żeby korzystać ze wspólnych danych.", needCode: true }, 401);
+
+// Ten sam warunek co GFSync.validState w sync.js
+const validState = s => !!s && typeof s === "object" && !Array.isArray(s) && Array.isArray(s.pantry) && s.pantry.every(x => typeof x === "string")
+  && (s.custom === undefined || Array.isArray(s.custom)) && (s.calib === undefined || (typeof s.calib === "object" && !Array.isArray(s.calib)))
+  && (s.prefs === undefined || (typeof s.prefs === "object" && !Array.isArray(s.prefs)));
+
+/** Kopia poprzedniego stanu: najwyżej jedna na godzinę (oszczędza darmowy limit 1000 zapisów KV na dzień). */
+async function backup(env, currentText) {
+  if (!currentText) return;
+  const key = BACKUP_PREFIX + new Date().toISOString().slice(0, 13); // np. state:bak:2026-11-20T14
+  if (await env.DATA.get(key)) return;
+  await env.DATA.put(key, currentText, { expirationTtl: BACKUP_TTL });
+}
+
+async function handleState(req, env, url) {
+  if (!codeOk(req, env)) return needCode();
+  const sub = url.pathname.slice("/api/state".length);
+  if (sub === "/backups" && req.method === "GET") {
+    const list = await env.DATA.list({ prefix: BACKUP_PREFIX });
+    return json({ backups: list.keys.map(k => k.name.slice(BACKUP_PREFIX.length)).sort().reverse() });
+  }
+  if (sub === "/restore" && req.method === "POST") {
+    let at;
+    try { at = (await req.json()).at; } catch { return json({ error: "Nieprawidłowe dane." }, 400); }
+    const text = typeof at === "string" ? await env.DATA.get(BACKUP_PREFIX + at) : null;
+    if (!text) return json({ error: "Nie ma takiej kopii zapasowej." }, 404);
+    const data = JSON.parse(text);
+    await backup(env, await env.DATA.get(STATE_KEY));
+    data.updatedAt = new Date().toISOString();
+    data.restoredFrom = at;
+    await env.DATA.put(STATE_KEY, JSON.stringify(data));
+    return json({ ok: true, state: data });
+  }
+  if (sub) return json({ error: "Nie ma takiego adresu." }, 404);
   if (req.method === "GET") {
     const v = await env.DATA.get(STATE_KEY);
     return json(v ? JSON.parse(v) : {});
@@ -21,8 +62,17 @@ async function handleState(req, env) {
     if (body.length > MAX_BODY) return json({ error: "Za dużo danych do zapisania (limit 100 KB)." }, 413);
     let data;
     try { data = JSON.parse(body); } catch { return json({ error: "Nieprawidłowe dane (to nie jest JSON)." }, 400); }
-    if (!data || typeof data !== "object" || Array.isArray(data)) return json({ error: "Nieprawidłowy format danych." }, 400);
+    if (!validState(data)) return json({ error: "Nieprawidłowy format danych." }, 400);
+    const currentText = await env.DATA.get(STATE_KEY);
+    const current = currentText ? JSON.parse(currentText) : null;
+    // Kontrola wersji: telefon podaje, na której wersji pracował. Jeśli na serwerze jest NOWSZA – zwracamy ją do scalenia.
+    // (Starsza wersja z odczytu oznacza tylko opóźnienie KV, wtedy zapisujemy.) Stare wersje aplikacji nie wysyłają nagłówka.
+    const base = req.headers.get("x-base-version");
+    if (base !== null && current && current.updatedAt && current.updatedAt > base) return json({ conflict: true, state: current }, 409);
+    await backup(env, currentText);
+    delete data.restoredFrom;
     data.updatedAt = new Date().toISOString();
+    if (current && current.updatedAt && data.updatedAt <= current.updatedAt) data.updatedAt = new Date(Date.parse(current.updatedAt) + 1).toISOString();
     await env.DATA.put(STATE_KEY, JSON.stringify(data));
     return json({ ok: true, updatedAt: data.updatedAt });
   }
@@ -157,9 +207,9 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     try {
-      if (url.pathname === "/api/state") return await handleState(req, env);
+      if (url.pathname === "/api/state" || url.pathname.startsWith("/api/state/")) return await handleState(req, env, url);
       if (url.pathname === "/api/off") return await handleOff(url);
-      if (url.pathname === "/api/label") return await handleLabel(req, env);
+      if (url.pathname === "/api/label") return codeOk(req, env) ? await handleLabel(req, env) : needCode();
       if (url.pathname.startsWith("/api/")) return json({ error: "Nie ma takiego adresu." }, 404);
     } catch (e) {
       return json({ error: "Błąd serwera: " + (e && e.message ? e.message : String(e)) }, 500);

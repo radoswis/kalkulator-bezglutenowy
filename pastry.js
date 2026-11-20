@@ -1087,7 +1087,7 @@
   const pastryCache = new Map();
   function solvePastryBlend(pantryFlours, b, tasteW = 0) {
     const key = b.id + "|" + tasteW + "|" + JSON.stringify(G.texAdjOf ? G.texAdjOf(b.id) : 0) + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
-    if (!pastryCache.has(key)) pastryCache.set(key, solvePastryBlendRaw(pantryFlours, b, tasteW));
+    if (!pastryCache.has(key)) { if (pastryCache.size >= 300) pastryCache.clear(); pastryCache.set(key, solvePastryBlendRaw(pantryFlours, b, tasteW)); }
     return pastryCache.get(key);
   }
   function solvePastryBlendRaw(pantryFlours, b, tasteW = 0) {

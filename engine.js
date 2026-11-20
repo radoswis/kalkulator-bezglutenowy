@@ -279,7 +279,7 @@
     // pampuchy: na parze – bez piekarnika (ovenPlan zwraca null, używany bakeNote)
   };
   const GF_TIME_FACTOR = 1.2;     // żel psyllium + skrobi potrzebuje dłużej, żeby się upiec w środku
-  const MIN_OVEN_TEMP = 160;
+  const MIN_OVEN_TEMP = 150; // najniższa temperatura pieczenia (także drugiego etapu)
   const round5 = x => Math.round(x / 5) * 5;
 
   /** Ile stopni obniżyć, bo cukier, jajka i tłuszcz przyspieszają rumienienie (reakcja Maillarda, karmelizacja). @param {Bake} b */
@@ -300,12 +300,12 @@
     if (mode === "griddle") return { note: `sucha patelnia na małym ogniu, pod przykryciem, ${m0}–${m1} min z każdej strony (bezglutenowe potrzebują dłużej niż pszenne)`, doneness: "Gotowe, gdy oba boki są złote, a boki bułeczki sprężyste po naciśnięciu. Najpewniej: w środku 96°C. Jeśli z zewnątrz są gotowe, a w środku wilgotne, dopiecz 8–10 min w piekarniku w 180°C. Przed podaniem rozdziel widelcem na pół i opiecz w tosterze." };
     if (mode === "stone") return { note: `jak najwyższa temperatura piekarnika (${t0 >= 300 ? "250–300" : t0}°C), najlepiej na rozgrzanym kamieniu lub odwróconej blasze, ${m0}–${m1} min`, doneness: "Gotowe, gdy brzegi są wyrośnięte i lekko przypieczone, a spód twardy i rumiany." };
     const drop = browningDrop(b) + (mode === "filled" ? 10 : 0);
-    const t = Math.max(MIN_OVEN_TEMP - 10, round5(t0 - drop + cT));
+    const t = Math.max(MIN_OVEN_TEMP, round5(t0 - drop + cT));
     const realDrop = Math.max(0, t0 - t - cT);
     const k = GF_TIME_FACTOR * (1 + 0.05 * (realDrop / 5)) * cK; // dłużej o ok. 5% na każde 5°C mniej, plus korekta użytkownika
     const a = Math.round(m0 * k), z = Math.round(m1 * k);
     let note = `${t}°C, góra–dół bez termoobiegu, środkowa półka, ${a}–${z} min`;
-    if (mode === "twoStage") note = `${t}°C przez 15 min, potem ${t - 20}°C, razem ${a}–${z} min, z parą na początku`;
+    if (mode === "twoStage") note = `${t}°C przez 15 min, potem ${Math.max(MIN_OVEN_TEMP, t - 20)}°C, razem ${a}–${z} min, z parą na początku`;
     if (mode === "steam") note += ", z parą przez pierwsze 10 min (naczynie z wrzątkiem na dnie piekarnika)";
     if (mode === "boil") note = `obgotuj 1 min z każdej strony, potem ${t}°C, ${a}–${z} min`;
     const big = b.unitWeight >= 300;
@@ -457,7 +457,7 @@
   }
 
   /** Funkcja kosztu solvera. @param {Blend} blend @param {RheologyClass} cls */
-  function blendCost(blend, cls, tasteW = 0, bake = null) {
+  function blendCost(blend, cls, tasteW = 0, bake = null, avail = null) {
     const p = profileOf(blend), t = cls.target;
     let c;
     if (tasteW) {
@@ -482,7 +482,7 @@
     }
     // Wypiek, którego smak wynika z konkretnej mąki (np. chleb gryczany) – preferowany jej udział
     for (const [id, want] of Object.entries((bake && bake.preferFlour) || {})) {
-      if (!blend.some(([i]) => i.id === id) && !(bake._avail || new Set()).has(id)) continue;
+      if (!blend.some(([i]) => i.id === id) && !(avail || new Set()).has(id)) continue;
       const hit = blend.find(([i]) => i.id === id);
       c += (((hit ? hit[1] : 0) - want) / 0.05) ** 2 * 3 + (hit ? 0 : 80); // brak mąki „z nazwy” = poważny błąd
     }
@@ -508,14 +508,15 @@
   const solveCache = new Map();
   function solveFlourBlend(pantryFlours, bake, tasteW = 0) {
     const key = bake.id + "|" + tasteW + "|" + JSON.stringify(TEX_ADJ[bake.id] || 0) + "|" + pantryFlours.map(i => i.id + ":" + i.macros.protein + ":" + i.macros.fiber).join(",");
-    if (!solveCache.has(key)) solveCache.set(key, solveFlourBlendRaw(pantryFlours, bake, tasteW));
+    if (!solveCache.has(key)) { if (solveCache.size >= 300) solveCache.clear(); solveCache.set(key, solveFlourBlendRaw(pantryFlours, bake, tasteW)); }
     return solveCache.get(key);
   }
   function solveFlourBlendRaw(pantryFlours, bake, tasteW = 0) {
     const cls = RHEOLOGY_CLASSES[bake.rheologyClass];
     const cands = pantryFlours.filter(i => i.role !== "hydrocolloid" && flavorAllowed(i, bake));
     if (!cands.length) return { blend: [], cost: Infinity, mode: "free" };
-    bake._avail = new Set(cands.map(i => i.id));
+    const avail = new Set(cands.map(i => i.id));
+    const cost = (/** @type {Blend} */ bl) => blendCost(bl, cls, tasteW, bake, avail);
 
     const mixes = cands.filter(i => i.isCommercialMix).sort((a, b) => (b.mixPriority ?? 1.5) - (a.mixPriority ?? 1.5));
     if (mixes.length) {
@@ -523,8 +524,8 @@
       const comp = cands.filter(i => !i.isCommercialMix && i.role !== "pure_starch");
       const tapioca = TAPIOCA_EXCEPTION_CLASSES.has(bake.rheologyClass) ? cands.find(i => i.id === "tap") : undefined;
       /** @type {Blend} */ let best = [[base, 1]];
-      let bestCost = blendCost(best, cls, tasteW, bake);
-      const consider = (/** @type {Blend} */ bl) => { const c = blendCost(bl, cls, tasteW, bake); if (c < bestCost - 1e-9) { bestCost = c; best = bl; } };
+      let bestCost = cost(best);
+      const consider = (/** @type {Blend} */ bl) => { const c = cost(bl); if (c < bestCost - 1e-9) { bestCost = c; best = bl; } };
       for (const ms of [0.8, 0.75, 0.7, 0.65]) {
         const rest = +(1 - ms).toFixed(2);
         for (const tap of tapioca ? [0, ...TAPIOCA_EXCEPTION_SHARES] : [0]) {
@@ -550,7 +551,7 @@
     const toBlend = (/** @type {number[]} */ w) => /** @type {Blend} */ (cands.map((c, i) => [c, w[i]]).filter(p => p[1] > 1e-9));
     let bestW = starts[0], bestCost = Infinity;
     for (const w of starts) {
-      let cur = blendCost(toBlend(w), cls, tasteW, bake);
+      let cur = cost(toBlend(w));
       for (let it = 0; it < 60; it++) {
         let move = null, mc = cur;
         for (let i = 0; i < n; i++) {
@@ -558,7 +559,7 @@
           for (let j = 0; j < n; j++) {
             if (i === j) continue;
             w[i] -= STEP; w[j] += STEP;
-            const c = blendCost(toBlend(w), cls, tasteW, bake);
+            const c = cost(toBlend(w));
             if (c < mc - 1e-9) { mc = c; move = [i, j]; }
             w[i] += STEP; w[j] -= STEP;
           }
@@ -628,7 +629,7 @@
     // Hydrokoloid
     let xan = 0;
     if (!pantryIds.includes("psy")) {
-      if (pantryIds.includes("xan")) { xan = psy * XANTHAN_PER_PSYLLIUM; warnings.push("Brak psyllium: używam gumy ksantanowej. Ciasto będzie mniej elastyczne."); }
+      if (pantryIds.includes("xan")) { xan = psyHusk * XANTHAN_PER_PSYLLIUM /* od łuski: forma psyllium nie zmienia ilości ksantanu */; warnings.push("Brak psyllium: używam gumy ksantanowej. Ciasto będzie mniej elastyczne."); }
       else if (hpmcShare < 0.6) warnings.push("Brak psyllium i gumy ksantanowej: ciasto nie utrzyma gazu. Dokup łuskę babki jajowatej (psyllium).");
       psy = 0;
     }

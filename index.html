@@ -394,6 +394,7 @@ li.mumli{color:var(--accent)}
 <h1 class="vt">Moja spiżarnia</h1>
 <p class="lead">Zaznacz mąki, które masz w domu. Aplikacja sama dobierze z nich najlepszą mieszankę.</p>
 <div class="msg" id="syncMsg">Wczytuję…</div>
+<details class="all" id="bakBox"><summary>Kopie zapasowe wspólnych danych</summary><div id="bakList" class="msg">Wczytuję…</div></details>
 <div id="flours"></div>
 <div class="group">Dodatki wiążące</div>
 <div class="chips" id="addons"></div>
@@ -482,6 +483,7 @@ li.mumli{color:var(--accent)}
 <script src="engine.js"></script>
 <script src="pastry.js"></script>
 <script src="nutrition.js"></script>
+<script src="sync.js"></script>
 <script>
 const {INGREDIENT_MATRIX:ING,RHEOLOGY_CLASSES:CLS,ALL_BAKES,CATEGORIES,calculateRecipe,suggestIdealBlend}=GFEngine;
 const BAKES=ALL_BAKES,defaultDough=b=>b.unitWeight*b.defaultCount;
@@ -494,18 +496,64 @@ try{const st=JSON.parse(localStorage.getItem("gf_state_v2")||"null");
 let mode="pcs";
 const all=()=>ING.concat(custom);
 const stateObj=()=>({pantry:[...sel],custom,calib,prefs});
-let saveTimer=null;
+// Synchronizacja (v2.25): zmiany najpierw na telefonie (sync.dirty), potem na serwer z numerem wersji, na której pracowaliśmy.
+// Gdy na serwerze jest nowsza wersja (409) albo telefon był bez internetu – scalamy (sync.js), więc nic nie ginie.
+let sync={dirty:false,base:null,ver:""};try{const s=JSON.parse(localStorage.getItem("gf_sync_v1")||"null");if(s)sync=Object.assign(sync,s)}catch(e){}
+const keepSync=()=>{try{localStorage.setItem("gf_sync_v1",JSON.stringify(sync))}catch(e){}};
+let homeCode="";try{homeCode=localStorage.getItem("gf_home_code")||""}catch(e){}
+const apiHeaders=(h={})=>homeCode?Object.assign(h,{"x-home-code":homeCode}):h;
+let saveTimer=null,pushing=false;
+const OFFLINE_MSG="Brak połączenia: zmiany są na tym urządzeniu, wyślę je, gdy wróci internet.";
 function setSync(t){const el=$("syncMsg");if(el)el.textContent=t}
+function applyState(st){const before=JSON.stringify(stateObj());custom=st.custom||[];sel=new Set(st.pantry||[]);calib=st.calib||{};prefs=Object.assign(prefs,st.prefs||{});
+ try{localStorage.setItem("gf_state_v2",JSON.stringify(stateObj()))}catch(e){}
+ if(JSON.stringify(stateObj())!==before&&typeof renderPantry==="function"){renderPantry();calc()}}
 function save(){try{localStorage.setItem("gf_state_v2",JSON.stringify(stateObj()))}catch(e){}
- if(syncMode!=="cloud")return;
- setSync("Zapisuję…");clearTimeout(saveTimer);
- saveTimer=setTimeout(async()=>{try{const r=await fetch("/api/state",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify(stateObj())});
-  const j=await r.json();setSync(r.ok?"Wspólne dla domu · zapisano":"Nie zapisano wspólnie: "+(j.error||r.status)+". Zmiany są na tym urządzeniu.")}
-  catch(e){setSync("Brak połączenia: zmiany zapisane tylko na tym urządzeniu.")}},1500)}
-async function loadShared(){try{const r=await fetch("/api/state",{cache:"no-store"});if(!r.ok)throw 0;const st=await r.json();syncMode="cloud";
-  if(st&&st.pantry){custom=st.custom||[];sel=new Set(st.pantry);calib=st.calib||{};prefs=Object.assign(prefs,st.prefs||{});try{localStorage.setItem("gf_state_v2",JSON.stringify(stateObj()))}catch(e){}renderPantry();calc();setSync("Wspólne dla domu · wczytano")}
+ sync.dirty=true;keepSync();
+ if(syncMode!=="cloud"){setSync(syncMode==="code"?"Zapisane na tym urządzeniu. Podaj kod domowy, żeby wysłać.":"Zapisane na tym urządzeniu. Wyślę, gdy będzie internet.");return}
+ setSync("Zapisuję…");clearTimeout(saveTimer);saveTimer=setTimeout(push,1500)}
+async function push(tries=0){if(pushing){clearTimeout(saveTimer);saveTimer=setTimeout(push,800);return}
+ pushing=true;let again=false;
+ try{const body=stateObj();
+  const r=await fetch("/api/state",{method:"PUT",headers:apiHeaders({"content-type":"application/json","x-base-version":sync.ver||""}),body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({}));
+  if(r.status===409&&j.state&&tries<3){applyState(GFSync.mergeState(sync.base,stateObj(),j.state));sync.base=j.state;sync.ver=j.state.updatedAt||"";keepSync();again=true;return}
+  if(r.status===401){askCode();return}
+  if(!r.ok){setSync("Nie zapisano wspólnie: "+(j.error||r.status)+". Zmiany są na tym urządzeniu, wyślę je przy następnej okazji.");return}
+  if(JSON.stringify(stateObj())===JSON.stringify(body))sync.dirty=false; // zmiany w trakcie wysyłania: kolejny zapis już zaplanowany
+  sync.base=body;sync.ver=j.updatedAt||"";keepSync();setSync(sync.dirty?"Zapisuję…":"Wspólne dla domu · zapisano")}
+ catch(e){syncMode="local";setSync(OFFLINE_MSG)}
+ finally{pushing=false;if(again)push(tries+1)}}
+async function loadShared(){try{const r=await fetch("/api/state",{cache:"no-store",headers:apiHeaders()});
+  if(r.status===401){askCode();return}
+  if(!r.ok)throw 0;const st=await r.json();syncMode="cloud";
+  const has=st&&Array.isArray(st.pantry);
+  if(sync.dirty){if(has){applyState(GFSync.mergeState(sync.base,stateObj(),st));sync.base=st;sync.ver=st.updatedAt||"";keepSync()}
+   setSync("Wysyłam zmiany z tego urządzenia…");clearTimeout(saveTimer);push()}
+  else if(has){applyState(st);sync.base=st;sync.ver=st.updatedAt||"";keepSync();setSync("Wspólne dla domu · wczytano")}
   else{setSync("Wspólne dla domu");save()}}
- catch(e){syncMode="local";setSync("Spiżarnia zapisana tylko na tym urządzeniu.")}}
+ catch(e){syncMode="local";setSync(sync.dirty?OFFLINE_MSG:"Spiżarnia zapisana tylko na tym urządzeniu.")}}
+// Kod domowy: pytamy tylko, gdy serwer go wymaga (sekret HOME_CODE)
+function askCode(){syncMode="code";const el=$("syncMsg");if(!el)return;
+ el.innerHTML=`${homeCode?"Kod domowy jest nieprawidłowy.":"Wspólne dane są chronione kodem domowym."} <label for="homeCode">Kod:</label> <input id="homeCode" type="password" autocomplete="off" size="10"> <button type="button" class="linkbtn" id="homeCodeBtn">Zapisz kod</button>`;
+ $("homeCodeBtn").onclick=()=>{homeCode=$("homeCode").value.trim();try{localStorage.setItem("gf_home_code",homeCode)}catch(e){}setSync("Sprawdzam kod…");loadShared()}}
+// Odśwież wspólne dane po powrocie do aplikacji i po odzyskaniu internetu
+window.addEventListener("online",()=>loadShared());
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")loadShared()});
+// Kopie zapasowe (serwer robi najwyżej jedną na godzinę, trzyma 60 dni)
+let bakPick="";
+async function renderBackups(){const box=$("bakList");if(!box)return;
+ try{const r=await fetch("/api/state/backups",{cache:"no-store",headers:apiHeaders()});const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
+  const fmtAt=a=>{const d=new Date(a+":00:00Z");return isNaN(d)?a:d.toLocaleString("pl-PL",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})};
+  box.innerHTML=j.backups.length?`Stan sprzed zmian z danej godziny. Przywrócenie zastępuje obecne dane na wszystkich telefonach (obecne trafią do kopii).<ul>${j.backups.slice(0,24).map(a=>`<li>${fmtAt(a)} <button type="button" class="linkbtn" data-bak="${a}">${bakPick===a?"Na pewno? Przywróć":"Przywróć"}</button></li>`).join("")}</ul>`:"Nie ma jeszcze kopii. Pierwsza powstanie przy najbliższej zmianie."}
+ catch(e){box.textContent="Kopie zapasowe są dostępne tylko z internetem."}}
+$("bakBox").addEventListener("toggle",e=>{if(e.target.open){bakPick="";renderBackups()}});
+$("bakList").addEventListener("click",async e=>{const b=e.target.closest("[data-bak]");if(!b)return;const at=b.dataset.bak;
+ if(bakPick!==at){bakPick=at;renderBackups();return}
+ bakPick="";const r=await fetch("/api/state/restore",{method:"POST",headers:apiHeaders({"content-type":"application/json"}),body:JSON.stringify({at})}).catch(()=>null);
+ const j=r?await r.json().catch(()=>({})):{};
+ if(r&&r.ok&&j.state){sync.dirty=false;clearTimeout(saveTimer);applyState(j.state);sync.base=j.state;sync.ver=j.state.updatedAt||"";keepSync();setSync("Przywrócono kopię zapasową.");renderBackups()}
+ else $("bakList").textContent="Nie udało się przywrócić: "+(j.error||"brak połączenia")+"."});
 const fmt=g=>(Number.isInteger(g)?g:g.toFixed(1).replace(".",","));
 
 // Lista przepisów z wyszukiwarką (bez polskich znaków i wielkości liter)
@@ -689,7 +737,9 @@ function fbQs(b){return FBQ.filter(x=>!x.y||b.family==="yeast")}
 function applyFeedback(id,sel,stars){const c=calib[id]||{water:0,yeast:0,temp:0,time:0,log:[]};const picked=[];
  for(const [q,v] of Object.entries(sel)){const Q=FBQ.find(x=>x.q===q),o=Q&&Q.o.find(x=>x[0]===v);if(!o)continue;picked.push(o[1]);const r=o[2];
   if(r.taste&&prefs.taste!=="wheat")prefs.taste="wheat";
-  for(const k in CAP)if(r[k])c[k]=Math.round(Math.max(-CAP[k],Math.min(CAP[k],(c[k]||0)+r[k]))*10)/10;
+  c.dir=c.dir||{};
+  for(const k in CAP)if(r[k]){const sg=Math.sign(r[k]),step=c.dir[k]&&c.dir[k]!==sg?r[k]/2:r[k];c.dir[k]=sg; // zmiana kierunku = mniejszy krok, przepis się ustala zamiast skakać
+   c[k]=Math.round(Math.max(-CAP[k],Math.min(CAP[k],(c[k]||0)+step))*10)/10}
   if(r.tex){c.tex=c.tex||{};for(const k in r.tex)c.tex[k]=Math.round(Math.max(-TEX_CAP[k],Math.min(TEX_CAP[k],(c.tex[k]||0)+r.tex[k]))*100)/100}}
  c.log=(c.log||[]).concat({d:new Date().toISOString().slice(0,10),v:picked.length?picked.join(", "):"Wyszło idealnie",s:stars||0}).slice(-20);
  calib[id]=c;fbSel={};fbStars=0;syncTex();save();calc()}
@@ -1015,7 +1065,7 @@ $("labelBtn").onclick=()=>$("labelFile").click();
 $("labelFile").onchange=async e=>{const file=e.target.files&&e.target.files[0];e.target.value="";if(!file)return;
  const m=$("labelMsg");$("addBox").open=true;m.textContent="Odczytuję etykietę (AI)… to trwa ok. 10–20 sekund.";
  try{const image=await shrinkImage(file);
-  const r=await fetch("/api/label",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image})});
+  const r=await fetch("/api/label",{method:"POST",headers:apiHeaders({"content-type":"application/json"}),body:JSON.stringify({image})});
   const j=await r.json();if(!r.ok)throw new Error(j.error||("kod "+r.status));
   if(j.name)$("nName").value=j.name+(j.brands?` (${String(j.brands).split(",")[0]})`:"");
   if(["pelna","skrobia","mix"].includes(j.type))$("nType").value=j.type;
