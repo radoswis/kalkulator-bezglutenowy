@@ -74,6 +74,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - Aktualizuj sekcję „Stan obecny” w tym pliku po większych zmianach.
 
 ## Bosch MUM5 (2.22)
+- Ważenie: użytkownik waży na osobnej wadze (HOTO, co 1 g); NIE podpowiadaj wagi MUM5 (co 5 g).
 - `useMum` (localStorage `gf_mum`), przełącznik `.mumseg` na Starcie i w przepisie, niezależny od `curDev`.
 - `mumSpec(b)` mapuje rheologyClass (+ wyjątki MUM_HAND, MUM_LAM, id) na końcówkę, zakres prędkości i kroki; `mumCard` wstawia kartę przed „Jak zrobić” (przez `mumDecor` w `decorateOut`) i li `.mumli` na początku kroków.
 - Limity misy `MUM_LIM` (hak 1600 g, Flexi 2200 g, ubijanie 1500 g) liczone z „ciasta wyjdzie” w `.hyd`.

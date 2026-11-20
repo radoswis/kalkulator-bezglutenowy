@@ -1,6 +1,7 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.22.2", d: "20.11.2026", t: ["MUM5: zamiast ważenia na wadze robota (co 5 g) – wskazówka, by odważyć składniki na dokładnej wadze kuchennej (co 1 g)."] },
   { v: "2.22.1", d: "20.11.2026", t: ["Tryb „Gotuj krok po kroku” uwzględnia wybór MUM5 (końcówka, prędkości i czasy we właściwych krokach) oraz urządzenie: ustawienia i wskazówki Gorenje, air fryera, OptiGrilla i frytkownicy wstawione przed pieczeniem lub smażeniem; „włącz piekarnik” zamienia się na właściwe urządzenie.", "Air fryer „da się, ale…”: karta pokazuje temperaturę i czas z podpowiedzi (np. odsmażanie pierogów 200°C, 8–12 min)."] },
   { v: "2.22.0", d: "20.11.2026", t: ["Nowy wybór „Czym mieszasz?”: Ręcznie albo Bosch MUM5 (na Starcie i w przepisie, zapamiętany na telefonie). Domyślnie ręcznie – przepisy bez zmian.", "Z MUM5 każdy przepis dostaje kartę: która końcówka (hak, Profi Flexi, ubijanie), pokrętło z prędkością, czasy pod timer, ważenie z tarą i płyny najpierw przy drożdżowym.", "Ostrzeżenie, gdy ciasta jest za dużo na jedną miskę – podpowiedź, na ile partii podzielić. Ciasta ziemniaczane i twarogowe do lepienia oraz laminowanie – ręcznie."] },
   { v: "2.21.1", d: "20.11.2026", t: ["Aplikacja zainstalowana na telefonie: treść i tryb gotowania zaczynają się niżej, pod paskiem stanu Androida (napisy nie są już zasłonięte)."] },

@@ -1220,8 +1220,8 @@ const MUM_T={hak:"Hak do zagniatania",flexi:"Końcówka Profi Flexi",whisk:"Koń
 const MUM_LIM={hak:1600,flexi:2200,whisk:1500};
 const MUM_HAND=new Set(["leniwe","kopytka","kluski_slaskie","gnocchi","pyzy","knedle","beszamel","panierka"]);
 const MUM_LAM=new Set(["croissant","rogale_marcinskie","francuskie","paluchy_francuskie","lamance"]);
-function mumSpec(b){const c=b.rheologyClass||"",id=b.id,W="Postaw miskę na MUM5, wyzeruj wagę (tara) i waż składniki prosto do miski – tarę rób przed każdym kolejnym.",T="Czas odliczaj timerem na wyświetlaczu (przycisk zegara).";
- if(MUM_HAND.has(id))return{tool:"hand",sp:[0,0],steps:[id==="beszamel"?"Beszamel gotujesz w rondlu – MUM5 nie jest tu potrzebny.":id==="panierka"?"Panierkę wymieszasz widelcem w misce – MUM5 nie jest potrzebny.":"To ciasto zagnieć ręcznie: w misce MUM5 robi się klejące i za rzadkie.","Waga MUM5 i tak się przyda: "+W.charAt(0).toLowerCase()+W.slice(1)]};
+function mumSpec(b){const c=b.rheologyClass||"",id=b.id,W="Składniki odważ wcześniej na dokładnej wadze kuchennej (co 1 g) – waga w MUM5 mierzy co 5 g, za mało precyzyjnie do drożdży, soli i psyllium.",T="Czas odliczaj timerem na wyświetlaczu (przycisk zegara).";
+ if(MUM_HAND.has(id))return{tool:"hand",sp:[0,0],steps:[id==="beszamel"?"Beszamel gotujesz w rondlu – MUM5 nie jest tu potrzebny.":id==="panierka"?"Panierkę wymieszasz widelcem w misce – MUM5 nie jest potrzebny.":"To ciasto zagnieć ręcznie: w misce MUM5 robi się klejące i za rzadkie."]};
  if(/^RHEO_(POURABLE|FREE_STANDING|TENSILE|LAMINATED|STIFF|ENRICHED)/.test(c)){const pour=/POURABLE/.test(c),rich=/ENRICHED/.test(c),min=pour?4:rich?5:/STIFF/.test(c)?6:5;
   const s=["Załóż <b>hak do zagniatania</b>. "+W,"Najpierw wlej <b>płyny</b> (woda, mleko, jajka), potem mąki, psyllium i drożdże – instrukcja Bosch zaleca płyny jako pierwsze przy mokrych ciastach drożdżowych.",`<b>30 s na 1</b>, potem <b>${min} min na ${pour?"2":"2–3"}</b>. ${T}`];
   if(rich)s.push("Miękkie masło dodawaj po kawałku przez otwór w pokrywie, na 2.");
