@@ -82,3 +82,8 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - Tryb gotowania: `cookView(cur)` buduje `cur.view` z `cur.steps` + kroki MUM5 (narzędzie i „płyny najpierw” przed mieszaniem, czasy po kroku wyrabiania) + ustawienia/wskazówki z karty urządzenia (Gorenje przed nagrzewaniem, reszta przed ostatnim krokiem pieczenia). Karta urządzenia to źródło – zmieniaj ją, nie cookView.
 - Audyt 2.23: /tmp-owe skrypty sprawdzały 1644 kombinacji (przepis × urządzenie × MUM5) regułami kolejności: brak mieszania po pieczeniu, MUM przed pieczeniem, ustawienia urządzenia przed pierwszym pieczeniem, brak „piekarnik” w air/opti/fry, brak pustych wartości. Po zmianach w krokach powtórz taki test.
 - preferFlour jest prawie twardy: brak mąki z nazwy = kara 80 w blendCost.
+
+## Testy (2.24)
+- `node tests/proporcje.js` – proporcje wszystkich przepisów (spiżarnie, porcje, mąka z nazwy). Kod 1 = błąd.
+- `python3 tests/kroki.py` – tryb gotowania: przepis × urządzenie × MUM5 (Playwright + Chrome), reguły kolejności. Kod 1 = błąd.
+- Uruchom oba przed każdym wdrożeniem zmieniającym przepisy, kroki, urządzenia lub MUM5. Katalog tests/ jest w .assetsignore.

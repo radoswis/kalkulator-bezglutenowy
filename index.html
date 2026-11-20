@@ -803,27 +803,45 @@ function showStep(){const n=cur.view.length;ci=Math.max(0,Math.min(n-1,ci));
  document.querySelector("[data-cookprev]").disabled=ci===0;const nx=document.querySelector("[data-cooknext]");nx.textContent=ci===n-1?"Koniec":"Dalej →"}
 // Tryb gotowania (v2.22.1): kroki uzupełnione o MUM5 i wybrane urządzenie
 const txt=h=>{const d=document.createElement("div");d.innerHTML=h;d.querySelectorAll("svg").forEach(x=>x.remove());return d.textContent.replace(/\s+/g," ").trim()};
-function cookView(c){const b=BAKES.find(x=>x.id===c.id);let s=[...c.steps];if(!b)return s;
- if(useMum){const m=mumSpec(b);if(m&&m.tool!=="hand"){const late=/SCALDED|FOAM/.test(b.rheologyClass||"");let i=s.findIndex(x=>(late?/wyrabiaj|zagnieć|mikser|ubij|utrzyj|zmiksuj/i:/wyrabiaj|zagnieć|mikser|ubij|utrzyj|zmiksuj|misk|wymieszaj|połącz|roztrzep/i).test(x));if(i<0)i=0;
-  s=s.map(x=>x.replace(/ręką lub mikserem|mikserem lub ręką|mikserem/gi,"w MUM5"));const ms=m.steps.map(x=>"MUM5 – "+MUM_T[m.tool]+": "+txt(x));const dm=s.findIndex(x=>/^Do dużej miski/i.test(x));if(dm>=0&&!late)i=dm;let K=s.findIndex((x,j)=>j>=i&&/wyrabiaj|zagnieć|ubij|utrzyj|zmiksuj|w MUM5/i.test(x));if(K<0)K=s.findIndex((x,j)=>j>=i&&/połącz|na gładko/i.test(x));if(K<0)K=i;
-  const fr=ms.filter((x,j)=>j===0||/Najpierw|Zaparz/.test(x)),rs=ms.filter(x=>!fr.includes(x));if(rs.length&&K>=0)s[K]=s[K].replace(/(^|\s)(łyżką|ręką|widelcem|trzepaczką)(?=[\s,.]|$)/i,"$1w MUM5").replace(/\s*\(najwyżej \d+ ruchów\)/,"");if(m.tool==="hak"){s.splice(K+1,0,...rs);s.splice(i,0,...fr)}else s.splice(i,0,ms[0],...ms.slice(1).map(x=>x.replace(/: /,": W kolejnych krokach – ")))}}
- const k=curDev;if(k==="uni"||k==="stove")return s.map(x=>x.charAt(0).toUpperCase()+x.slice(1));const f=k==="gorenje"?{ok:"yes"}:devFit(b,k),h=devCard(b);if(!h)return s;
- const d=document.createElement("div");d.innerHTML=h;const card=d.querySelector(".ovencard"),body=card&&card.querySelector(":scope>div:last-child");if(!body)return s;
+function cookView(c){const b=BAKES.find(x=>x.id===c.id);let s=[...c.steps];if(!b)return s;const cap=a=>a.filter(x=>x&&x.trim()).map(x=>(x.charAt(0).toUpperCase()+x.slice(1)).replace(/([^\d])\. ([a-ząćęłńóśźż])/g,(_,a,c)=>a+". "+c.toUpperCase()));
+ const plM=n=>n==1?"minutę":(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?"minuty":"minut";
+ // --- MUM5: wplecione w istniejące kroki zamiast osobnych
+ if(useMum){const m=mumSpec(b);if(m&&m.tool!=="hand"){const T=MUM_T[m.tool],late=/SCALDED|FOAM/.test(b.rheologyClass||""),plain=m.steps.map(x=>txt(x).replace(/\s*Czas odliczaj timerem.*$/,""));
+  s=s.map(x=>x.replace(/ręką lub mikserem|mikserem lub ręką/gi,"w MUM5").replace(/\bmikserem\b/gi,"w MUM5"));
+  let i=s.findIndex(x=>(late?/wyrabiaj|zagnieć|mikser|ubij|utrzyj|zmiksuj/i:/wyrabiaj|zagnieć|mikser|ubij|utrzyj|zmiksuj|misk|wymieszaj|połącz|roztrzep/i).test(x));if(i<0)i=0;
+  const dm=s.findIndex(x=>/^Do dużej miski/i.test(x));if(dm>=0&&!late)i=dm;
+  let K=s.findIndex((x,j)=>j>=i&&/wyrabiaj|zagnieć|ubij|utrzyj|zmiksuj|w MUM5/i.test(x));if(K<0)K=s.findIndex((x,j)=>j>=i&&/połącz|na gładko/i.test(x));if(K<0)K=i;
+  const head=`MUM5: załóż ${{hak:"hak do zagniatania",flexi:"końcówkę Profi Flexi",whisk:"końcówkę do ubijania"}[m.tool]}. Składniki odważ wcześniej na dokładnej wadze (co 1 g). Czasy mieszania odliczaj timerem MUM5.`;
+  if(m.tool==="hak"){const tm=plain.find(x=>/30 s na 1/.test(x))||"",extra=plain.filter(x=>/masło dodawaj|Laminowanie|Wkładanie masła|klei się do ścianek/i.test(x));
+   if(dm>=0&&!late)s[dm]=s[dm].replace(/^Do dużej miski/i,"Do misy MUM5");
+   const kn=tm.replace(/^.*?(30 s na 1)/,"$1").replace(/\.$/,"");
+   if(/wyrabiaj (w MUM5 |ręką )?\d+–\d+ minut[y]?/i.test(s[K]))s[K]=s[K].replace(/wyrabiaj (w MUM5 |ręką )?\d+–\d+ minut[y]?/i,(late?"przełóż do misy MUM5, wyrabiaj hakiem: ":"wyrabiaj hakiem: ")+kn);else s[K]+=` W MUM5: ${kn}.`;
+   if(extra.length)s[K]+=" "+extra.join(" ");s.splice(i,0,head)}
+  else{const tips=plain.slice(1).filter(x=>!/^Najpierw płyny/.test(x)||!s.some(y=>/płyn|mleko|wod/i.test(y)));
+   s[K]=s[K].replace(/(^|\s)(łyżką|ręką|widelcem|trzepaczką)(?=[\s,.]|$)/i,"$1w MUM5").replace(/\s*\(najwyżej \d+ ruchów\)/,"");
+   s.splice(i,0,head+(tips.length?" W kolejnych krokach: "+tips.map(x=>x.replace(/\.$/,"")).join("; ")+".":""))}}}
+ const k=curDev;if(k==="uni"||k==="stove")return cap(s);const f=k==="gorenje"?{ok:"yes"}:devFit(b,k),h=devCard(b);if(!h)return cap(s);
+ const d=document.createElement("div");d.innerHTML=h;const card=d.querySelector(".ovencard"),body=card&&card.querySelector(":scope>div:last-child");if(!body)return cap(s);
  const name=k==="gorenje"?"Gorenje":DEVS[k].short;
- if(f.ok==="no"){s.unshift(`Uwaga – ${name}: ${txt(body.innerHTML)}`);return s}
- const li=[...body.querySelectorAll("li")].map(x=>txt(x.innerHTML)),facts=[...body.querySelectorAll(".facts span")].map(x=>x.textContent.trim()).filter(Boolean),why=[...body.querySelectorAll(":scope>span")].map(x=>txt(x.innerHTML)),tip=[...body.querySelectorAll(":scope>small")].map(x=>txt(x.innerHTML));
- if(!li.length&&!facts.length&&!tip.length)return s;
- const gT=body.querySelector(".frygauge svg"),ft=gT?"termostat "+tOf((gT.getAttribute("aria-label")||"").replace(/(\d{3}) stopni/,"$1°C"))+"°C, ":"";const set=[`${name} – ustawienia: ${ft}${li.join(". ")}${li.length?". ":""}${facts.join(", ")}`.trim()];if(why.length)set.unshift(`${name}: ${why.join(" ")}`);if(tip.length)set.push(`${name} – wskazówki: ${tip.join(" ")}`);
+ if(f.ok==="no"){s.unshift(`Uwaga – ${name}: `+[...body.children].map(x=>txt(x.innerHTML).replace(/\.$/,"")).filter(Boolean).join(". ").replace(new RegExp("^"+name+": "),"")+".");return cap(s)}
+ const li=[...body.querySelectorAll("li")].map(x=>txt(x.innerHTML).replace(/\.$/,"")),facts=[...body.querySelectorAll(".facts span")].map(x=>x.textContent.trim()).filter(Boolean),why=[...body.querySelectorAll(":scope>span")].map(x=>txt(x.innerHTML)),tip=[...body.querySelectorAll(":scope>small")].map(x=>txt(x.innerHTML));
+ if(!li.length&&!facts.length&&!tip.length)return cap(s);
+ const gT=body.querySelector(".frygauge svg"),fryT=gT?tOf((gT.getAttribute("aria-label")||"").replace(/(\d{3}) stopni/,"$1°C")):0,devT=fryT||tOf(li.join(" "));
+ const whyHasT=why.some(x=>/\d{3}°C/.test(x));
+ // --- urządzenie: słowa i nagrzewanie
  if(k!=="gorenje"){const w=k==="fry"?"nagrzej olej we frytkownicy":k==="air"?"włącz air fryer":"włącz OptiGrill";s=s.map(x=>x.replace(/(włącz|nagrzej|rozgrzej) piekarnik( do \d{3}\s*°C)?/gi,w).replace(/przygotuj olej lub patelnię/gi,k==="fry"?"nagrzej olej we frytkownicy":k==="air"?"przygotuj air fryer":"przygotuj OptiGrill"))}
  const PRE=/(włącz|nagrzej|rozgrzej) (air fryer|optigrill|olej|piekarnik|gofrownic|patelni)|przygotuj (air|optigrill)/i,BK=/\bpiecz(?!eni)|\bsmaż|^na koniec|\bgofrownic|\bgrill|odsmaż|\bsusz w/i;
- const F=s.findIndex(x=>BK.test(x)&&!PRE.test(x)&&!/^po upiecz/i.test(x)),nb=s.filter(x=>BK.test(x)&&/\d{3}\s*°C/.test(x)).length;
+ const F=s.findIndex(x=>BK.test(x)&&!PRE.test(x)&&!/^po upiecz/i.test(x)),nb=new Set(s.filter(x=>BK.test(x)).flatMap(x=>[...x.matchAll(/(\d{3})\s*°C/g)].map(m=>m[1]))).size;
  let i;if(k==="gorenje"){i=s.findIndex(x=>PRE.test(x));if(i<0||(F>=0&&i>F))i=F<0?s.length:F}else{i=F<0?s.length:F;if(F>0&&PRE.test(s[F-1])&&!/odstaw|wyrast|napusz|przykryj/i.test(s[F-1]))i=F-1}
- if(k==="air"||k==="opti"){for(let j=0;j<i;j++)s[j]=s[j].replace(/(Po około \d+ minutach )?(włącz|nagrzej|rozgrzej) (air fryer|optigrill)[^.]*\.\s*/i,"");s=s.filter((x,j)=>x.trim()||j>=i);i=Math.min(i,s.length)}
- if(nb>1)set[why.length]+=" Przepis ma kilka etapów pieczenia – temperaturę i czas zmieniaj według kolejnych kroków.";
- if(why.some(x=>/\d{3}°C/.test(x)))set.splice(why.length,1);
- if(k!=="gorenje"){s=s.map(x=>x.replace(/^Na koniec:.*(piekarnik|patelni|kamieni).*$/i,`Na koniec: ${name} – ustawienia jak w kroku „${name} – ustawienia”.`).replace(/piekarnika/gi,"urządzenia").replace(/piekarniku/gi,"urządzeniu").replace(/piekarnik/gi,"urządzenie"))}
- if(k!=="gorenje")for(let j=i;j<s.length;j++)if(/°C/.test(s[j])&&/piecz|urządzeni/i.test(s[j])&&!/^Na koniec/.test(s[j])&&!s[j].startsWith(name)){s[j]=`${name}: temperatury w tym kroku są do piekarnika – ustaw urządzenie jak w kroku „ustawienia”. `+s[j]}
- s.splice(i,0,...set);return s.map(x=>x.charAt(0).toUpperCase()+x.slice(1))}
+ if(k==="air"||k==="opti"){for(let j=0;j<i;j++)s[j]=s[j].replace(/(Po około \d+ minutach )?(włącz|nagrzej|rozgrzej) (air fryer|optigrill)[^.]*\.\s*/i,"");const n0=s.length;s=s.filter((x,j)=>x.trim()||j>=i);i-=n0-s.length}
+ if(k!=="gorenje"){s=s.map(x=>x.replace(/^Na koniec:.*(piekarnik|patelni|kamieni).*$/i,`Na koniec: ${name} – jak w kroku przygotowania.`).replace(/piekarnika/gi,"urządzenia").replace(/piekarniku/gi,"urządzeniu").replace(/piekarnik/gi,"urządzenie"));
+  // temperatury i czasy w krokach pieczenia przeliczone pod urządzenie (zamiast dopisku „są do piekarnika”)
+  const own=b.device===k;for(let j=i;j<s.length;j++){if(own||whyHasT||!BK.test(s[j])||/^Na koniec/.test(s[j])||!/\d{3}\s*°C/.test(s[j]))continue;
+   if(k==="air")s[j]=s[j].replace(/(\d{3})\s*°C/g,(_,t)=>Math.min(200,+t-20)+"°C").replace(/(\d+)–(\d+) minut[y]?/g,(_,a,c)=>{const y=Math.round(c*.7);return Math.max(1,Math.round(a*.7))+"–"+y+"\u00a0"+plM(y)}).replace(/(\d+) minut[ęy]?/g,(z,a)=>{const y=Math.max(1,Math.round(a*.7));return y+" "+plM(y)})+" (czasy i temperatury przeliczone na air fryer)";
+   else if(devT)s[j]=s[j].replace(/(\d{3})\s*°C/g,devT+"°C")}}
+ // --- jeden krok przygotowania urządzenia
+ let prep=`${name} – przygotuj: `+(why.length?why.join(" ")+" ":"")+(whyHasT?"":(fryT?`termostat ${fryT}°C. `:"")+(li.length?(nb>1&&k!=="gorenje"?"tryb ręczny – temperaturę i czas ustawiaj według kolejnych kroków. ":li.map((x,j)=>j?x.charAt(0).toLowerCase()+x.slice(1):x).join(", ")+". "):"")+(facts.length?facts.join(", ")+". ":""))+(nb>1&&k==="gorenje"?"Przepis ma kilka etapów pieczenia – temperaturę zmieniaj według kolejnych kroków. ":"")+tip.join(" ");
+ s.splice(i,0,prep.trim());return cap(s)}
 function openCook(){if(!cur)return;ci=0;cur.view=cookView(cur);$("cookTitle").textContent=cur.title;
  $("cookIng").innerHTML="<table>"+cur.lines.map(l=>`<tr data-ing="${l.label}"${l.sub?' class="sub"':""}><td>${l.label}</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("")+"</table>";
  $("cookIng").hidden=true;$("cook").hidden=false;document.body.style.overflow="hidden";showStep();keepAwake()}

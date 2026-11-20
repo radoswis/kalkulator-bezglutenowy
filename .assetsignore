@@ -9,3 +9,5 @@ README.md
 .wrangler/**
 node_modules
 node_modules/**
+tests
+tests/**
