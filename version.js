@@ -1,6 +1,9 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.20.0", d: "20.11.2026", t: ["Grafiki z instrukcji w kartach urządzeń: ekrany „Ręczne” i „Potrząśnij” oraz układanie w 1 lub 2 warstwach (air fryer Xiaomi), ekran trybu ręcznego z temperaturą (OptiGrill Elite), poziom oleju MIN/MAX i wiersze tabeli produktów (frytkownica Tefal).",
+    "8 przepisów dedykowanych urządzeniom (razem 137): air fryer – pączki pieczone, donuty w foremkach; OptiGrill – gofry czekoladowe, gofry kukurydziane z serem, arepy; frytkownica – jabłka w cieście, krążki cebulowe (lub kalmary), pieczarki w cieście (temperatury i czasy z tabeli w instrukcji Tefal).",
+    "Air fryer: czas przeliczany z piekarnika skrócony o ok. 30%. OptiGrill: płyty grillowe 240°C, płyty do gofrów 200°C (temperatury z ekranu trybu ręcznego)."] },
   { v: "2.19.0", d: "20.11.2026", t: ["Na ekranie Start nowy wybór „Na czym dziś?”: Uniwersalnie (wszystkie przepisy bez zmian), Gorenje, Air fryer, OptiGrill, Frytkownica, Patelnia i garnek – z liczbą przepisów.",
     "Wybrane urządzenie filtruje wyszukiwarkę, tematy i rodzaje wypieków; przepisy „da się, ale…” są w osobnej, zwiniętej grupie. Przepis otwiera się od razu z ustawieniami pod to urządzenie.",
     "W przepisie „Zrób w innym urządzeniu” pokazuje tylko urządzenia, w których przepis wychodzi. Wybór jest zapamiętany na tym telefonie (nie zmienia się innym domownikom). Usunięta zakładka „Sprzęt” i temat „Bez piekarnika” (zastępuje go „Patelnia i garnek”)."] },

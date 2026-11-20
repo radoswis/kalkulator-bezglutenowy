@@ -247,7 +247,13 @@
     { id: "chleb_proteinowy", name: "Chleb proteinowy (ciecierzyca, amarantus, ziarna)", boldByDesign: true, preferFlour: { cie: 0.25, ama: 0.1 }, rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 3, sugar: 1, eggs: 0, unitWeight: 750, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 45 min",
       shapeStep: () => "Wmieszaj w ciasto 80 g ziaren (słonecznik, pestki dyni, siemię). Bez wyrastania w misce przełóż do keksówki wyłożonej papierem i wyrównaj mokrą łyżką. Posyp ziarnami." },
     { id: "bulka_tarta", name: "Chleb na bułkę tartą (domowa bułka tarta)", rheologyClass: "RHEO_FREE_STANDING_LOAF", salt: 2.0, yeastDry: 1.45, fat: 2, sugar: 1, eggs: 0, unitWeight: 700, defaultCount: 1, unit: "bochenek", bakeNote: "220°C 15 min, potem 200°C 40 min",
-      preBake: "Po upieczeniu: wystudź (najlepiej zostaw do następnego dnia), pokrój w kostkę 1 cm i susz w piekarniku w 120°C przez 40–60 minut, mieszając co 15 minut, aż będzie zupełnie sucha. Wystudź i zmiel w blenderze. Z bochenka wychodzi ok. 400 g bułki tartej; przechowuj w słoiku do 2 miesięcy." }
+      preBake: "Po upieczeniu: wystudź (najlepiej zostaw do następnego dnia), pokrój w kostkę 1 cm i susz w piekarniku w 120°C przez 40–60 minut, mieszając co 15 minut, aż będzie zupełnie sucha. Wystudź i zmiel w blenderze. Z bochenka wychodzi ok. 400 g bułki tartej; przechowuj w słoiku do 2 miesięcy." },
+    // ===== v2.20: przepisy dedykowane urządzeniom (pole `device`) =====
+    { id: "paczki_air", device: "air", name: "Pączki z air fryera (pieczone, z nadzieniem)", rheologyClass: "RHEO_ENRICHED_BRIOCHE_FRIED", salt: 1.5, yeastDry: 1.5, fat: 12, sugar: 12, eggs: 20, unitWeight: 50, defaultCount: 12, unit: "pączek", sweet: true,
+      bakeNote: "frytkownica beztłuszczowa, tryb ręczny 170°C, 9–11 min, partiami po 5–6 sztuk",
+      shapeStep: c => `Bez wyrastania w misce podziel ciasto na ${c.pcs} kulek po około ${c.pw} g (mokre dłonie) i ułóż każdą na kwadraciku papieru do pieczenia – łatwiej je potem przenieść do kosza.`,
+      preBake: "Posmaruj kulki roztopionym masłem. Rozgrzej frytkownicę 3 min w trybie ręcznym, włóż partię razem z papierkami (z odstępami, jedna warstwa). Komunikat „Potrząśnij” zignoruj. Gorące pączki posmaruj masłem, obtocz w cukrze i nadziej rękawem konfiturą lub budyniem." }
+
 
 
   ];

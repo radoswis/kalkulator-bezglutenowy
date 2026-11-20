@@ -925,7 +925,82 @@
         `Dodaj mleko (${c.g("milk")}), jajka (${c.g("eggs")}) i olej, wymieszaj na gęste ciasto. Wmieszaj starty ser (${c.g("cheese")}) i drobno pokrojone salami lub szynkę.`,
         `Nakładaj po ok. ${c.pw} g do nagrzanej, natłuszczonej gofrownicy i piecz 5–6 minut.`,
         "Podawaj z sosem pomidorowym do maczania."
+      ] },
+
+    // ===== v2.20: przepisy dedykowane urządzeniom. Frytkownica Tefal Uno M – temperatury i czasy z tabeli produktów w instrukcji (jabłka 170°C 7–8 min po 4 szt., krążki/kalmary 180°C 4–5 min, pieczarki 150°C 6–8 min po 8 szt.) =====
+    { id: "jablka_w_ciescie", device: "fry", name: "Jabłka w cieście (plastry, z frytkownicy)", category: "Pączki i słodkie smażone", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["milk", 110], ["eggs", 50], ["sugar", 10], ["bakingPowder", 2.5], ["salt", 0.4]],
+      unitWeight: 500, defaultCount: 1, unit: "porcja na 4 jabłka", bakeNote: "frytkownica olejowa, 170°C, 7–8 min, po 4 plastry", sweet: true,
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}) z proszkiem, cukrem i solą. Dodaj mleko (${c.g("milk")}) i jajka (${c.g("eggs")}), wymieszaj na gęste, gładkie ciasto. Odstaw na 10 minut.`,
+        "Rozgrzej olej we frytkownicy do 170°C (zgaśnie kontrolka grzania). 4 jabłka obierz, wydrąż gniazda nasienne i pokrój w plastry grubości 1 cm.",
+        "Plastry osusz, obtocz w odrobinie mąki, zanurz w cieście i strzep nadmiar.",
+        "Smaż po 4 plastry, 7–8 minut, w połowie obróć szczypcami, aż będą złote.",
+        "Odsącz na podniesionym koszu i na ręczniku papierowym. Posyp cukrem pudrem z cynamonem."
+      ] },
+    { id: "krazki_cebulowe", device: "fry", name: "Krążki cebulowe w cieście (lub kalmary)", category: "Przekąski i wytrawne", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["iceWater", 115], ["eggs", 15], ["oil", 5], ["bakingPowder", 2.5], ["salt", 2.0]], prefer: { kuk: 0.15 },
+      unitWeight: 450, defaultCount: 1, unit: "porcja na ok. 500 g cebuli", bakeNote: "frytkownica olejowa, 180°C, 4–5 min",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}) z proszkiem i solą. Wlej lodowatą wodę (${c.g("iceWater")}) – może być piwo bezglutenowe – jajko i olej. Wymieszaj krótko, grudki mogą zostać.`,
+        "Rozgrzej olej we frytkownicy do 180°C. 2–3 duże cebule pokrój w plastry 1 cm i rozdziel na krążki (albo 500 g kalmarów w krążki, osuszonych).",
+        "Krążki obtocz w odrobinie mąki, zanurz w cieście, strzep nadmiar.",
+        "Smaż partiami 4–5 minut, aż będą złote i chrupiące. Nie przepełniaj kosza.",
+        "Odsącz, posól od razu. Podawaj z sosem czosnkowym lub ketchupem."
+      ] },
+    { id: "pieczarki_w_ciescie", device: "fry", name: "Pieczarki w cieście", category: "Przekąski i wytrawne", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["iceWater", 110], ["eggs", 20], ["bakingPowder", 2.5], ["salt", 2.0]], prefer: { kuk: 0.15 },
+      unitWeight: 400, defaultCount: 1, unit: "porcja na ok. 24 pieczarki", bakeNote: "frytkownica olejowa, 150°C, 6–8 min, po 8 sztuk",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}) z proszkiem i solą, wlej lodowatą wodę (${c.g("iceWater")}) i jajko. Wymieszaj na gęste ciasto.`,
+        "Rozgrzej olej we frytkownicy do 150°C – niższa temperatura, żeby pieczarki zdążyły się upiec w środku.",
+        "Małe, całe pieczarki oczyść na sucho, obtocz w mące i zanurz w cieście.",
+        "Smaż po 8 sztuk, 6–8 minut, obracając, aż będą złote.",
+        "Odsącz i posól. Podawaj z sosem czosnkowym lub tatarskim."
+      ] },
+    // Air fryer Xiaomi 3,5 l: tryb ręczny (40–200°C); program „Ciasto” nie przypomina o potrząsaniu – w trybie ręcznym zignoruj komunikat.
+    { id: "donuty_air", device: "air", name: "Donuty pieczone (z air fryera, w foremkach)", category: "Pączki i słodkie smażone", rheologyClass: "RHEO_CHEM_LEAVENED_MUFFIN_CHOUX",
+      basis: "flour", components: [["milkOrYogurt", 75], ["eggs", 45], ["oil", 22], ["sugar", 40], ["bakingPowder", 3.0], ["salt", 0.4]],
+      unitWeight: 45, defaultCount: 12, unit: "donut", bakeNote: "frytkownica beztłuszczowa, tryb ręczny 160°C, 9–10 min, partiami", sweet: true,
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}) z proszkiem i solą. W drugiej misce roztrzep jajka (${c.g("eggs")}) z cukrem, jogurtem lub mlekiem (${c.g("milkOrYogurt")}) i olejem.`,
+        "Połącz krótko łyżką. Przełóż do rękawa lub woreczka z odciętym rogiem.",
+        `Wyciśnij ciasto do silikonowych foremek na donuty (do 3/4 wysokości), po ok. ${c.pw} g. Foremki muszą się zmieścić w koszu z odstępem od grzałki.`,
+        "Rozgrzej frytkownicę 3 min w trybie ręcznym 160°C. Piecz partiami 9–10 minut – komunikat „Potrząśnij” zignoruj. Patyczek ma być suchy.",
+        "Wystudź 5 minut w foremkach, wyjmij. Zanurz wierzch w polewie czekoladowej lub lukrze i posyp posypką."
+      ] },
+    // OptiGrill Elite: tryb ręczny (wyświetlacz pokazuje temperaturę), płyty do gofrów i płyty grillowe.
+    { id: "gofry_czekoladowe", device: "opti", optiAcc: "waffle", masked: true, name: "Gofry czekoladowe (z OptiGrilla)", category: "Naleśniki, placki i gofry", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["milk", 120], ["eggs", 50], ["oil", 25], ["sugar", 30], ["cocoa", 12], ["bakingPowder", 2.5], ["salt", 0.4]],
+      unitWeight: 85, defaultCount: 7, unit: "gofr", bakeNote: "OptiGrill, płyty do gofrów, tryb ręczny 200°C, 5–6 min", sweet: true,
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}) z kakao, proszkiem i solą.`,
+        `Dodaj mleko (${c.g("milk")}), jajka (${c.g("eggs")}), olej i cukier. Wymieszaj na gładkie, gęste ciasto. Odstaw na 10 minut.`,
+        "Załóż płyty do gofrów, zamknij OptiGrill, wybierz tryb ręczny i ustaw 200°C. Poczekaj na sygnał końca nagrzewania.",
+        `Wlej ok. ${c.pw} g ciasta (do połowy wysokości wgłębień), zamknij i piecz 5–6 minut, nie otwierając przez pierwsze 4.`,
+        "Podawaj z owocami, bitą śmietaną albo lodami."
+      ] },
+    { id: "gofry_kukurydziane", device: "opti", optiAcc: "waffle", name: "Gofry kukurydziane z serem (wytrawne)", category: "Naleśniki, placki i gofry", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
+      basis: "flour", components: [["milk", 110], ["eggs", 50], ["oil", 25], ["cheese", 40], ["bakingPowder", 3.0], ["salt", 1.0]], prefer: { kuk: 0.5 },
+      unitWeight: 85, defaultCount: 7, unit: "gofr", bakeNote: "OptiGrill, płyty do gofrów, tryb ręczny 200°C, 6–7 min",
+      steps: c => [
+        `Wymieszaj mąki (${c.flour}) – najlepiej z mąką kukurydzianą – z proszkiem i solą.`,
+        `Dodaj mleko (${c.g("milk")}), jajka (${c.g("eggs")}) i olej, wymieszaj. Wmieszaj starty ser (${c.g("cheese")}), szczypiorek i 2 łyżki kukurydzy z puszki.`,
+        "Załóż płyty do gofrów, w trybie ręcznym ustaw 200°C i poczekaj na sygnał nagrzania.",
+        `Nakładaj po ok. ${c.pw} g i piecz 6–7 minut, aż będą złote.`,
+        "Podawaj do chili, gulaszu albo z jajkiem sadzonym i awokado."
+      ] },
+    { id: "arepy", device: "opti", optiAcc: "plate", name: "Arepy (placki kukurydziane do nadziewania)", category: "Pizza, placki i chlebki płaskie", rheologyClass: "RHEO_SCALDED_BOILED_DOUGH",
+      basis: "flour", components: [["hotWater", 95], ["oil", 5], ["psy", 0.8], ["salt", 1.5]], prefer: { kuk: 0.7 },
+      unitWeight: 90, defaultCount: 6, unit: "arepa", bakeNote: "OptiGrill, płyty grillowe, tryb ręczny 200°C, 8–10 min",
+      steps: c => [
+        `Mąki (${c.flour}) – głównie kukurydzianą – wymieszaj z psyllium i solą. Zalej gorącą wodą (${c.g("hotWater")}), dodaj olej, wymieszaj i odstaw na 10 minut.`,
+        `Zagnieć gładkie ciasto (jeśli pęka, dodaj łyżkę wody). Podziel na ${c.pcs} kulek po ok. ${c.pw} g i spłaszcz na placki grubości 1,5 cm.`,
+        "Na płytach grillowych w trybie ręcznym ustaw 200°C i poczekaj na sygnał nagrzania. Posmaruj płyty odrobiną oleju.",
+        "Połóż arepy, zamknij grill i piecz 8–10 minut, aż będą złote z obu stron, a postukane brzmią głucho.",
+        "Natnij z boku jak bułkę i nadziej: ser, awokado, fasola, szarpana wieprzowina."
       ] }
+
 
 
   ];
@@ -948,7 +1023,7 @@
   const CAT_BY_ID = { calzone: 2, langosz: 2, paszteciki: 10, pierogi_drozdzowe: 5, grissini: 10, precle: 10, bajgle: 1,
     paczki: 7, oponki: 7, faworki: 7, paczki_serowe: 7, bomboloni: 7, quiche: 10, tarta: 9, szarlotka: 9, tempura: 11, bulka_tarta: 11,
     croissant: 4, rogale_marcinskie: 4, bao: 1, pampuchy: 5, pinsa: 2, panzerotti: 2, paska: 3, pizzerinki: 10, chleb_proteinowy: 0,
-    bulki_czosnkowe: 1, biszkopty_tiramisu: 8, cebularze: 1, tortilla: 2, krakersy: 10 };
+    bulki_czosnkowe: 1, biszkopty_tiramisu: 8, cebularze: 1, tortilla: 2, krakersy: 10, paczki_air: 7 };
   /** Kategorie wypieków drożdżowych */
   const YEAST_CATEGORY = {
     pizza_neapol: 0, pizza_blacha: 0, pizza_patelnia: 0, focaccia: 0, pita: 0, naan: 0, langosz: 0,
