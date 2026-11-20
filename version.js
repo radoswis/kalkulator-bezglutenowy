@@ -1,6 +1,9 @@
 /* Wersja aplikacji i lista zmian – JEDNO źródło. Ładowane przez stronę i przez sw.js (nazwa pamięci offline).
    Przy każdym wdrożeniu: dopisz wpis NA GÓRZE i podbij numer. */
 self.APP_CHANGELOG = [
+  { v: "2.19.0", d: "20.11.2026", t: ["Na ekranie Start nowy wybór „Na czym dziś?”: Uniwersalnie (wszystkie przepisy bez zmian), Gorenje, Air fryer, OptiGrill, Frytkownica, Patelnia i garnek – z liczbą przepisów.",
+    "Wybrane urządzenie filtruje wyszukiwarkę, tematy i rodzaje wypieków; przepisy „da się, ale…” są w osobnej, zwiniętej grupie. Przepis otwiera się od razu z ustawieniami pod to urządzenie.",
+    "W przepisie „Zrób w innym urządzeniu” pokazuje tylko urządzenia, w których przepis wychodzi. Wybór jest zapamiętany na tym telefonie (nie zmienia się innym domownikom). Usunięta zakładka „Sprzęt” i temat „Bez piekarnika” (zastępuje go „Patelnia i garnek”)."] },
   { v: "2.18.0", d: "20.11.2026", t: ["Nowa zakładka „Sprzęt”: zaznacz urządzenia domu – Gorenje, frytkownica beztłuszczowa Xiaomi 3,5 l, Tefal OptiGrill Elite (płyty grillowe, do gofrów, brytfanka), frytkownica olejowa Tefal Uno M.",
     "W przepisie „Czym robisz?”: wybór urządzenia z oznaczeniem, czy przepis się nadaje („da się, ale…”, „nie do tego” z wyjaśnieniem). Karta z ustawieniami pod wybrane urządzenie: tryb, temperatura, czas, akcesorium, wielkość partii.",
     "Air fryer: temperatura o 20°C niższa, czas o ok. 25% krótszy, wskazówki do foremek i porcji. OptiGrill: tryb ręczny, płyty do placków i gofrów, brytfanka do płaskich ciast. Frytkownica: termostat 150–190°C, partie po 3–4 sztuki."] },
