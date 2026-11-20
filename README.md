@@ -1,6 +1,13 @@
 # Kalkulator ciast bezglutenowych
 
-Liczy proporcje 61 bezglutenowych przepisów: ciasta drożdżowe, pierogi i kluski, naleśniki i panierki, kruche, biszkopty i desery. Sam dobiera mieszankę z mąk, które masz w spiżarni, i podaje instrukcję krok po kroku.
+Liczy proporcje ponad 130 bezglutenowych przepisów (obecnie 137: 52 drożdżowe i 85 bezdrożdżowych) w 12 kategoriach: chleby, bułki, pizza i chlebki płaskie, słodkie drożdżowe, ciasto francuskie i rogale, pierogi, kluski i makarony, naleśniki, placki i gofry, pączki i słodkie smażone, ciastka i kruche, ciasta, torty i desery, przekąski wytrawne oraz panierki, sosy i dodatki. Sam dobiera mieszankę z mąk, które masz w spiżarni, i podaje instrukcję krok po kroku.
+
+Co jeszcze potrafi:
+- wartości odżywcze ciasta (100 g, 1 sztuka, całość),
+- tryb „Gotuj krok po kroku” z minutnikami,
+- ustawienia dla urządzeń: piekarnik Gorenje, air fryer, OptiGrill, frytkownica, kuchenka, robot Bosch MUM5,
+- spiżarnia wspólna dla domu, wyszukiwanie mąk w Open Food Facts, skaner kodu kreskowego i zdjęcie etykiety,
+- ocena „Jak wyszło?”, która poprawia przepis przy następnym razie.
 
 Pliki: `index.html` (interfejs), `engine.js` (silnik drożdżowy), `pastry.js` (wyroby bezdrożdżowe).
 
