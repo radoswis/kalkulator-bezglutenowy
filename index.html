@@ -81,6 +81,7 @@ details .inner{display:grid;gap:10px;margin-top:12px}
 .timer{display:flex;align-items:center;gap:12px;justify-content:space-between;background:var(--accent-soft);border-radius:10px;padding:10px 14px}
 .timer b{font-family:var(--mono);font-size:1.4rem;color:var(--accent)}
 .timer.done{background:var(--warn-soft)}.timer.done b{color:var(--warn)}
+.pushst{font-size:.85rem;opacity:.85;padding:2px 4px}.pushst.bad{color:var(--warn);opacity:1}
 .timerbadge{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--bg);border-top:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-left,0px)) max(10px,env(safe-area-inset-bottom,0px));max-width:none}
 #installBtn{margin-top:10px}
 .fb{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px;font-size:.95rem}
@@ -941,7 +942,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-fry],[data
 function renderTimers(){const now=Date.now();fryTick(now);
  for(const t of timers)if(!t.done&&t.end<=now){t.done=true;beep()}
  const html=timers.map((t,i)=>`<div class="timer${t.done?" done":""}"><span>${t.label}</span><b>${t.done?(now-t.end>90000?"Gotowe o "+new Date(t.end).toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"}):"Gotowe!"):fmtT(Math.ceil((t.end-now)/1000))}</b><button type="button" class="linkbtn" data-timerdel="${i}">${t.done?"OK":"Anuluj"}</button></div>`).join("");
- const all=fryHtml(now)+html;$("cookTimers").innerHTML=all;$("timerBadge").innerHTML=all;$("timerBadge").hidden=!all||!$("cook").hidden}
+ const all=fryHtml(now)+html+(fryHtml(now)+html?pushHtml():"");$("cookTimers").innerHTML=all;$("timerBadge").innerHTML=all;$("timerBadge").hidden=!all||!$("cook").hidden}
 setInterval(()=>{if(timers.length||fry)renderTimers()},1000);
 // ===== Minutniki przy zamkniętej aplikacji (v2.26) =====
 // 1) Minutnik to godzina końca, zapisana od razu w osobnym kluczu – po zamknięciu i ponownym otwarciu liczy się dalej.
@@ -950,16 +951,20 @@ const TIMER_KEY="gf_timers_v1";
 function saveTimers(){try{localStorage.setItem(TIMER_KEY,JSON.stringify({timers,fry}))}catch(e){}}
 (function restoreTimers(){let u;try{u=JSON.parse(localStorage.getItem(TIMER_KEY)||"null")}catch(e){}
  if(!u)return;(u.timers||[]).forEach(t=>{if(!t.id)t.id="t"+t.end;if(!timers.some(x=>x.id===t.id))timers.push(t)});if(u.fry&&!fry)fry=u.fry})();
-let pushSub=null,pushOff=false,pushSent=null;
+let pushSub=null,pushOff=false,pushSent=null,pushState=""; // ok | denied | server | unsupported | offline
+const PUSH_TXT={ok:["Powiadomienie przyjdzie także przy zamkniętej aplikacji.",0],denied:["Powiadomienia są zablokowane w telefonie: przy zamkniętej aplikacji minutnik nie zadzwoni. Zezwól na nie w ustawieniach strony.",1],
+ server:["Powiadomienia przy zamkniętej aplikacji nie są włączone na serwerze. Zostaw aplikację otwartą.",1],unsupported:["Ta przeglądarka nie obsługuje powiadomień: zostaw aplikację otwartą.",1],offline:["Brak internetu: powiadomienie przy zamkniętej aplikacji nie przyjdzie. Zostaw aplikację otwartą.",1]};
+const pushHtml=()=>{const p=PUSH_TXT[pushState];return p&&(timers.some(t=>!t.done)||fry)?`<div class="pushst${p[1]?" bad":""}">${p[0]}</div>`:""};
 const b64uBytes=s=>{const b=atob(s.replace(/-/g,"+").replace(/_/g,"/")+"==".slice(0,(4-s.length%4)%4));return Uint8Array.from(b,c=>c.charCodeAt(0))};
 async function pushEnsure(){if(pushSub||pushOff)return pushSub;
- if(!swReg||!("PushManager" in window)||!("Notification" in window)){pushOff=true;return null}
+ const off=st=>{pushOff=true;pushState=st;return null};
+ if(!swReg||!("PushManager" in window)||!("Notification" in window))return off("unsupported");
  try{if(Notification.permission==="default")await Notification.requestPermission();
-  if(Notification.permission!=="granted"){pushOff=true;return null}
+  if(Notification.permission!=="granted")return off("denied");
   pushSub=await swReg.pushManager.getSubscription();
-  if(!pushSub){const r=await fetch("/api/timers/key",{headers:apiHeaders()});const j=await r.json().catch(()=>({}));if(!r.ok||!j.key){pushOff=true;return null}
+  if(!pushSub){const r=await fetch("/api/timers/key",{headers:apiHeaders()});const j=await r.json().catch(()=>({}));if(!r.ok||!j.key)return off("server");
    pushSub=await swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uBytes(j.key)})}}
- catch(e){pushOff=true;return null}
+ catch(e){return off(navigator.onLine===false?"offline":"unsupported")}
  return pushSub}
 // Lista do powiadomień: minutniki i bieżąca faza smażenia, które jeszcze się nie skończyły (z opisem do treści powiadomienia)
 function pushList(){const now=Date.now(),l=timers.filter(t=>!t.done&&t.end>now).map(t=>({id:t.id,end:t.end,label:t.label}));
@@ -968,8 +973,13 @@ function pushList(){const now=Date.now(),l=timers.filter(t=>!t.done&&t.end>now).
 async function timersChanged(){saveTimers();const l=pushList(),sig=JSON.stringify(l);if(sig===pushSent)return;pushSent=sig;
  try{navigator.serviceWorker&&navigator.serviceWorker.controller&&navigator.serviceWorker.controller.postMessage({timers:l})}catch(e){}
  const sub=l.length?await pushEnsure():pushSub; // o zgodę pytamy dopiero przy pierwszym minutniku
- if(!sub)return;
- try{await fetch("/api/timers",{method:"PUT",headers:apiHeaders({"content-type":"application/json"}),body:JSON.stringify({sub:sub.toJSON(),timers:l.map(({id,end})=>({id,end}))})})}catch(e){pushSent=null}}
+ if(!sub){renderTimers();return}
+ try{const r=await fetch("/api/timers",{method:"PUT",headers:apiHeaders({"content-type":"application/json"}),body:JSON.stringify({sub:sub.toJSON(),timers:l.map(({id,end})=>({id,end}))})});
+  pushState=r.ok?"ok":r.status===503?"server":"offline";if(!r.ok)pushSent=null}
+ catch(e){pushSent=null;pushState="offline"}
+ renderTimers()}
+// Po powrocie do aplikacji: spróbuj jeszcze raz, jeśli powiadomienia wcześniej nie zadziałały (np. włączono je na serwerze lub w telefonie)
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState!=="visible"||pushState==="ok"||!(timers.length||fry))return;pushOff=false;pushSub=null;pushSent=null;timersChanged()});
 document.addEventListener("click",e=>{const t=e.target;
  if(t.closest("[data-cook]")){openCook();renderTimers()}
  else if(t.closest("[data-cookclose]")){closeCook();renderTimers()}
