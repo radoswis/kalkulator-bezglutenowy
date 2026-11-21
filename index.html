@@ -178,6 +178,7 @@ summary{min-height:28px}
 .timerbadge{border-radius:24px 24px 0 0;box-shadow:0 -6px 24px #0002}
 .fry{border-radius:18px}
 .fbq .seg{background:transparent;padding:0}
+.fbchips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.fbchips button[data-fbq]{min-height:44px;padding:8px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:.92rem;cursor:pointer}.fbchips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
 .fbq .seg button{border-radius:14px;border-width:1.5px}
 .fbq .seg button[aria-pressed="true"]{box-shadow:none}
 .stars button{color:var(--gold)}
@@ -592,9 +593,10 @@ function renderPantry(){const g=[["Gotowe mieszanki",f=>f.role==="commercial_bas
  $("flours").innerHTML=g.map(([n,fn])=>`<div class="group">${n}</div><div class="chips${n==="Gotowe mieszanki"?" mixes":""}">${all().filter(fn).map(chip).join("")}</div>`).join("");
  $("addons").innerHTML=all().filter(f=>f.role==="hydrocolloid").map(chip).join("")}
 document.addEventListener("click",e=>{const fq=e.target.closest("[data-fbq]");
- if(fq){const k=fq.dataset.fbq,v=fq.dataset.fba;if(v&&fbSel[k]!==v)fbSel[k]=v;else delete fbSel[k];refreshFb();return}
+ if(fq){const k=fq.dataset.fbq;fbSel.has(k)?fbSel.delete(k):fbSel.add(k);refreshFb();return}
+ if(e.target.closest("[data-fbmore]")){fbMore=!fbMore;refreshFb();return}
  const fs=e.target.closest("[data-fbstar]");if(fs){const v=+fs.dataset.fbstar;fbStars=fbStars===v?0:v;refreshFb();return}
- if(e.target.closest("[data-fbclear]")){fbSel={};fbStars=0;refreshFb();return}
+ if(e.target.closest("[data-fbclear]")){fbSel=new Set();fbStars=0;refreshFb();return}
  if(e.target.closest("[data-fbsave]")){applyFeedback($("bake").value,fbSel,fbStars);return}
  const rs=e.target.closest("[data-fbreset]");if(rs){delete calib[$("bake").value];syncTex();save();calc();return}
  const pk=e.target.closest("[data-pick]");if(pk){pickBake(pk.dataset.pick);return}
@@ -642,7 +644,7 @@ function simHtml(id,fam){const v=SIMILAR[id];if(!v)return"";const [p,n]=v;
   (fam==="yeast"?`<div>Najlepsze w dniu pieczenia; następnego dnia odśwież w piekarniku (bezglutenowe szybciej czerstwieje).</div>`:"")}
 function calc(){syncTex();
  const bakeId=$("bake").value,b=BAKES.find(x=>x.id===bakeId);
- const cb=calib[b.id]||{};const op=GFEngine.ovenPlan&&b.family==="yeast"?GFEngine.ovenPlan(b,cb):null;if(op)b.bakeNote=gorNote(op.note,b);
+ const cb=calFor(b.id);const op=GFEngine.ovenPlan&&b.family==="yeast"?GFEngine.ovenPlan(b,cb):null;if(op)b.bakeNote=gorNote(op.note,b);
  $("simInfo").innerHTML=simHtml(b.id,b.family);
  $("bakeInfo").textContent=`Rodzaj: ${CLS[b.rheologyClass].label} · Domyślnie ${b.defaultCount} × ${b.unitWeight} g (${b.unit}) · ${b.bakeNote}`;
  const D=mode==="pcs"?(+$("count").value||0)*(+$("portion").value||0):(+$("grams").value||0);
@@ -718,53 +720,82 @@ function idealHtml(bakeId){
  <button type="button" class="btn ghost" data-add="${s.missing.map(i=>i.id).join(",")}">Kupiłem, dodaj do spiżarni</button></div>`;
 }
 
-// ===== „Jak wyszło?” – ankieta: każde pytanie 3 odpowiedzi (za mało / dobrze / za dużo), wypełniasz tylko to, co nie wyszło =====
-// Efekty: water (pkt % płynu), psy/salt/yeast/proof/time (% zmiany), temp (°C), taste (poziom), tex.{chew,soft,short,grit} (przesunięcie wzorca tekstury)
-const FBQ=[
- {q:"mid",t:"Miąższ, środek",o:[["dry","Suchy, kruszy się",{water:3}],["wet","Kleisty, mokry",{water:-2,time:8}]]},
- {q:"tex",t:"Konsystencja",o:[["gum","Gumowata, ciągnie się",{tex:{chew:-0.1,soft:0.05}}],["crumb","Rozsypuje się",{tex:{chew:0.1,short:-0.1},psy:10}]]},
- {q:"hard",t:"Twardość",o:[["hard","Za twarde, zbite",{water:2,tex:{soft:0.1}}],["soft","Za miękkie, rozpływa się",{water:-2,tex:{soft:-0.05}}]]},
- {q:"rise",t:"Wyrośnięcie",y:1,o:[["flat","Płaskie, za mało",{yeast:10,proof:15,water:-1}],["over","Przerosło, opadło",{yeast:-10,proof:-15}]]},
- {q:"shape",t:"Formowanie",o:[["sticky","Kleiło się do rąk",{water:-1.5}],["crack","Pękało, rwało się",{water:2,psy:10}]]},
- {q:"crust",t:"Kolor wierzchu",o:[["pale","Blady",{temp:10}],["dark","Za ciemny, przypalony",{temp:-10,time:10}]]},
- {q:"bake",t:"Upieczenie środka",o:[["raw","Niedopieczony",{time:10}],["over","Przesuszony",{time:-10}]]},
- {q:"salt",t:"Słoność",o:[["bland","Mdłe",{salt:15}],["salty","Za słone",{salt:-15}]]},
- {q:"taste",t:"Smak mąk",o:[["flour","Czuć posmak mąki",{taste:1}],["grit","Piasek w zębach",{tex:{grit:1}}]]},
- {q:"day2",t:"Następnego dnia",o:[["stale","Czerstwe, twarde",{water:1.5,tex:{soft:0.05}}]]}];
+// ===== „Jak wyszło?” (v2.27) – lista do zaznaczenia dobrana do przepisu i urządzenia; zaznaczasz tylko to, co nie wyszło =====
+// Efekty: water (pkt % płynu), psy/salt/yeast/proof/time (% zmiany), temp (°C), taste (poziom), tex.{chew,soft,short,grit}
+// temp/time zapisują się osobno dla urządzenia: piekarnik (uni/Gorenje/kuchenka) albo air / opti / fry
+const FBI={
+ mid_dry:["Suchy, kruszący się miąższ",{water:3}],mid_wet:["Kleisty, mokry środek",{water:-2,time:8}],
+ gum:["Gumowate, ciągnie się",{tex:{chew:-0.1,soft:0.05}}],crumbly:["Rozsypuje się",{tex:{chew:0.1,short:-0.1},psy:10}],
+ flat:["Za mało wyrosło",{yeast:10,proof:15,water:-1}],over:["Przerosło, opadło",{yeast:-10,proof:-15}],
+ sticky:["Kleiło się do rąk",{water:-1.5}],crack:["Pękało, rwało się przy formowaniu",{water:2,psy:10}],
+ pale:["Blady wierzch",{temp:10}],dark:["Za ciemne, przypalone",{temp:-10,time:10}],raw:["Niedopieczony środek",{time:10}],
+ hardcrust:["Za twarda skórka",{time:-8}],stale:["Czerstwe następnego dnia",{water:1.5,tex:{soft:0.05}}],
+ soggy:["Miękki, blady spód",{temp:10,time:5}],flatbread:["Placki twarde, nie wydęły się",{water:2,temp:10}],
+ butter:["Masło wyciekło przy pieczeniu",{proof:10}],
+ bland:["Mdłe, za mało soli",{salt:15}],salty:["Za słone",{salt:-15}],flour:["Czuć posmak mąki",{taste:1}],grit:["Piasek w zębach",{tex:{grit:1}}],
+ sh_crumb:["Kruszy się, rozpada",{water:2,psy:10,tex:{short:-0.1}}],sh_hard:["Twarde, zbite",{water:-1,tex:{short:0.1}}],
+ sh_spread:["Rozlało się w piekarniku",{water:-2}],sh_tear:["Rwało się przy wałkowaniu",{water:2}],sh_stick:["Kleiło się przy wałkowaniu",{water:-1.5}],
+ ch_dry:["Suche",{water:3}],ch_wet:["Zakalec, kleisty środek",{water:-2,time:10}],ch_sink:["Opadło po upieczeniu",{time:10}],ch_crack:["Mocno popękany wierzch",{temp:-10}],
+ fo_sink:["Opadł po upieczeniu",{time:10,temp:-5}],fo_dry:["Suchy",{time:-10}],fo_dense:["Zbity, niski",{tex:{soft:0.1}}],fo_roll:["Pękał przy zwijaniu",{time:-10}],
+ sc_tear:["Rwie się przy lepieniu lub wałkowaniu",{water:2,psy:10}],sc_boil:["Rozkleja się w wodzie",{psy:10}],sc_hard:["Twarde po ugotowaniu",{water:2}],
+ sc_wrap:["Pęka przy zwijaniu",{water:2,psy:10}],sc_stiff:["Twarde placki",{water:2}],
+ cp_fall:["Rozpada się w wodzie",{psy:10,water:-2}],cp_pan:["Rozpada się na patelni",{psy:10}],cp_dense:["Twarde, zbite",{water:2}],
+ ba_tear:["Rwą się",{psy:10,water:-1}],ba_thick:["Za gęste ciasto",{water:3}],ba_thin:["Za rzadkie ciasto",{water:-3}],ba_stick:["Przywierają",{temp:10}],
+ ba_soft:["Miękkie, nie chrupiące",{water:-2,time:15}],ba_off:["Panierka odpada",{water:-2}],
+ oily:["Nasiąkło tłuszczem",{temp:10}],rawin:["Surowe w środku, z wierzchu gotowe",{temp:-10,time:15}],fdark:["Za ciemne z zewnątrz",{temp:-10}],
+ outraw:["Przypieczone z wierzchu, surowe w środku",{temp:-10,time:15}],dried:["Wysuszone",{time:-10}]};
+const FB_BOIL=/pierog|uszk|knedl|kopytk|kluski|gnocchi|pyzy|leniwe|makaron|nokedl|spaetzl|kopytka/;
+const FB_FRYPAN=/placki|racuch|pancake|nalesnik|tortill|arep|langosz/;
+function fbItems(b){const c=b.rheologyClass||"",id=b.id,dev=curDev,L=[];const add=(...k)=>k.forEach(x=>{if(!L.includes(x))L.push(x)});
+ const fried=dev==="fry"||b.device==="fry"||/paczk|bombolon|oponk|faworki|roze_|churros|panzerotti|langosz|tempura|krazki|w_ciescie/.test(id);
+ if(b.family==="yeast"){add("mid_dry","mid_wet","flat","over","sticky");
+  if(/pizza|pinsa|focaccia|langosz|pizzerinki/.test(id))add("soggy");if(/pita|naan|placki|podplomyk|bao/.test(id))add("flatbread");
+  if(b.laminate)add("butter");add("gum","crack");if(!fried)add("pale","dark","raw","hardcrust");add("stale")}
+ else if(/SHORTCRUST/.test(c))add("sh_crumb","sh_hard","sh_spread","sh_tear","sh_stick","pale","dark","raw");
+ else if(/FOAM/.test(c))add("fo_sink","fo_dry","fo_dense",/rolad/.test(id)?"fo_roll":"gum","pale","dark","raw");
+ else if(/SCALDED/.test(c))FB_BOIL.test(id)?add("sc_tear","sticky","sc_boil","sc_hard","gum"):add("sc_wrap","sc_stiff","sticky","crumbly","pale","dark");
+ else if(/CURD_POTATO/.test(c))FB_BOIL.test(id)?add("cp_fall","sticky","cp_dense","gum"):add("cp_pan","sticky","cp_dense","raw","dark");
+ else if(/BATTER/.test(c)){add("ba_tear","ba_thick","ba_thin");if(/gofr/.test(id))add("ba_soft","ba_stick");else if(/panierk|tempur|krazki|w_ciescie/.test(id))add("ba_off");else add("ba_stick","gum")}
+ else add("ch_dry","ch_wet","ch_sink","ch_crack","gum","pale","dark","raw");
+ const dv=fried?["oily","rawin","fdark"]:dev==="air"||dev==="opti"?(L.some(x=>/_dry$|^fo_dry/.test(x))?["outraw"]:["outraw","dried"]):[];dv.forEach(x=>{const j=L.indexOf(x);if(j>=0)L.splice(j,1)});L.splice(3,0,...dv);
+ if(!b.sweet)add("bland","salty");add("flour","grit");if(b.family!=="yeast"&&!fried&&!/CURD_POTATO|SCALDED|BATTER/.test(c))add("stale");
+ return L}
 const CAP={water:10,yeast:30,temp:30,time:40,taste:3,psy:30,salt:30,proof:40},TEX_CAP={chew:0.3,soft:0.3,short:0.3,grit:3};
-let fbSel={},fbStars=0;
+let fbSel=new Set(),fbStars=0,fbMore=false;
 const FB_OLD={suche:"Za suche",kleiste:"Kleiste",plaskie:"Płaskie",przypieczone:"Za mocno przypieczone",niedopieczone:"Niedopieczone",smak:"Smak nie jak pszenny",idealne:"Wyszło idealnie"};
-function fbQs(b){return FBQ.filter(x=>!x.y||b.family==="yeast")}
-function applyFeedback(id,sel,stars){const c=calib[id]||{water:0,yeast:0,temp:0,time:0,log:[]};const picked=[];
- for(const [q,v] of Object.entries(sel)){const Q=FBQ.find(x=>x.q===q),o=Q&&Q.o.find(x=>x[0]===v);if(!o)continue;picked.push(o[1]);const r=o[2];
+const DEV_ADJ=()=>["air","opti","fry"].includes(curDev)?curDev:"oven";
+function calFor(id){const c=calib[id]||{},k=DEV_ADJ();if(k==="oven")return c;const d=(c.devAdj||{})[k]||{};return Object.assign({},c,{temp:d.temp||0,time:d.time||0})}
+function applyFeedback(id,sel,stars){const c=calib[id]||{water:0,yeast:0,temp:0,time:0,log:[]};const picked=[],dk=DEV_ADJ();
+ for(const key of sel){const it=FBI[key];if(!it)continue;picked.push(it[0]);const r=it[1];
   if(r.taste&&prefs.taste!=="wheat")prefs.taste="wheat";
-  c.dir=c.dir||{};
-  for(const k in CAP)if(r[k]){const sg=Math.sign(r[k]),step=c.dir[k]&&c.dir[k]!==sg?r[k]/2:r[k];c.dir[k]=sg; // zmiana kierunku = mniejszy krok, przepis się ustala zamiast skakać
-   c[k]=Math.round(Math.max(-CAP[k],Math.min(CAP[k],(c[k]||0)+step))*10)/10}
+  for(const k in CAP)if(r[k]){const tgt=(k==="temp"||k==="time")&&dk!=="oven"?((c.devAdj=c.devAdj||{})[dk]=c.devAdj[dk]||{}):c;tgt.dir=tgt.dir||{};
+   const sg=Math.sign(r[k]),step=tgt.dir[k]&&tgt.dir[k]!==sg?r[k]/2:r[k];tgt.dir[k]=sg; // zmiana kierunku = mniejszy krok
+   tgt[k]=Math.round(Math.max(-CAP[k],Math.min(CAP[k],(tgt[k]||0)+step))*10)/10}
   if(r.tex){c.tex=c.tex||{};for(const k in r.tex)c.tex[k]=Math.round(Math.max(-TEX_CAP[k],Math.min(TEX_CAP[k],(c.tex[k]||0)+r.tex[k]))*100)/100}}
- c.log=(c.log||[]).concat({d:new Date().toISOString().slice(0,10),v:picked.length?picked.join(", "):"Wyszło idealnie",s:stars||0}).slice(-20);
- calib[id]=c;fbSel={};fbStars=0;syncTex();save();calc()}
+ c.log=(c.log||[]).concat({d:new Date().toISOString().slice(0,10),v:picked.length?picked.join(", "):"Wyszło idealnie",s:stars||0,dev:curDev,mum:useMum?1:0}).slice(-20);
+ calib[id]=c;fbSel=new Set();fbStars=0;fbMore=false;syncTex();save();calc()}
 function refreshFb(){const box=document.querySelector("#out .fb"),b=BAKES.find(x=>x.id===$("bake").value);if(box&&b)box.outerHTML=fbHtml(b)}
 function syncTex(){const m={};for(const id in calib)if(calib[id].tex)m[id]=calib[id].tex;GFEngine.setTexAdj(m)}
-function fbHtml(b){const c=calib[b.id],parts=[];
+function fbHtml(b){const c=calib[b.id]?calFor(b.id):null,parts=[],dn=DEV_ADJ()==="oven"?"":` (${DEVS[curDev].short})`;
  if(c){if(c.taste)parts.push(`mąki o bardziej neutralnym smaku (poziom ${c.taste} z 3)`);if(c.water)parts.push(`${c.water>0?"więcej":"mniej"} płynu (${c.water>0?"+":""}${c.water} pkt %)`);
   if(c.yeast)parts.push(`drożdży ${c.yeast>0?"+":""}${c.yeast}%`);if(c.proof)parts.push(`wyrastanie ${c.proof>0?"dłużej":"krócej"} o ${Math.abs(c.proof)}%`);
   if(c.psy)parts.push(`psyllium ${c.psy>0?"+":""}${c.psy}%`);if(c.salt)parts.push(`sól ${c.salt>0?"+":""}${c.salt}%`);
-  if(c.temp)parts.push(`temperatura ${c.temp>0?"+":""}${c.temp}°C`);if(c.time)parts.push(`czas ${c.time>0?"+":""}${c.time}%`);
+  if(c.temp)parts.push(`temperatura${dn} ${c.temp>0?"+":""}${c.temp}°C`);if(c.time)parts.push(`czas${dn} ${c.time>0?"+":""}${c.time}%`);
   const t=c.tex||{};if(t.chew)parts.push(t.chew>0?"mieszanka bardziej ciągliwa":"mieszanka mniej gumowata");if(t.soft)parts.push(t.soft>0?"mieszanka bardziej miękka":"mieszanka bardziej zwarta");
   if(t.short)parts.push(t.short>0?"mieszanka bardziej krucha":"mieszanka mniej krucha");if(t.grit)parts.push("mniej mąk dających piasek")}
  const logs=c&&c.log?c.log:[],last=logs.length?logs[logs.length-1]:null,st=logs.filter(l=>l.s),avg=st.length?st.reduce((a,l)=>a+l.s,0)/st.length:0;
  const autoOven=b.family==="yeast"&&GFEngine.ovenPlan(b)?.temp;
  const pastryOven=!autoOven&&c&&(c.temp||c.time)?`<div>Przy pieczeniu lub smażeniu: ${c.temp?`temperatura o ${Math.abs(c.temp)}°C ${c.temp<0?"niższa (albo mniejszy ogień)":"wyższa"}`:""}${c.temp&&c.time?" i ":""}${c.time?`piecz o ${Math.abs(c.time)}% ${c.time>0?"dłużej":"krócej"}`:""} niż w krokach.</div>`:"";
- const qs=fbQs(b).map(Q=>`<div class="fbq"><span>${Q.t}</span><div class="seg" role="group" aria-label="${Q.t}">${Q.o.length===1?"":`<button type="button" data-fbq="${Q.q}" data-fba="${Q.o[0][0]}" aria-pressed="${fbSel[Q.q]===Q.o[0][0]}">${Q.o[0][1]}</button>`}<button type="button" data-fbq="${Q.q}" data-fba="" aria-pressed="${!fbSel[Q.q]}">Dobrze</button>${Q.o.slice(Q.o.length===1?0:1).map(o=>`<button type="button" data-fbq="${Q.q}" data-fba="${o[0]}" aria-pressed="${fbSel[Q.q]===o[0]}">${o[1]}</button>`).join("")}</div></div>`).join("");
- const n=Object.keys(fbSel).length;
- return `<div class="fb"><b>Jak wyszło?</b> Zaznacz tylko to, co nie wyszło, i zapisz. Przy następnym razie przepis sam się poprawi.
+ const items=fbItems(b),SHOW=6,vis=fbMore?items:items.slice(0,SHOW).concat(items.slice(SHOW).filter(k=>fbSel.has(k)));
+ const qs=`<div class="fbchips" role="group" aria-label="Co nie wyszło">${vis.map(k=>`<button type="button" data-fbq="${k}" aria-pressed="${fbSel.has(k)}">${fbSel.has(k)?"✓ ":""}${FBI[k][0]}</button>`).join("")}${items.length>SHOW?`<button type="button" class="linkbtn" data-fbmore>${fbMore?"Mniej":`Więcej (${items.length-vis.length})`}</button>`:""}</div>`;
+ const n=fbSel.size;
+ return `<div class="fb"><b>Jak wyszło?</b> Zaznacz tylko to, co nie wyszło – reszty nie oceniasz. Przy następnym razie przepis sam się poprawi.
  <div class="fbqs">${qs}</div>
  <div class="fbq"><span>Ogólnie</span><div class="stars" role="group" aria-label="Ocena ogólna">${[1,2,3,4,5].map(i=>`<button type="button" data-fbstar="${i}" aria-label="${i} z 5" aria-pressed="${fbStars===i}">${i<=fbStars?"★":"☆"}</button>`).join("")}</div></div>
  <div class="fbact"><button type="button" class="btn" data-fbsave>${n?`Zapisz ocenę (${n})`:"Wyszło idealnie – zapisz"}</button>${n?`<button type="button" class="linkbtn" data-fbclear>Wyczyść zaznaczenia</button>`:""}</div>
  ${parts.length?`<div>Twoje korekty w tym przepisie: ${parts.join(", ")}. <button type="button" class="linkbtn" data-fbreset="1">Wyzeruj</button></div>`:""}
  ${c&&c.taste&&b.family==="yeast"&&prefs.proof!=="cold"?`<div>Spróbuj też wyrastania w lodówce przez noc: to najmocniej poprawia smak.</div>`:""}${pastryOven}
- ${last?`<div class="msg">Ostatnia ocena (${last.d}): ${FB_OLD[last.v]||last.v}${last.s?` · ${"★".repeat(last.s)}`:""}${st.length>1?` · średnia ${avg.toFixed(1).replace(".",",")} ★ z ${st.length} ocen`:""}.</div>`:""}</div>`}
+ ${last?`<div class="msg">Ostatnia ocena (${last.d}): ${FB_OLD[last.v]||last.v}${last.dev&&last.dev!=="uni"?` · ${DEVS[last.dev]?DEVS[last.dev].short:last.dev}`:""}${last.mum?" · MUM5":""}${last.s?` · ${"★".repeat(last.s)}`:""}${st.length>1?` · średnia ${avg.toFixed(1).replace(".",",")} ★ z ${st.length} ocen`:""}.</div>`:""}</div>`}
 
 // Wartości odżywcze samego ciasta (bez nadzienia)
 function nutrHtml(r,b,D){if(!GFEngine.nutritionOf)return "";
@@ -919,7 +950,7 @@ const FRY={tortilla:[50,50,1,"Placek"],nalesniki:[75,30,1,"Naleśnik"],pancakes:
 const FRY_STEP=/smaż|patelni|obgotuj|wrzątk|gotuj partiami/i;
 let fry=null;
 const frN=()=>{const f=FRY[cur.id];return Math.max(1,Math.ceil((cur.pcs||1)/f[2]))};
-function fryStart(){const f=FRY[cur.id],k=1+((calib[cur.id]&&calib[cur.id].time)||0)/100;fry={title:cur.title,a:Math.round(f[0]*k),b:Math.round(f[1]*k),word:f[3],float:!!f[4],n:frN(),i:1,phase:f[4]?0:1,end:f[4]?0:Date.now()+f[0]*1000,left:0};renderTimers()}
+function fryStart(){const f=FRY[cur.id],k=1+(calFor(cur.id).time||0)/100;fry={title:cur.title,a:Math.round(f[0]*k),b:Math.round(f[1]*k),word:f[3],float:!!f[4],n:frN(),i:1,phase:f[4]?0:1,end:f[4]?0:Date.now()+f[0]*1000,left:0};renderTimers()}
 function fryTick(now){if(!fry||fry.left||!fry.end||now<fry.end)return;
  if(fry.phase===1&&fry.b){fry.phase=2;fry.end=now+fry.b*1000;beep()}else{fry.phase=3;fry.end=0;beep()}timersChanged()}
 function fryHtml(now){if(!fry)return"";const f=fry,rem=f.left||Math.max(0,Math.ceil((f.end-now)/1000));

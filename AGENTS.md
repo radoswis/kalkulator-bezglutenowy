@@ -97,3 +97,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - `node tests/synchronizacja.js` – scalanie stanu i API stanu z udawanym KV.
 - `node tests/minutniki.js` – API minutników, cron i podpis powiadomień (udawany KV i serwer push).
 - `python3 tests/kroki.py` – kroki w przeglądarce (wymaga `pip install playwright`).
+
+## Jak wyszło? (2.27)
+- `FBI` = katalog pozycji [etykieta, efekty]; `fbItems(b)` dobiera listę wg rodziny/klasy/id i `curDev` (pozycje urządzenia na 4. miejscu). Pierwsze 6 widoczne, reszta pod „Więcej”.
+- temp/time z ocen trafiają do `calib[id].devAdj[air|opti|fry]` albo do `calib[id]` (piekarnik); zawsze czytaj przez `calFor(id)`.
