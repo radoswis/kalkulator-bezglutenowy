@@ -607,7 +607,13 @@ document.addEventListener("click",e=>{const fq=e.target.closest("[data-fbq]");
  const r2=e.target.closest("[data-rise2]");if(r2){prefs.rise2=r2.dataset.rise2==="1";save();calc();return}
  const a=e.target.closest("[data-add]");if(a){a.dataset.add.split(",").forEach(id=>sel.add(id));save();renderPantry();calc();return}const c=e.target.closest(".chip");if(!c)return;src="pantry";const id=c.dataset.id;sel.has(id)?sel.delete(id):sel.add(id);c.setAttribute("aria-pressed",sel.has(id));save();calc()});
 
-function setDefaults(){const b=BAKES.find(x=>x.id===$("bake").value);$("count").value=b.defaultCount;$("portion").value=b.unitWeight;$("grams").value=defaultDough(b)}
+function setDefaults(){const b=BAKES.find(x=>x.id===$("bake").value);if(b.anchor){const a=b.anchor;$("count").value=a.def;$("portion").value=a.per;$("grams").value=a.def*a.per;return}$("count").value=b.defaultCount;$("portion").value=b.unitWeight;$("grams").value=defaultDough(b)}
+// Przepisy liczone od składnika, który masz (beza: od białek) – etykiety pól ilości
+const QTY0={h:"Ile ciasta?",p:"Sztuki",g:"Gramy ciasta",c:"Liczba sztuk",gr:"Ciasto razem (g)"};
+function qtyLabels(b){const a=b&&b.anchor,t=a?{h:"Ile masz białek?",p:"Sztuki",g:"Gramy",c:`Liczba białek (1 ≈ ${a.per} g)`,gr:"Białka razem (g) – najdokładniej"}:QTY0;
+ const h=document.querySelector(".qty h2");if(h)h.textContent=t.h;$("mPcs").textContent=t.p;$("mGr").textContent=t.g;
+ $("lblCount").firstChild.textContent=t.c;$("lblGrams").firstChild.textContent=t.gr;$("lblPortion").hidden=mode!=="pcs"||!!a}
+const pcsOf=(b,D)=>mode==="pcs"&&!b.anchor?Math.max(1,+$("count").value||1):Math.max(1,Math.round(D/(b.unitWeight||100)));
 function setMode(m){mode=m;$("mPcs").setAttribute("aria-pressed",m==="pcs");$("mGr").setAttribute("aria-pressed",m==="gr");$("lblCount").hidden=$("lblPortion").hidden=m!=="pcs";$("lblGrams").hidden=m==="pcs";calc()}
 $("mPcs").onclick=()=>setMode("pcs");$("mGr").onclick=()=>setMode("gr");
 let src="ideal"; // "ideal" = podgląd na najlepszym zestawie mąk, "pantry" = z mojej spiżarni
@@ -637,21 +643,25 @@ const SIMILAR={focaccia:[85],pizza_blacha:[85],pizza_patelnia:[85],langosz:[88],
  czapati:[80],placki_dymka:[78,"mniej elastyczne warstwy"],gozleme:[82],francuskie:[72,"rośnie i listkuje się słabiej niż pszenne"],paluchy_francuskie:[78],panierka:[97,"często bardziej chrupiąca"],
  beszamel:[97],lamance:[92],baranek:[94],roze_karnawalowe:[78,"płatki cieńsze trudniej uzyskać"],biszkopt_kakaowy:[93],paluszki_serowe:[95],muffinki_wytrawne:[94],gougeres:[85,"rosną trochę słabiej"],
  placuszki_bananowe:[97],gofry_bialkowe:[95],scones:[92],gofry_ziemniaczane:[97],gofry_pizzowe:[95],
- paczki_air:[75,"pieczone, więc bardziej bułeczkowe niż smażone"],donuty_air:[92],jablka_w_ciescie:[97],krazki_cebulowe:[97],pieczarki_w_ciescie:[97],gofry_czekoladowe:[95],gofry_kukurydziane:[96],arepy:[100,"arepy są z natury bezglutenowe"]};
+ paczki_air:[75,"pieczone, więc bardziej bułeczkowe niż smażone"],donuty_air:[92],jablka_w_ciescie:[97],krazki_cebulowe:[97],pieczarki_w_ciescie:[97],gofry_czekoladowe:[95],gofry_kukurydziane:[96],arepy:[100,"arepy są z natury bezglutenowe"],pavlova:[100,"beza jest z natury bezglutenowa"]};
 function simHtml(id,fam){const v=SIMILAR[id];if(!v)return"";const [p,n]=v;
  const lvl=p>=90?"prawie jak pszenne":p>=80?"bardzo podobne":p>=70?"podobne, z różnicami":"wyraźnie inne";
  return `<div>Podobieństwo do pszennego: <b>${p}%</b> – ${lvl}${n?`. ${n[0].toUpperCase()+n.slice(1)}.`:""}</div><div class="simbar"><i style="width:${p}%"></i></div>`+
   (fam==="yeast"?`<div>Najlepsze w dniu pieczenia; następnego dnia odśwież w piekarniku (bezglutenowe szybciej czerstwieje).</div>`:"")}
 function calc(){syncTex();
- const bakeId=$("bake").value,b=BAKES.find(x=>x.id===bakeId);
+ const bakeId=$("bake").value,b=BAKES.find(x=>x.id===bakeId);qtyLabels(b);
  const cb=calFor(b.id);const op=GFEngine.ovenPlan&&b.family==="yeast"?GFEngine.ovenPlan(b,cb):null;if(op)b.bakeNote=gorNote(op.note,b);
  $("simInfo").innerHTML=simHtml(b.id,b.family);
  $("bakeInfo").textContent=`Rodzaj: ${CLS[b.rheologyClass].label} · Domyślnie ${b.defaultCount} × ${b.unitWeight} g (${b.unit}) · ${b.bakeNote}`;
- const D=mode==="pcs"?(+$("count").value||0)*(+$("portion").value||0):(+$("grams").value||0);
+ const AW=b.anchor?(mode==="pcs"?(+$("count").value||0)*b.anchor.per:(+$("grams").value||0)):0;
+ if(b.anchor){$("bakeInfo").textContent=`Rodzaj: beza (piana z cukrem) · Liczona od białek: 1 białko ≈ ${b.anchor.per} g (jajko M–L) · Domyślnie ${b.anchor.def} białka`;
+  if(AW<20){$("out").innerHTML=`<h3>${b.name}</h3><div class="warn">Podaj, ile masz białek (min. 1 białko, ok. 20 g).</div>`;return}}
+ const D=b.anchor?AW*100/GFEngine.anchorPct(b):mode==="pcs"?(+$("count").value||0)*(+$("portion").value||0):(+$("grams").value||0);
  if(D<50){$("out").innerHTML=`<h3>${b.name}</h3><div class="warn">Podaj ilość ciasta (min. 50 g).</div>`;return}
  const best=suggestIdealBlend(bakeId,[...sel],prefs.taste);
  const ids=src==="ideal"&&best?best.ideal.map(x=>x.ingredient.id).concat(["psy"]):[...sel];
- const r=calculateRecipe({bakeId,pantryIds:ids,doughWeight:D,extraIngredients:custom,calib:cb,taste:prefs.taste,coldProof:b.family==="yeast"&&prefs.proof==="cold",psyForm:prefs.psyForm||"husk"});
+ const r=calculateRecipe({bakeId,pantryIds:ids,doughWeight:D,anchorGrams:AW,extraIngredients:custom,calib:cb,taste:prefs.taste,coldProof:b.family==="yeast"&&prefs.proof==="cold",psyForm:prefs.psyForm||"husk"});
+ if(r.bakeNote)b.bakeNote=r.bakeNote;
  if(b.laminate&&!r.empty&&r.family!=="pastry"&&!r.lines.some(l=>l.key==="butter")){const fg=r.lines.find(l=>l.key==="flour").grams,g=Math.round(r.total*b.laminate);r.lines.push({key:"butter",label:"Masło do przekładania (zimne, osobno)",grams:g,pct:g/fg*100})}
  if(r.empty){$("out").innerHTML=`<h3>${b.name}</h3>${srcBar()}${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}`;return}
  if(r.family==="pastry"){renderPastry(r,b,D);$("out").querySelector("h3").insertAdjacentHTML("afterend",srcBar());return}
@@ -743,10 +753,14 @@ const FBI={
  ba_tear:["Rwą się",{psy:10,water:-1}],ba_thick:["Za gęste ciasto",{water:3}],ba_thin:["Za rzadkie ciasto",{water:-3}],ba_stick:["Przywierają",{temp:10}],
  ba_soft:["Miękkie, nie chrupiące",{water:-2,time:15}],ba_off:["Panierka odpada",{water:-2}],
  oily:["Nasiąkło tłuszczem",{temp:10}],rawin:["Surowe w środku, z wierzchu gotowe",{temp:-10,time:15}],fdark:["Za ciemne z zewnątrz",{temp:-10}],
- outraw:["Przypieczone z wierzchu, surowe w środku",{temp:-10,time:15}],dried:["Wysuszone",{time:-10}]};
+ outraw:["Przypieczone z wierzchu, surowe w środku",{temp:-10,time:15}],dried:["Wysuszone",{time:-10}],
+ // beza Pavlova: korekty temperatury i czasu trafiają wprost do kroków (pavlovaSize)
+ pv_crack:["Mocno popękała, zapadła się",{temp:-10}],pv_weep:["Kropelki syropu na wierzchu",{time:10}],pv_brown:["Zbrązowiała zamiast kremowej",{temp:-10,time:10}],
+ pv_soft:["Miękka, lepka skorupka",{time:15}],pv_dry:["Sucha w środku, bez pianki",{time:-15}],pv_hollow:["Skorupka odstaje, pusto pod spodem",{temp:-10}]};
 const FB_BOIL=/pierog|uszk|knedl|kopytk|kluski|gnocchi|pyzy|leniwe|makaron|nokedl|spaetzl|kopytka/;
 const FB_FRYPAN=/placki|racuch|pancake|nalesnik|tortill|arep|langosz/;
 function fbItems(b){const c=b.rheologyClass||"",id=b.id,dev=curDev,L=[];const add=(...k)=>k.forEach(x=>{if(!L.includes(x))L.push(x)});
+ if(id==="pavlova")return["pv_crack","pv_weep","pv_soft","pv_brown","pv_dry","pv_hollow"];
  const fried=dev==="fry"||b.device==="fry"||/paczk|bombolon|oponk|faworki|roze_|churros|panzerotti|langosz|tempura|krazki|w_ciescie/.test(id);
  if(b.family==="yeast"){add("mid_dry","mid_wet","flat","over","sticky");
   if(/pizza|pinsa|focaccia|langosz|pizzerinki/.test(id))add("soggy");if(/pita|naan|placki|podplomyk|bao/.test(id))add("flatbread");
@@ -784,7 +798,7 @@ function fbHtml(b){const c=calib[b.id]?calFor(b.id):null,parts=[],dn=DEV_ADJ()==
   const t=c.tex||{};if(t.chew)parts.push(t.chew>0?"mieszanka bardziej ciągliwa":"mieszanka mniej gumowata");if(t.soft)parts.push(t.soft>0?"mieszanka bardziej miękka":"mieszanka bardziej zwarta");
   if(t.short)parts.push(t.short>0?"mieszanka bardziej krucha":"mieszanka mniej krucha");if(t.grit)parts.push("mniej mąk dających piasek")}
  const logs=c&&c.log?c.log:[],last=logs.length?logs[logs.length-1]:null,st=logs.filter(l=>l.s),avg=st.length?st.reduce((a,l)=>a+l.s,0)/st.length:0;
- const autoOven=b.family==="yeast"&&GFEngine.ovenPlan(b)?.temp;
+ const autoOven=b.ownOven||b.family==="yeast"&&GFEngine.ovenPlan(b)?.temp;
  const pastryOven=!autoOven&&c&&(c.temp||c.time)?`<div>Przy pieczeniu lub smażeniu: ${c.temp?`temperatura o ${Math.abs(c.temp)}°C ${c.temp<0?"niższa (albo mniejszy ogień)":"wyższa"}`:""}${c.temp&&c.time?" i ":""}${c.time?`piecz o ${Math.abs(c.time)}% ${c.time>0?"dłużej":"krócej"}`:""} niż w krokach.</div>`:"";
  const items=fbItems(b),SHOW=6,vis=fbMore?items:items.slice(0,SHOW).concat(items.slice(SHOW).filter(k=>fbSel.has(k)));
  const qs=`<div class="fbchips" role="group" aria-label="Co nie wyszło">${vis.map(k=>`<button type="button" data-fbq="${k}" aria-pressed="${fbSel.has(k)}">${fbSel.has(k)?"✓ ":""}${FBI[k][0]}</button>`).join("")}${items.length>SHOW?`<button type="button" class="linkbtn" data-fbmore>${fbMore?"Mniej":`Więcej (${items.length-vis.length})`}</button>`:""}</div>`;
@@ -799,7 +813,7 @@ function fbHtml(b){const c=calib[b.id]?calFor(b.id):null,parts=[],dn=DEV_ADJ()==
 
 // Wartości odżywcze samego ciasta (bez nadzienia)
 function nutrHtml(r,b,D){if(!GFEngine.nutritionOf)return "";
- const pcs=mode==="pcs"?Math.max(1,+$("count").value||1):Math.max(1,Math.round(D/b.unitWeight));
+ const pcs=pcsOf(b,D);
  const n=GFEngine.nutritionOf(r,pcs),one=pcs>1;
  const f1=v=>v<10?v.toFixed(1).replace(".",","):String(Math.round(v)),fs=v=>v.toFixed(2).replace(".",",");
  const rows=[["Energia",x=>`${Math.round(x.kcal)} kcal`],["Tłuszcz",x=>`${f1(x.fat)} g`],["Węglowodany",x=>`${f1(x.carbs)} g`],["w tym cukry",x=>`${f1(x.sugar)} g`,1],
@@ -820,12 +834,14 @@ function srcBar(){return `<div class="seg srcbar" role="group" aria-label="Z jak
  <div class="note">${src==="ideal"?"Podgląd przepisu na najlepszych mąkach. Zaznacz w spiżarni, co masz, a przeliczę przepis na Twoje mąki.":"Przepis przeliczony na mąki z Twojej spiżarni."}</div>`}
 const whyTxt=()=>src==="ideal"?"To najlepszy zestaw z całej bazy mąk dla tego przepisu.":"Z tego, co masz w domu, ta mieszanka da wynik najbardziej podobny do tradycyjnego, pszennego.";
 function renderPastry(r,b,D){
- cur={id:b.id,title:b.name,steps:r.steps,lines:r.lines,pcs:mode==="pcs"?+$("count").value:Math.max(1,Math.round(D/(b.unitWeight||100)))};
+ cur={id:b.id,title:b.name,steps:r.steps,lines:r.lines,pcs:pcsOf(b,D)};
  const p=r.profile,t=p.target;
  const rows=r.lines.map(l=>`<tr data-ing="${l.label}"${l.sub?' class="sub"':""}><td>${l.label}</td><td class="p">${l.pct.toFixed(1)}%</td><td class="g">${fmt(l.grams)} g</td></tr>`).join("");
  const flour=r.lines.find(l=>l.key==="flour").grams,pcs=Math.max(1,Math.round(D/b.unitWeight));
+ const z=b.sizeOf?b.sizeOf(D/pcs,calFor(b.id)):null,an=b.anchor?r.lines.find(l=>l.key===b.anchor.key):null;
  $("out").innerHTML=`<h3>${b.name}</h3>
- <div class="hyd"><div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div><div><b>${flour} g</b><span>mąk razem</span></div>${b.defaultCount>1||pcs>1?`<div><b>${pcs} × ${Math.round(D/pcs)} g</b><span>${b.unit}</span></div>`:""}</div>
+ <div class="hyd">${an?`<div><b>${fmt(an.grams)} g</b><span>białek</span></div><div><b>${fmt(r.total)} g</b><span>masy bezowej wyjdzie</span></div><div><b>${pcs>1?pcs+" × ":""}Ø ${z.d} cm</b><span>${pcs>1?"blaty":"blat"}, ok. ${String(z.h).replace(".",",")} cm wysokości</span></div>`
+  :`<div><b>${fmt(r.total)} g</b><span>ciasta wyjdzie</span></div><div><b>${flour} g</b><span>mąk razem</span></div>${b.defaultCount>1||pcs>1?`<div><b>${pcs} × ${Math.round(D/pcs)} g</b><span>${b.unit}</span></div>`:""}`}</div>
  <table>${rows}</table>
  ${nutrHtml(r,b,D)}
  ${r.warnings.map(w=>`<div class="warn">${w}</div>`).join("")}
@@ -902,7 +918,7 @@ function cookView(c){const b=BAKES.find(x=>x.id===c.id);let s=[...c.steps];if(!b
   else{const tips=plain.slice(1).filter(x=>!/^Najpierw płyny/.test(x)||!s.some(y=>/płyn|mleko|wod/i.test(y)));
    s[K]=s[K].replace(/(^|\s)(łyżką|ręką|widelcem|trzepaczką)(?=[\s,.]|$)/i,"$1w MUM5").replace(/\s*\(najwyżej \d+ ruchów\)/,"");
    const FB=s.findIndex(x=>/\bpiecz(?!eni)|\bsmaż|gotuj partiami|nakładaj|przelej|wylej do/i.test(x)),end=FB<0?s.length:FB,left=[];
-   const KEY=[[/^Białka/i,/białk/i],[/^Żółtka/i,/żółtk/i],[/^Mąki/i,/mąk|skrobi/i],[/^(Ser|Masa)/i,/twaróg|\bser|mas[ęa]/i],[/^Mokre|^Dodaj suche/i,/połącz|wymieszaj|zmiksuj/i],[/^Najpierw płyny/i,/mlek|wod|płyn|jajk/i],[/^Wszystkie składniki/i,/utrzyj|zmiksuj|wymieszaj|połącz/i],[/^Bakalie/i,/bakali|czekolad|owoc|rodzyn/i],[/^Zimne masło/i,/masło/i],[/^Jajko lub płyn/i,/jajk|żółtk|wod|śmietan/i],[/^Przed użyciem/i,/odstaw/i],[/^Masło z cukrem/i,/utrzyj|ucier/i],[/^Jajka i płyny/i,/mąk/i],[/^Zaparz/i,/zaparz|garn/i],[/^Jajka dodawaj/i,/jajk/i],[/^Skończ/i,/jajk/i]];
+   const KEY=[[/^Białka/i,/białk/i],[/^Żółtka/i,/żółtk/i],[/^Mąki/i,/mąk|skrobi/i],[/^(Ser|Masa)/i,/twaróg|\bser|mas[ęa]/i],[/^Mokre|^Dodaj suche/i,/połącz|wymieszaj|zmiksuj/i],[/^Najpierw płyny/i,/mlek|wod|płyn|jajk/i],[/^Wszystkie składniki/i,/utrzyj|zmiksuj|wymieszaj|połącz/i],[/^Bakalie/i,/bakali|czekolad|owoc|rodzyn/i],[/^Zimne masło/i,/masło/i],[/^Jajko lub płyn/i,/jajk|żółtk|wod|śmietan/i],[/^Przed użyciem/i,/odstaw/i],[/^Masło z cukrem/i,/utrzyj|ucier/i],[/^Jajka i płyny/i,/mąk/i],[/^Zaparz/i,/zaparz|garn/i],[/^Jajka dodawaj/i,/jajk/i],[/^Skończ/i,/jajk/i],[/^Przełącz na 7/i,/dodawaj cukier/i],[/^Pastę ze skrobi/i,/dodaj pastę/i]];
    for(const t of tips){const kw=(KEY.find(([a])=>a.test(t))||[])[1];let j=-1;if(kw){for(let x=i;x<end;x++)if(kw.test(s[x])){j=x;break}if(j<0)continue}else if(K>=i&&K<end)j=K;if(j<0){left.push(t);continue}s[j]=s[j].replace(/\s*$/,"")+" MUM5: "+t.replace(/\.$/,"")+"."}
    s.splice(i,0,head+(left.length?" "+left.map(x=>x.replace(/\.$/,"")).join("; ")+".":""))}}}
  const k=curDev;if(k==="uni"||k==="stove")return cap(s);const f=k==="gorenje"?{ok:"yes"}:devFit(b,k),h=devCard(b);if(!h)return cap(s);
@@ -1174,7 +1190,7 @@ const TH=(ids)=>ids.split(" ");
 const THEMES=[
  ["Kuchnia włoska",TH("pizza_neapol pizza_blacha pizza_patelnia focaccia ciabatta grissini calzone pinsa panzerotti piadina bomboloni taralli cantucci crostata torta_caprese ravioli lasagne gnocchi makaron biszkopty_tiramisu")],
  ["Kuchnie świata",TH("arepy gyoza bao czapati placki_dymka gozleme naan pita tortilla pide croissant bagietka english_muffin bajgle precle scones clafoutis crumble cookies brownie pancakes tempura gougeres bliny cynamonki langosz banana_bread marchewkowe brioche biscoff lava_cake")],
- ["Święta i okazje",TH("uszka lamance pierniczki piernik strucla_makowa paska baranek babka mazurek sernik faworki roze_karnawalowe paczki rogale_marcinskie biszkopt biszkopt_kakaowy chalka szarlotka tartaletki rolada")],
+ ["Święta i okazje",TH("pavlova uszka lamance pierniczki piernik strucla_makowa paska baranek babka mazurek sernik faworki roze_karnawalowe paczki rogale_marcinskie biszkopt biszkopt_kakaowy chalka szarlotka tartaletki rolada")],
  ["Śniadanie",TH("donuty_air pancakes placuszki_bananowe gofry_bialkowe scones bliny nalesniki placki_twarogowe chleb_proteinowy chleb_owsiany english_muffin bulki_ziarniste kajzerki buleczki_maslane brioche croissant drozdzowki banana_bread muffinki")],
  ["Na obiad",TH("pierogi uszka knedle kopytka kluski_slaskie kluski_kladzione kluski_lane leniwe gnocchi pyzy placki_ziemniaczane ravioli lasagne gyoza makaron panierka beszamel tempura quiche pampuchy gozleme calzone pierogi_drozdzowe")],
  ["Przekąski i do pudełka",TH("krazki_cebulowe pieczarki_w_ciescie pizzerinki paluszki_serowe muffinki_wytrawne krakersy taralli grissini paszteciki gougeres paluchy_francuskie precle bulki_czosnkowe gofry_pizzowe cebularze piadina pide")],
@@ -1303,7 +1319,8 @@ const AIR_NO=[[L("biszkopt biszkopt_kakaowy rolada biszkopty_tiramisu torta_capr
  [L("faworki roze_karnawalowe tempura"),"Za lekkie i cienkie – nawiew je porwie, a bez oleju nie zrobią się chrupiące. Użyj frytkownicy olejowej."],
  [L("bao pampuchy"),"To ciasto gotowane na parze."],
  [L("tortilla czapati piadina placki_dymka gozleme podplomyki"),"Placki z suchej patelni – na patelni albo w OptiGrillu wyjdą lepiej."],
- [L("strucla_makowa paska chleb_tostowy"),"Za duże na komorę 3,5 l (forma się nie zmieści)."]];
+ [L("strucla_makowa paska chleb_tostowy"),"Za duże na komorę 3,5 l (forma się nie zmieści)."],
+ [L("pavlova"),"Beza suszy się prawie 2 godziny w 120°C i stygnie w zamkniętej komorze – silny nawiew ją spęka i zbrązowi."]];
 const OPTI_PLATE=L("piadina tortilla czapati podplomyki naan pita gozleme placki_dymka english_muffin");
 const OPTI_WAFFLE=L("gofry gofry_bialkowe gofry_ziemniaczane gofry_pizzowe");
 const OPTI_TRAY=L("brownie ciasto_jogurtowe placek_kruszonka crumble clafoutis pizza_patelnia focaccia quiche lasagne cookies murzynek");
@@ -1375,6 +1392,7 @@ function mumSpec(b){const c=b.rheologyClass||"",id=b.id,W="Składniki odważ wcz
  if(/CURD_POTATO/.test(c))return{tool:"flexi",sp:[1,2],main:1,steps:["Załóż <b>Profi Flexi</b>. "+W,`Mieszaj tylko <b>30–60 s na 1–2</b>, do połączenia – dłużej i masa zrobi się rzadka. ${T}`]};
  if(/SHORTCRUST/.test(c)){if(MUM_LAM.has(id))return{tool:"hak",sp:[1,2],main:2,steps:["Załóż <b>hak</b>. "+W,"Ciasto bazowe: <b>30 s na 1, potem 2 min na 2</b>. "+T,"Wkładanie masła i składanie rób ręcznie."]};
   return{tool:"flexi",sp:[1,2],main:2,steps:["Załóż <b>Profi Flexi</b>. "+W,"Zimne masło w kostce, mąki i cukier: <b>30–60 s na 2</b>, aż powstanie kruszonka.",`Jajko lub płyn dodaj na 1 i mieszaj <b>najwyżej 30 s</b>, tylko do połączenia. Resztę zagnieć ręką w kulę. ${T}`]}}
+ if(id==="pavlova")return{tool:"whisk",sp:[4,7],main:7,steps:["Załóż <b>końcówkę do ubijania</b>. Misę i końcówkę przetrzyj octem – nawet ślad tłuszczu niszczy pianę. "+W,"Białka: <b>1–2 min na 4</b>, do miękkiej piany.",`Przełącz na <b>7</b> i dosypuj cukier łyżką przez otwór w pokrywie co 20–30 s. Po całym cukrze jeszcze <b>5–8 min na 7</b>, aż masa nie zgrzyta między palcami. ${T}`,"Pastę ze skrobi i octu wmieszaj ręcznie szpatułką (albo 10 s na 1)."]};
  if(/FOAM/.test(c)){if(/sernik|brownie|lava/.test(id))return{tool:"flexi",sp:[1,3],main:2,steps:["Załóż <b>Profi Flexi</b>. "+W,`${id==="sernik"?"Ser z cukrem":"Masa"}: <b>1 min na 2</b>, potem jajka po jednym, każde ok. 20 s na 2.`,`Mąki na końcu: <b>15 s na 1</b> – nie napowietrzaj za mocno. ${T}`]};
   return{tool:"whisk",sp:[4,7],main:7,steps:["Załóż <b>końcówkę do ubijania</b>. Miska i końcówka muszą być czyste i suche. "+W,`Białka: <b>3–4 min na 7</b>, cukier dosypuj łyżką przez otwór w pokrywie. ${T}`,"Żółtka dodawaj po jednym na 4.","Mąki wmieszaj ręcznie szpatułką albo Profi Flexi <b>10–15 s na 1</b>."]}}
  if(/BATTER/.test(c))return{tool:"flexi",sp:[1,3],main:3,steps:["Załóż <b>Profi Flexi</b>. "+W,"Najpierw płyny i jajka, potem mąki.",`<b>30 s na 1</b>, potem <b>1 min na 3</b>, aż bez grudek. ${T}`,"Przed użyciem zmiksuj jeszcze 10 s na 2."]};
@@ -1388,7 +1406,7 @@ function mumDial(sp,main){const a=i=>(-135+i*270/7)*Math.PI/180;let t="";for(let
  const px=50+Math.sin(a(main))*22,py=50-Math.cos(a(main))*22;
  return `<svg class="mumdial" viewBox="0 0 100 100" role="img" aria-label="Pokrętło: prędkość ${sp[0]===sp[1]?sp[0]:sp[0]+"–"+sp[1]}"><circle cx="50" cy="50" r="20" class="knob"/>${t}<line x1="50" y1="50" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" class="ptr"/></svg>`}
 const mumIco=(t,s)=>`<svg width="${s}" height="${s}" viewBox="0 0 60 56" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MUM_ICO[t]}</svg>`;
-function mumCard(b){const m=mumSpec(b);if(!m)return "";const hy=$("out").querySelector(".hyd");let tot=0;if(hy){const d=[...hy.querySelectorAll("div")].find(x=>/ciasta wyjdzie/.test(x.textContent));if(d)tot=parseFloat(d.querySelector("b").textContent.replace(/\s/g,"").replace(",","."))||0}
+function mumCard(b){const m=mumSpec(b);if(!m)return "";const hy=$("out").querySelector(".hyd");let tot=0;if(hy){const d=[...hy.querySelectorAll("div")].find(x=>/wyjdzie/.test(x.textContent));if(d)tot=parseFloat(d.querySelector("b").textContent.replace(/\s/g,"").replace(",","."))||0}
  const lim=MUM_LIM[m.tool],n=lim&&tot>lim?Math.ceil(tot/lim):0;
  const warn=n?`<div class="mumwarn"><b>Za dużo naraz:</b> ok. ${Math.round(tot)} g ciasta, a MUM5 przerobi bezpiecznie ok. ${lim} g (instrukcja: max 2× porcja przepisu). Zrób w ${n} partiach.</div>`:"";
  return `<div class="ovencard mumcard"><div class="mumviz"><div class="mumtool">${mumIco(m.tool,46)}<small>${MUM_T[m.tool]}</small></div>${m.tool==="hand"?"":mumDial(m.sp,m.main)}</div><div><b>${m.tool==="hand"?"Bosch MUM5: tym razem ręcznie":"Bosch MUM5 – "+MUM_T[m.tool]}</b>${STEPS(m.steps)}${warn}</div></div>`}

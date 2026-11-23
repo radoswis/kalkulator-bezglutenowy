@@ -10,7 +10,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - Bez logowania. Dwie osoby w domu, wspólne dane.
 - Działa na telefonie (Samsung S21 Ultra) i laptopie.
 
-## Stan obecny (v2.24 – 137 przepisów: 52 drożdżowe + 85 bezdrożdżowych)
+## Stan obecny (v2.28 – 138 przepisów: 52 drożdżowe + 86 bezdrożdżowych)
 - `engine.js` – silnik (globalny `GFEngine`, działa też w Node: `require("./engine.js")`). Typy w JSDoc.
   - `INGREDIENT_MATRIX` – składniki: `macros` (g/100 g), `wac_cold`, `wac_hot` (na razie informacyjnie), `flavorProfile`, `role`, mixy: `isCommercialMix`, `hasHPMC`, `starchBase`, `mixPriority`; `maxShare` = limit udziału.
   - `RHEOLOGY_CLASSES` – 6 klas reologicznych: zakresy hydratacji bazowej, psyllium, tłuszczu, jajek, cukru i cel profilu mąk (skrobia = udział frakcji skrobiowej, białko, błonnik).
@@ -97,6 +97,11 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - `node tests/synchronizacja.js` – scalanie stanu i API stanu z udawanym KV.
 - `node tests/minutniki.js` – API minutników, cron i podpis powiadomień (udawany KV i serwer push).
 - `python3 tests/kroki.py` – kroki w przeglądarce (wymaga `pip install playwright`).
+
+## Beza Pavlova i przepisy „od składnika” (2.28)
+- Pole `anchor: {key, per, def}` w przepisie bezdrożdżowym = liczymy od składnika, który użytkownik MA (beza: białka). UI (`qtyLabels`, `pcsOf`) pyta o liczbę sztuk (× `per` g) albo gramy; `calculateRecipe({..., anchorGrams})` wylicza masę całości z `anchorPct(b)`, kotwica = dokładnie podane gramy, bilans domyka największy inny składnik; procenty w tabeli od masy kotwicy.
+- `PAV` w pastry.js: na 100 g białek 175 g cukru (granica rozpuszczalności sacharozy w wodzie białek w 20°C ≈ 179 g), 3,5 g skrobi, 3 g octu. `pavlovaSize(masa, calib)` → średnica (gęstość 0,21 g/ml), wysokość, temperatura 120°C (+ `calib.temp`) i czas ∝ grubości (+ `calib.time`); `ownOven: true` = korekty z „Jak wyszło?” trafiają wprost do kroków (pozycje `pv_*` w `FBI`).
+- Nowy przepis „od składnika”: dodaj `anchor`, `unitWeight` = masa jednej sztuki/blatu (decyduje o podziale na sztuki).
 
 ## Jak wyszło? (2.27)
 - `FBI` = katalog pozycji [etykieta, efekty]; `fbItems(b)` dobiera listę wg rodziny/klasy/id i `curDev` (pozycje urządzenia na 4. miejscu). Pierwsze 6 widoczne, reszta pod „Więcej”.

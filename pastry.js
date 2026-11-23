@@ -84,8 +84,35 @@
     chocolateChips:{ label: "Czekolada posiekana lub kropelki" },
     banana:        { label: "Dojrzałe banany (rozgniecione)" },
     carrot:        { label: "Marchewka (drobno starta)" },
-    cheese:        { label: "Ser żółty lub parmezan (starty)" }
+    cheese:        { label: "Ser żółty lub parmezan (starty)" },
+    whites:        { label: "Białka (najlepiej zważone)", egg: 35, white: true },
+    fineSugar:     { label: "Cukier drobny (do wypieków)" },
+    acid:          { label: "Ocet (spirytusowy lub jabłkowy) albo sok z cytryny", micro: true }
   };
+
+  // ---------- Beza Pavlova: liczona od masy białek ----------
+  // Proporcje na 100 g białek (szacunek z fizyki + porównanie z przepisami, 23.11.2026):
+  // • Cukier 175 g. Białko to ok. 88% wody; sacharoza rozpuszcza się w 20°C do 203,9 g/100 g wody,
+  //   więc 100 g białek rozpuści najwyżej 0,88 × 203,9 ≈ 179 g cukru. Więcej = nierozpuszczone kryształki,
+  //   które w piekarniku ciągną wodę i „płaczą” syropem (McGee: górna granica ok. 2:1 = granica rozpuszczalności).
+  //   Porównanie: Akademia Tortu 210 g białek / 300 g (1,43×), BBC/Ottolenghi 4 białka / 250 g (ok. 1,8×),
+  //   klasyka australijska 55 g na białko (ok. 1,6×), 8 białek / 420 g (1,5×), „1:2” (2,0× – już ponad granicą).
+  // • Skrobia 3,5 g: kleikuje w wilgotnym środku (ziemniaczana od ok. 60°C) i daje piankowy środek; przepisy 2–6 g.
+  // • Kwas 3 g (ok. 1 łyżeczka na 4 białka – zgodnie we wszystkich źródłach): obniża pH białek z ok. 9 i usztywnia pianę.
+  // Gęstość upieczonej masy ok. 0,21 g/ml (4 białka → blat ok. 20 cm × 6 cm, jak w przepisach) – SZACUNEK.
+  const PAV = { whites: 100, fineSugar: 175, acid: 3, starch: 3.5 };
+  const PAV_SUM = Object.values(PAV).reduce((a, x) => a + x, 0);
+  const pavPct = k => (PAV[k] / PAV_SUM) * 100;
+  /** Rozmiar i czas pieczenia blatu bezy z masy (g). Suszenie zależy od grubości (dyfuzja), nie od średnicy. */
+  function pavlovaSize(mass, calib = {}) {
+    const h = Math.min(7.5, Math.max(4.5, 4 + mass / 200));             // wysokość, cm
+    const d = Math.round(Math.sqrt((4 * mass) / 0.21 / (Math.PI * h)));   // średnica, cm
+    const T = Math.min(140, Math.max(100, 120 + (calib.temp || 0)));
+    // czas ∝ grubości (środek ma zostać piankowy, więc nie suszymy do końca – liniowo, nie ∝ h²); 6 cm → 75 min jak w przepisach
+    const base = 75 * (h / 6) * (1 + (120 - T) / 100) * (1 + (calib.time || 0) / 100);
+    const a = Math.max(40, Math.round(base / 5) * 5);
+    return { h: Math.round(h * 2) / 2, d, T, min: [a, a + 15] };
+  }
 
   /**
    * @typedef {Object} StepCtx
@@ -314,6 +341,33 @@
         `Wsyp mąki (${c.flour}), kakao i sól. Wymieszaj tylko do połączenia.`,
         "Piecz 25–30 minut. Patyczek ma wyjść wilgotny, z grudkami. Studź w formie co najmniej godzinę."
       ] },
+    { id: "pavlova", name: "Beza Pavlova (z białek, np. po carbonarze)", category: "Ciasta, torty i desery", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
+      basis: "total", flourPct: pavPct("starch"), components: [["whites", pavPct("whites")], ["fineSugar", pavPct("fineSugar")], ["acid", pavPct("acid")]],
+      target: { starch: [95, 100], protein: [0, 1], fiber: [0, 1] }, prefer: { szi: 1 },
+      anchor: { key: "whites", per: 35, def: 4 }, sizeOf: pavlovaSize, ownOven: true,
+      unitWeight: 700, defaultCount: 1, unit: "blat bezy", bakeNote: "nagrzej do 150°C, po wstawieniu zmniejsz na 120°C, 75–90 min, potem studzenie w uchylonym piekarniku", sweet: true,
+      steps: c => {
+        const s = pavlovaSize(c.pw, c.cal), two = c.pcs > 1, W = c.n("whites"), S = c.n("fineSugar");
+        const spoons = Math.max(2, Math.round(S / 12.5)), cream = Math.round(W * 2.1 / 10) * 10;
+        return [
+          `Białka (${c.g("whites")}) przełóż do czystej miski, przykryj i zostaw na 30–60 minut, aż będą w temperaturze pokojowej. Ciepłe białka dają wyższą pianę, a cukier szybciej się w nich rozpuszcza. Jeśli po oddzielaniu wpadła choćby kropla żółtka, wybierz ją skorupką: tłuszcz nie pozwala urosnąć pianie.`,
+          two
+            ? `Nagrzej piekarnik do 130°C z termoobiegiem (dwie blachy naraz; termoobieg o 20°C niżej niż góra i dół). Na dwóch arkuszach papieru do pieczenia narysuj po okręgu ${s.d} cm i połóż je rysunkiem do dołu na dwóch blachach.`
+            : `Nagrzej piekarnik do 150°C (góra i dół, bez termoobiegu). Na papierze do pieczenia narysuj okrąg ${s.d} cm i połóż go na blasze rysunkiem do dołu.`,
+          `Miskę i końcówki miksera przetrzyj ręcznikiem papierowym zwilżonym octem: resztki tłuszczu niszczą pianę. Cukier (${c.g("fineSugar")}) odmierz do miseczki. W drugiej miseczce wymieszaj skrobię (${c.flour}) z octem lub sokiem z cytryny (${c.g("acid")}) na gładką pastę.`,
+          "Ubijaj białka na średnich obrotach 1–2 minuty, aż piana będzie biała, a z końcówki będą opadać miękkie szczyty.",
+          `Przełącz na najwyższe obroty i dodawaj cukier po 1 łyżce co 20–30 sekund (ok. ${spoons} łyżek, razem ${Math.ceil(spoons * 20 / 60)}–${Math.ceil(spoons * 30 / 60)} minut). Nie spiesz się: cukru jest prawie tyle, ile woda z białek w ogóle może rozpuścić, a każdy nierozpuszczony kryształek w piekarniku zamieni się w kropelkę syropu.`,
+          "Po dodaniu całego cukru ubijaj jeszcze 5–8 minut, aż masa będzie gęsta, lśniąca i będzie stała w sztywnych szczytach (miskę można odwrócić do góry dnem). Rozetrzyj odrobinę masy między palcami: nie może zgrzytać. Jeśli zgrzyta, ubijaj dalej po minucie.",
+          "Zmniejsz obroty do najniższych albo odłóż mikser. Dodaj pastę ze skrobi i octu i wmieszaj szpatułką 3–4 ruchami, tylko do połączenia.",
+          `Przyklej papier do blachy kropelką masy w rogach. Wyłóż masę${two ? " po równo" : ""} w okrąg ${s.d} cm, na wysokość ok. ${String(s.h).replace(".", ",")} cm: najpierw środek, potem brzegi. Brzegi podciągnij szpatułką do góry, a w środku zrób lekkie zagłębienie na krem.`,
+          two
+            ? `Wstaw obie blachy (poziomy 2 i 4) i od razu zmniejsz temperaturę do ${s.T - 20}°C. Piecz ${s.min[0]}–${s.min[1]} minut. Przez pierwszą godzinę nie otwieraj drzwiczek. Beza jest gotowa, gdy jest kremowobiała, sucha i twarda z wierzchu, a po lekkim stuknięciu brzmi głucho.`
+            : `Wstaw blachę na środkowy poziom i od razu zmniejsz temperaturę do ${s.T}°C. Piecz ${s.min[0]}–${s.min[1]} minut. Nie otwieraj drzwiczek. Beza jest gotowa, gdy jest kremowobiała, sucha i twarda z wierzchu, a po lekkim stuknięciu brzmi głucho.`,
+          "Wyłącz piekarnik, uchyl drzwiczki (wsadź w nie drewnianą łyżkę) i zostaw bezę do całkowitego wystygnięcia, co najmniej 2 godziny, najlepiej na noc. Powolne stygnięcie mniej ją rozrywa. Pęknięcia na wierzchu są normalne i znikną pod kremem.",
+          `Najwyżej 1–2 godziny przed podaniem (inaczej krem rozmiękczy bezę): ubij na sztywno ${cream} g bardzo zimnej śmietanki 30–36% z ${Math.round(cream * 0.08)} g cukru pudru. Wyłóż na bezę i ułóż ok. ${Math.round(W * 2.5 / 10) * 10} g owoców: maliny, truskawki, borówki, marakuję. Kwaśne owoce równoważą słodycz.`
+        ];
+      },
+      tip: "Białka po carbonarze możesz trzymać w lodówce w zamkniętym słoiku do 3 dni albo zamrozić (do 3 miesięcy, rozmrażaj w lodówce). Kilkudniowe białka ubijają się nawet lepiej. Mini bezy: kładź po ok. 60–70 g masy (Ø 8 cm) i piecz w 120°C 45–55 minut. Bezę piecz w suchy dzień: cukier wciąga wilgoć z powietrza i w deszczową pogodę beza robi się lepka. Beza jest z natury bez glutenu, ale sprawdź etykiety skrobi, cukru pudru (bywa ze skrobią) i ekstraktu waniliowego." },
     { id: "sernik", name: "Sernik (masa sernikowa pieczona)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
       basis: "total", flourPct: 2.5, components: [["cheesecakeQuark", 70], ["eggs", 14], ["sugar", 10], ["butterOrCream", 4]], target: { starch: [90, 100], protein: [0, 1], fiber: [0, 1] }, prefer: { szi: 1 },
       unitWeight: 1200, defaultCount: 1, unit: "tortownica 24 cm", bakeNote: "160°C, 60–70 min + 1 h w uchylonym piekarniku", sweet: true,
@@ -1134,7 +1188,12 @@
 
   /** Receptura bezdrożdżowa. */
   const LIQUIDS = ["hotWater", "water", "coldWater", "iceWater", "milkWater", "milk", "milkOrWater", "milkOrYogurt", "buttermilk", "kefir", "lemonMilk", "sourCream"];
-  function calculatePastryFormulation({ bake, pantryIds, doughWeight, extraIngredients = [], calib = {}, taste = "wheat", psyForm = "husk" }) {
+  /** Udział składnika-kotwicy (np. białek w bezie) w masie całości, %. */
+  const anchorPct = b => (b.anchor ? (b.components.find(([k]) => k === b.anchor.key) || [0, 0])[1] : 0);
+  function calculatePastryFormulation({ bake, pantryIds, doughWeight, anchorGrams = 0, extraIngredients = [], calib = {}, taste = "wheat", psyForm = "husk" }) {
+    // Przepis liczony od składnika, który masz (beza: białka) – masa całości wynika z masy białek
+    if (bake.anchor && anchorGrams > 0) doughWeight = (anchorGrams * 100) / anchorPct(bake);
+    if (bake.anchor && !(anchorGrams > 0)) anchorGrams = Math.round((doughWeight * anchorPct(bake)) / 100);
     const cls = RHEOLOGY_CLASSES[bake.rheologyClass];
     const all = INGREDIENT_MATRIX.concat(extraIngredients);
     const pantry = all.filter(i => pantryIds.includes(i.id));
@@ -1190,15 +1249,19 @@
     const compLines = comps.map(([k, p]) => ({ key: k, label: label(k), grams: rg(k, (flour * p) / 100), pct: p })).filter(l => l.grams > 0);
 
     // Domknięcie bilansu masy na największym składniku (nie-mikro)
+    const anc = bake.anchor && compLines.find(l => l.key === bake.anchor.key);
+    if (anc) anc.grams = Math.round(anchorGrams); // kotwica = dokładnie to, co masz
     const total0 = flourTotal + compLines.reduce((s, l) => s + l.grams, 0);
-    const diff = doughWeight - total0;
-    if (diff && compLines.length) {
-      const big = compLines.reduce((a, l) => (l.grams > a.grams ? l : a), compLines[0]);
+    const diff = Math.round(doughWeight) - total0;
+    const closable = compLines.filter(l => l !== anc);
+    if (diff && closable.length) {
+      const big = closable.reduce((a, l) => (l.grams > a.grams ? l : a), closable[0]);
       big.grams = Math.round(big.grams + diff); // duże pozycje w pełnych gramach (bilans ±0,5 g)
     }
 
     const lines = [{ key: "flour", label: bake.target && bake.target.starch && bake.target.starch[0] >= 90 ? "Skrobia / mąki razem" : "Mąki razem", grams: flourTotal, pct: 100 }, ...flourLines, ...compLines];
     const total = lines.filter(l => !l.sub).reduce((s, l) => s + l.grams, 0);
+    if (anc) for (const l of lines) l.pct = (l.grams / anc.grams) * 100; // beza: procenty od masy białek
 
     // Kontekst instrukcji
     const byKey = Object.fromEntries(compLines.map(l => [l.key, l]));
@@ -1207,11 +1270,13 @@
     const g = k => {
       const l = byKey[k]; if (!l || l.grams < 0.5) return "szczypta";
       const e = COMPONENTS[k] && COMPONENTS[k].egg;
-      if (e) { const n = Math.max(1, Math.round(l.grams / e)); return `${fmt(l.grams)} g, ok. ${n} ${eggWord(n, e < 30)}`; }
+      if (e) { const n = Math.max(1, Math.round(l.grams / e)), w = COMPONENTS[k].white ? (n === 1 ? "białko" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "białka" : "białek") : eggWord(n, e < 30);
+        return `${fmt(l.grams)} g, ok. ${n} ${w}`; }
       return `${fmt(l.grams)} g`;
     };
     const pcs = Math.max(1, Math.round(doughWeight / bake.unitWeight));
-    const steps = bake.steps({ g, pcs, pw: Math.round(doughWeight / pcs), flour: `${flourTotal} g` });
+    const n = k => (byKey[k] ? byKey[k].grams : 0);
+    const steps = bake.steps({ g, n, cal: calib, pcs, pw: Math.round(doughWeight / pcs), flour: `${flourTotal} g` });
 
     // Ostrzeżenia technologiczne
     const st = blend.reduce((s, [i, x]) => s + x * starchFraction(i), 0) * 100;
@@ -1225,7 +1290,8 @@
       bake, cls, empty: false, family: "pastry", taste: G.tasteOf(blend, bake),
       blend: blend.map(([ingredient, share]) => ({ ingredient, share })), textureMatch: G.textureMatch(blend, bake),
       profile: { protein: P, fiber: F, starch: st, target: t },
-      lines, total, steps, tip: bake.tip,
+      lines, total, steps, tip: bake.tip, doughWeight,
+      bakeNote: bake.sizeOf ? (() => { const z = bake.sizeOf(doughWeight / pcs, calib); return `nagrzej do 150°C, po wstawieniu zmniejsz na ${z.T}°C, ${z.min[0]}–${z.min[1]} min, potem studzenie w uchylonym piekarniku`; })() : undefined,
       unused: pantryFlours.filter(i => !used.has(i.id)),
       warnings
     };
@@ -1274,5 +1340,5 @@
     return { ideal, missing, complete: missing.length === 0, profile };
   }
 
-  Object.assign(G, { suggestIdealBlend, PASTRY_BAKES, ALL_BAKES, CATEGORIES, COMPONENTS, calculateRecipe, calculatePastryFormulation, solvePastryBlend, validateAllRecipes });
+  Object.assign(G, { anchorPct, pavlovaSize, suggestIdealBlend, PASTRY_BAKES, ALL_BAKES, CATEGORIES, COMPONENTS, calculateRecipe, calculatePastryFormulation, solvePastryBlend, validateAllRecipes });
 })(typeof window !== "undefined" ? window : globalThis);

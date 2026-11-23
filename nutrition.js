@@ -40,6 +40,8 @@
     milk: MILK, milkOrYogurt: MILK, lemonMilk: MILK, milkWater: half(MILK, WATER), milkOrWater: half(MILK, WATER),
     buttermilk: N(1.5, 4.7, 4.7, 0, 3.1, 0.1), kefir: N(2, 4.5, 4.5, 0, 3.4, 0.1), sourCream: N(18, 3.6, 3.6, 0, 2.7, 0.1),
     eggs: N(10, 0.7, 0.4, 0, 12.5, 0.35), yolks: N(27, 0.6, 0.6, 0, 16, 0.12),
+    whites: N(0.2, 0.7, 0.7, 0, 10.9, 0.41),           // białko jaja surowe (USDA 01124: Na 166 mg)
+    fineSugar: N(0, 100, 100, 0, 0), acid: N(0, 0, 0, 0, 0),
     butter: BUTTER, softButter: BUTTER, coldButter: BUTTER, meltedButter: BUTTER, butterOrOil: BUTTER, butterOrCream: BUTTER, oil: OIL,
     sugar: N(0, 100, 100, 0, 0), brownSugar: N(0, 98, 97, 0, 0, 0.07), powderedSugar: N(0, 100, 100, 0, 0), honey: N(0, 80, 80, 0, 0.3),
     salt: N(0, 0, 0, 0, 0, 100),
@@ -74,7 +76,8 @@
     piadina: [0.1, 0], taralli: [0.2, 0], cantucci: [0.15, 0], crostata: [0.1, 0], torta_caprese: [0.1, 0], ravioli: [0, 0], lasagne: [0, 0], gyoza: [0.05, 0.05], czapati: [0.12, 0],
     placki_dymka: [0.1, 0.08], gozleme: [0.1, 0.03], francuskie: [0.15, 0], paluchy_francuskie: [0.15, 0], panierka: [0, 0.1], beszamel: [0.1, 0], lamance: [0.15, 0], baranek: [0.1, 0],
     roze_karnawalowe: [0.1, 0.2], biszkopt_kakaowy: [0.1, 0], paluszki_serowe: [0.12, 0], muffinki_wytrawne: [0.1, 0], gougeres: [0.25, 0], placuszki_bananowe: [0.12, 0.02],
-    gofry_bialkowe: [0.15, 0], scones: [0.1, 0], gofry_ziemniaczane: [0.15, 0], gofry_pizzowe: [0.15, 0]
+    gofry_bialkowe: [0.15, 0], pavlova: [0.17, 0], // beza: ok. 55% wody z białek odparowuje (środek zostaje wilgotny)
+    scones: [0.1, 0], gofry_ziemniaczane: [0.15, 0], gofry_pizzowe: [0.15, 0]
   };
   function cookChange(bake) {
     if (bake.family === "pastry") return PASTRY_COOK[bake.id] || [0.1, 0];
