@@ -149,7 +149,7 @@
       steps: c => [
         `W misce wymieszaj mąki (${c.flour}), sól i psyllium.`,
         `Zagotuj wodę i odmierz ${c.g("hotWater")}. Dodaj do niej masło lub olej i od razu wlej do mąki, mieszając łyżką. Gorąca woda parzy skrobię, dzięki temu ciasto jest elastyczne i nie pęka przy lepieniu.`,
-        `Gdy ciasto przestygnie tak, że można go dotknąć, dodaj jajko (${c.g("eggs")}) i wyrabiaj ręką 3–4 minuty na gładką kulę. Przykryj miską i zostaw na 10 minut.`,
+        `Gdy ciasto przestygnie tak, że można je dotknąć, dodaj jajko (${c.g("eggs")}) i wyrabiaj ręką 3–4 minuty na gładką kulę. Przykryj miską i zostaw na 10 minut.`,
         `Wałkuj partiami na grubość 1,5–2 mm, podsypując skrobią lub mąką ryżową. Wykrawaj krążki szklanką, nakładaj farsz i mocno sklejaj brzegi. Wyjdzie ok. ${c.pcs} pierogów.`,
         "Gotuj partiami w dużym garnku osolonej wody na małym wrzeniu. Od wypłynięcia gotuj 2–3 minuty i wyjmuj łyżką cedzakową."
       ] },
@@ -181,7 +181,7 @@
       steps: c => [
         `Twaróg (${c.g("quark")}) zmiel lub dokładnie rozgnieć widelcem na gładko.`,
         `Dodaj jajka (${c.g("eggs")}), roztopione masło, sól i cukier. Wymieszaj.`,
-        `Wsyp mąki (${c.flour}) i szybko zagnieć tylko do połączenia. Długie wyrabianie robi ciasto klejące.`,
+        `Wsyp mąki (${c.flour}) i szybko zagnieć, tylko do połączenia. Od długiego wyrabiania ciasto robi się klejące.`,
         "Podziel na 4 części. Na podsypanej skrobią stolnicy uformuj wałki grubości ok. 2,5 cm i pokrój ukośnie na kawałki.",
         "Gotuj partiami w osolonym wrzątku, 2 minuty od wypłynięcia. Podawaj z masłem i cukrem lub bezglutenową bułką tartą."
       ] },
@@ -350,24 +350,24 @@
         const s = pavlovaSize(c.pw, c.cal), two = c.pcs > 1, W = c.n("whites"), S = c.n("fineSugar");
         const spoons = Math.max(2, Math.round(S / 12.5)), cream = Math.round(W * 2.1 / 10) * 10;
         return [
-          `Białka (${c.g("whites")}) przełóż do czystej miski, przykryj i zostaw na 30–60 minut, aż będą w temperaturze pokojowej. Ciepłe białka dają wyższą pianę, a cukier szybciej się w nich rozpuszcza. Jeśli po oddzielaniu wpadła choćby kropla żółtka, wybierz ją skorupką: tłuszcz nie pozwala urosnąć pianie.`,
+          `Białka (${c.g("whites")}) przełóż do czystej miski, przykryj i odstaw na 30–60 minut, aż osiągną temperaturę pokojową. Z ciepłych białek wychodzi wyższa piana, a cukier szybciej się w nich rozpuszcza. Jeśli przy oddzielaniu do białek trafiła choćby kropla żółtka, wyjmij ją połówką skorupki – tłuszcz nie pozwoli ubić piany.`,
           two
-            ? `Nagrzej piekarnik do 130°C z termoobiegiem (dwie blachy naraz; termoobieg o 20°C niżej niż góra i dół). Na dwóch arkuszach papieru do pieczenia narysuj po okręgu ${s.d} cm i połóż je rysunkiem do dołu na dwóch blachach.`
-            : `Nagrzej piekarnik do 150°C (góra i dół, bez termoobiegu). Na papierze do pieczenia narysuj okrąg ${s.d} cm i połóż go na blasze rysunkiem do dołu.`,
-          `Miskę i końcówki miksera przetrzyj ręcznikiem papierowym zwilżonym octem: resztki tłuszczu niszczą pianę. Cukier (${c.g("fineSugar")}) odmierz do miseczki. W drugiej miseczce wymieszaj skrobię (${c.flour}) z octem lub sokiem z cytryny (${c.g("acid")}) na gładką pastę.`,
-          "Ubijaj białka na średnich obrotach 1–2 minuty, aż piana będzie biała, a z końcówki będą opadać miękkie szczyty.",
-          `Przełącz na najwyższe obroty i dodawaj cukier po 1 łyżce co 20–30 sekund (ok. ${spoons} łyżek, razem ${Math.ceil(spoons * 20 / 60)}–${Math.ceil(spoons * 30 / 60)} minut). Nie spiesz się: cukru jest prawie tyle, ile woda z białek w ogóle może rozpuścić, a każdy nierozpuszczony kryształek w piekarniku zamieni się w kropelkę syropu.`,
-          "Po dodaniu całego cukru ubijaj jeszcze 5–8 minut, aż masa będzie gęsta, lśniąca i będzie stała w sztywnych szczytach (miskę można odwrócić do góry dnem). Rozetrzyj odrobinę masy między palcami: nie może zgrzytać. Jeśli zgrzyta, ubijaj dalej po minucie.",
-          "Zmniejsz obroty do najniższych albo odłóż mikser. Dodaj pastę ze skrobi i octu i wmieszaj szpatułką 3–4 ruchami, tylko do połączenia.",
-          `Przyklej papier do blachy kropelką masy w rogach. Wyłóż masę${two ? " po równo" : ""} w okrąg ${s.d} cm, na wysokość ok. ${String(s.h).replace(".", ",")} cm: najpierw środek, potem brzegi. Brzegi podciągnij szpatułką do góry, a w środku zrób lekkie zagłębienie na krem.`,
+            ? `Nagrzej piekarnik do 130°C z termoobiegiem (przy dwóch blachach naraz; z termoobiegiem temperatura jest o 20°C niższa niż przy grzałce górnej i dolnej). Na dwóch arkuszach papieru do pieczenia narysuj okręgi o średnicy ${s.d} cm i połóż papier na blachach rysunkiem do spodu.`
+            : `Nagrzej piekarnik do 150°C (grzałka górna i dolna, bez termoobiegu). Na papierze do pieczenia narysuj okrąg o średnicy ${s.d} cm i połóż papier na blasze rysunkiem do spodu.`,
+          `Miskę i trzepaczki miksera przetrzyj ręcznikiem papierowym zwilżonym octem – nawet ślad tłuszczu zniszczy pianę. Odważ cukier (${c.g("fineSugar")}) do miseczki. W drugiej miseczce wymieszaj skrobię (${c.flour}) z octem lub sokiem z cytryny (${c.g("acid")}) na gładką pastę.`,
+          "Ubijaj białka na średnich obrotach przez 1–2 minuty, aż piana zbieleje i zacznie tworzyć miękkie szczyty, które opadają po podniesieniu trzepaczki.",
+          `Zwiększ obroty do najwyższych i dosypuj cukier po łyżce co 20–30 sekund (ok. ${spoons} łyżek, łącznie ${Math.ceil(spoons * 20 / 60)}–${Math.ceil(spoons * 30 / 60)} minut). Nie spiesz się: białka są w stanie rozpuścić niewiele więcej cukru, a każdy nierozpuszczony kryształek zamieni się w piekarniku w kropelkę syropu.`,
+          "Gdy dodasz cały cukier, ubijaj jeszcze 5–8 minut, aż masa będzie gęsta, lśniąca i tak sztywna, że nie wypłynie z odwróconej miski. Rozetrzyj odrobinę masy w palcach: nie powinno być czuć kryształków cukru. Jeśli są wyczuwalne, ubijaj dalej i sprawdzaj co minutę.",
+          "Zatrzymaj ubijanie. Dodaj pastę ze skrobi i octu i delikatnie wmieszaj ją szpatułką, 3–4 ruchami, tylko do połączenia.",
+          `Pod rogi papieru nałóż po odrobinie masy, żeby przykleił się do blachy. ${two ? "Podziel masę na pół, wyłóż na narysowane okręgi i uformuj blaty wysokie" : "Wyłóż masę na narysowany okrąg i uformuj blat wysoki"} na ok. ${String(s.h).replace(".", ",")} cm: najpierw nałóż masę na środek, potem rozprowadź ją do brzegów. Boki wygładź szpatułką ku górze, a na środku zrób płytkie wgłębienie na krem.`,
           two
-            ? `Wstaw obie blachy (poziomy 2 i 4) i od razu zmniejsz temperaturę do ${s.T - 20}°C. Piecz ${s.min[0]}–${s.min[1]} minut. Przez pierwszą godzinę nie otwieraj drzwiczek. Beza jest gotowa, gdy jest kremowobiała, sucha i twarda z wierzchu, a po lekkim stuknięciu brzmi głucho.`
-            : `Wstaw blachę na środkowy poziom i od razu zmniejsz temperaturę do ${s.T}°C. Piecz ${s.min[0]}–${s.min[1]} minut. Nie otwieraj drzwiczek. Beza jest gotowa, gdy jest kremowobiała, sucha i twarda z wierzchu, a po lekkim stuknięciu brzmi głucho.`,
-          "Wyłącz piekarnik, uchyl drzwiczki (wsadź w nie drewnianą łyżkę) i zostaw bezę do całkowitego wystygnięcia, co najmniej 2 godziny, najlepiej na noc. Powolne stygnięcie mniej ją rozrywa. Pęknięcia na wierzchu są normalne i znikną pod kremem.",
-          `Najwyżej 1–2 godziny przed podaniem (inaczej krem rozmiękczy bezę): ubij na sztywno ${cream} g bardzo zimnej śmietanki 30–36% z ${Math.round(cream * 0.08)} g cukru pudru. Wyłóż na bezę i ułóż ok. ${Math.round(W * 2.5 / 10) * 10} g owoców: maliny, truskawki, borówki, marakuję. Kwaśne owoce równoważą słodycz.`
+            ? `Wstaw blachy na 2. i 4. poziom i od razu zmniejsz temperaturę do ${s.T - 20}°C. Piecz ${s.min[0]}–${s.min[1]} minut; przez pierwszą godzinę nie otwieraj drzwiczek. Beza jest gotowa, gdy jest kremowobiała, a z wierzchu sucha i twarda – po lekkim stuknięciu brzmi głucho.`
+            : `Wstaw blachę na środkowy poziom i od razu zmniejsz temperaturę do ${s.T}°C. Piecz ${s.min[0]}–${s.min[1]} minut, nie otwierając drzwiczek. Beza jest gotowa, gdy jest kremowobiała, a z wierzchu sucha i twarda – po lekkim stuknięciu brzmi głucho.`,
+          "Wyłącz piekarnik, uchyl drzwiczki (zablokuj je drewnianą łyżką) i zostaw bezę w środku, aż całkiem wystygnie – co najmniej 2 godziny, najlepiej przez noc. Gdy stygnie powoli, mniej pęka. Drobne pęknięcia na wierzchu są normalne, przykryje je krem.",
+          `Bezę udekoruj najwyżej 1–2 godziny przed podaniem, bo krem ją rozmiękcza. Ubij na sztywno ${cream} g bardzo zimnej śmietanki 30–36% z ${Math.round(cream * 0.08)} g cukru pudru, wyłóż na bezę i ułóż na wierzchu ok. ${Math.round(W * 2.5 / 10) * 10} g owoców, np. malin, truskawek, borówek lub marakui. Kwaśne owoce równoważą słodycz.`
         ];
       },
-      tip: "Białka po carbonarze możesz trzymać w lodówce w zamkniętym słoiku do 3 dni albo zamrozić (do 3 miesięcy, rozmrażaj w lodówce). Kilkudniowe białka ubijają się nawet lepiej. Mini bezy: kładź po ok. 60–70 g masy (Ø 8 cm) i piecz w 120°C 45–55 minut. Bezę piecz w suchy dzień: cukier wciąga wilgoć z powietrza i w deszczową pogodę beza robi się lepka. Beza jest z natury bez glutenu, ale sprawdź etykiety skrobi, cukru pudru (bywa ze skrobią) i ekstraktu waniliowego." },
+      tip: "Białka po carbonarze możesz przechować w zamkniętym słoiku w lodówce do 3 dni albo zamrozić na 3 miesiące (rozmrażaj w lodówce). Kilkudniowe białka ubijają się nawet lepiej. Mini bezy: nakładaj po ok. 60–70 g masy (Ø 8 cm) i piecz w 120°C przez 45–55 minut. Bezę najlepiej piec w suchy dzień – cukier wciąga wilgoć z powietrza, więc przy deszczowej pogodzie beza robi się lepka. Beza jest naturalnie bezglutenowa, ale sprawdź etykiety skrobi, cukru pudru (bywa ze skrobią) i ekstraktu waniliowego." },
     { id: "sernik", name: "Sernik (masa sernikowa pieczona)", category: "Ciasta, biszkopty i desery", rheologyClass: "RHEO_FOAM_EMULSION_CAKE",
       basis: "total", flourPct: 2.5, components: [["cheesecakeQuark", 70], ["eggs", 14], ["sugar", 10], ["butterOrCream", 4]], target: { starch: [90, 100], protein: [0, 1], fiber: [0, 1] }, prefer: { szi: 1 },
       unitWeight: 1200, defaultCount: 1, unit: "tortownica 24 cm", bakeNote: "160°C, 60–70 min + 1 h w uchylonym piekarniku", sweet: true,
@@ -431,7 +431,7 @@
         `Wymieszaj kefir (${c.g("kefir")}), jajka (${c.g("eggs")}) i cukier.`,
         `Wsyp mąki (${c.flour}) z sodą i proszkiem i wymieszaj na gęste ciasto.`,
         "Dodaj 2–3 jabłka obrane i pokrojone w plasterki lub kostkę. Odstaw na 10 minut.",
-        `Smaż na rozgrzanym oleju, na średnim ogniu, nakładając po ok. ${c.pw} g ciasta. Po 2–3 minuty z każdej strony.`,
+        `Smaż na rozgrzanym oleju, na średnim ogniu, nakładając po ok. ${c.pw} g ciasta. Smaż po 2–3 minuty z każdej strony.`,
         "Odsącz na ręczniku papierowym i posyp cukrem pudrem."
       ] },
 
@@ -486,7 +486,7 @@
         `Jajka (${c.g("eggs")}) roztrzep widelcem z solą i mlekiem lub wodą.`,
         `Wsyp mąki (${c.flour}) i mieszaj, aż ciasto będzie gładkie i gęste jak gęsta śmietana. Odstaw na 5 minut.`,
         "Doprowadź zupę lub osoloną wodę do wrzenia.",
-        "Wlewaj ciasto cienką strużką z łyżki lub z kubka, przesuwając nad całym garnkiem. Nie mieszaj od razu, poczekaj aż się zetnie.",
+        "Wlewaj ciasto cienką strużką z łyżki lub z kubka, przesuwając nad całym garnkiem. Nie mieszaj od razu – poczekaj, aż się zetnie.",
         "Gotuj 1–2 minuty, aż kluski wypłyną. Podawaj od razu."
       ] },
     // Tarta wytrawna (quiche). Spód kruchy bez cukru + masa jajeczno-śmietankowa. Źródło: klasyczna quiche lorraine (pâte brisée, 3 jajka : 250 ml śmietanki).
@@ -520,7 +520,7 @@
         `Zdejmij z ognia, wsyp od razu wszystkie mąki (${c.flour}) i energicznie mieszaj.`,
         "Postaw z powrotem na małym ogniu i mieszaj 1–2 minuty, aż ciasto odejdzie od ścianek, a na dnie zrobi się cienka warstewka.",
         "Przełóż do miski i studź 5–10 minut.",
-        `Wbijaj jajka po jednym (razem do ${c.g("eggs")}), miksując po każdym. Ciasto ma być gładkie i lśniące i opadać z łyżki w kształt litery V. Ostatnie jajko może nie być potrzebne.`,
+        `Wbijaj jajka po jednym (razem do ${c.g("eggs")}), miksując po każdym. Ciasto ma być gładkie, lśniące i opadać z łyżki w kształcie litery V. Ostatnie jajko może nie być potrzebne.`,
         `Szprycuj rękawem ${c.pcs} ptysi po ok. ${c.pw} g (albo eklery długości 10 cm). Piecz w 200°C 15 minut, potem w 180°C 15–20 minut. Przez pierwsze 20 minut nie otwieraj piekarnika.`,
         "Churros: zamiast pieczenia wyciskaj paski prosto do oleju rozgrzanego do 180°C i smaż na złoto, ok. 2–3 minuty."
       ] },
@@ -554,7 +554,7 @@
         `Dodaj jajka (${c.g("eggs")}), mąki (${c.flour}) i sól. Szybko zagnieć gładkie ciasto.`,
         `Podziel na ${c.pcs} części po ok. ${c.pw} g. Każdą rozpłaszcz na dłoni, włóż śliwkę (bez pestki, w środek możesz dać kostkę cukru) i zlep, tocząc kulkę.`,
         "Gotuj partiami w osolonym wrzątku na małym ogniu, 5–6 minut od wypłynięcia.",
-        "Podawaj polane masłem zrumienionym z bułką tartą bezglutenową i cukrem, ze śmietaną."
+        "Podawaj polane masłem zrumienionym z bezglutenową bułką tartą, posypane cukrem, ze śmietaną."
       ] },
     { id: "kluski_kladzione", name: "Kluski kładzione", category: "Pierogi, kluski i makarony (bez drożdży)", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
       basis: "flour", components: [["eggs", 60], ["milkOrWater", 55], ["salt", 1.5]],
@@ -657,7 +657,7 @@
       basis: "flour", components: [["eggs", 220], ["sugar", 100], ["bakingPowder", 1.0]], target: { starch: [45, 55] }, prefer: { szi: 0.45 },
       unitWeight: 520, defaultCount: 1, unit: "blacha 30 × 40 cm", bakeNote: "180°C, 10–12 min", sweet: true,
       steps: c => [
-        `Białka z jajek (${c.g("eggs")}) ubij ze szczyptą soli na sztywno, dodając stopniowo cukier. Wmiksuj po jednym żółtku.`,
+        `Oddziel białka od żółtek (jajka razem ${c.g("eggs")}). Białka ubij ze szczyptą soli na sztywno, dodając stopniowo cukier. Wmiksuj po jednym żółtku.`,
         `Wsyp przesiane mąki (${c.flour}) z proszkiem i delikatnie wymieszaj łopatką.`,
         "Wylej na blachę wyłożoną papierem i wyrównaj. Piecz w 180°C 10–12 minut, aż będzie sprężysty.",
         "Od razu zwiń ciepły biszkopt razem z papierem lub w ściereczkę oprószoną cukrem pudrem i zostaw do wystygnięcia.",
@@ -841,7 +841,7 @@
         `Zrób szybkie ciasto francuskie: mąki (${c.flour}) z psyllium i solą wymieszaj z zimnym masłem (${c.g("coldButter")}) w kostce, wlej lodowatą wodę (${c.g("iceWater")}) i zbierz bez wyrabiania. Schłódź 30 minut.`,
         "Rozwałkuj i złóż na trzy, schłódź 30 minut. Powtórz 3 razy.",
         `Rozwałkuj na prostokąt grubości 4 mm, posmaruj jajkiem i posyp tartym serem (${c.g("cheese")}), papryką i kminkiem. Lekko wciśnij wałkiem.`,
-        `Pokrój na ${c.pcs} pasków szerokości 1,5 cm i skręć każdy w spiralę. Ułóż na blasze z papierem i schłódź 15 minut.`,
+        `Pokrój na ${c.pcs} ${c.pcs % 10 >= 2 && c.pcs % 10 <= 4 && (c.pcs % 100 < 12 || c.pcs % 100 > 14) ? "paski" : c.pcs === 1 ? "pasek" : "pasków"} szerokości 1,5 cm i skręć każdy w spiralę. Ułóż na blasze z papierem i schłódź 15 minut.`,
         "Piecz w 200°C 15–18 minut, aż będą złote."
       ] },
     { id: "panierka", name: "Panierka do schabowego i kotletów", category: "W kuchni: panierki, sosy, dodatki", rheologyClass: "RHEO_BATTER_COATING_SUSPENSION",
@@ -858,7 +858,7 @@
       basis: "flour", components: [["milk", 1000], ["butter", 100], ["salt", 6]], target: { starch: [80, 100], protein: [0, 8], fiber: [0, 3] }, prefer: { ryz: 0.5 },
       unitWeight: 600, defaultCount: 1, unit: "porcja (do lasagne lub zapiekanki)", bakeNote: "rondel, 5–8 min mieszania",
       steps: c => [
-        `W rondlu roztop masło (${c.g("butter")}). Wsyp mąki (${c.flour}) i mieszaj na małym ogniu 1–2 minuty – to zasmażka. Do zup i sosów możesz skończyć na tym kroku.`,
+        `W rondlu roztop masło (${c.g("butter")}). Wsyp mąki (${c.flour}) i mieszaj na małym ogniu 1–2 minuty – to zasmażka. Jeśli potrzebujesz tylko zasmażki do zupy lub sosu, na tym możesz skończyć.`,
         `Stopniowo wlewaj zimne mleko (${c.g("milk")}), cały czas mieszając trzepaczką, żeby nie było grudek.`,
         "Gotuj na małym ogniu 5–8 minut, mieszając, aż sos zgęstnieje.",
         "Dopraw solą, pieprzem i szczyptą gałki muszkatołowej. Mąka ryżowa i skrobia gęstnieją szybciej niż pszenna – jeśli sos jest za gęsty, dolej mleka.",
@@ -889,7 +889,7 @@
       unitWeight: 30, defaultCount: 18, unit: "róża", bakeNote: "smażenie w 175°C, 1–2 min", sweet: true,
       steps: c => [
         `Mąki (${c.flour}) wymieszaj z cukrem pudrem, proszkiem i solą. Dodaj żółtka (${c.g("yolks")}), śmietanę, roztopione masło i spirytus lub ocet. Zagnieć gładkie ciasto i odstaw pod folią na 20 minut.`,
-        "Rozwałkuj między papierem bardzo cienko (1–2 mm). Wykrawaj krążki w 3 rozmiarach (8, 6 i 4 cm), nacinaj każdy brzeg 5 razy w stronę środka.",
+        "Rozwałkuj między papierem bardzo cienko (1–2 mm). Wykrawaj krążki w 3 rozmiarach (8, 6 i 4 cm), każdy krążek natnij 5 razy od brzegu w stronę środka.",
         `Złóż po jednym krążku z każdego rozmiaru (od największego), sklejając środek kroplą białka i mocno dociskając palcem. Wyjdzie ok. ${c.pcs} róż.`,
         "Smaż w oleju rozgrzanym do 175°C, najpierw stroną z płatkami w dół, 1–2 minuty, aż płatki się rozchylą i zezłocą. Obróć na chwilę.",
         "Odsącz, posyp cukrem pudrem, na środek nałóż konfiturę różaną lub żurawinę."
@@ -898,9 +898,9 @@
       basis: "flour", components: [["eggs", 200], ["sugar", 95], ["cocoa", 15], ["bakingPowder", 1.5]], target: { starch: [45, 55] }, prefer: { szi: 0.4 },
       unitWeight: 650, defaultCount: 1, unit: "tortownica 24 cm", bakeNote: "170°C, 30–35 min", sweet: true,
       steps: c => [
-        `Jajka (${c.g("eggs")}) w temperaturze pokojowej. Białka ubij ze szczyptą soli na sztywno, dodając stopniowo cukier. Wmiksuj po jednym żółtku.`,
+        `Jajka (${c.g("eggs")}) mają mieć temperaturę pokojową. Oddziel białka od żółtek. Białka ubij ze szczyptą soli na sztywno, dodając stopniowo cukier. Wmiksuj po jednym żółtku.`,
         `Mąki (${c.flour}) przesiej z kakao i proszkiem. Wmieszaj delikatnie łopatką w 3 porcjach.`,
-        "Przelej do tortownicy wyłożonej papierem tylko na dnie (boki nie smarowane). Piecz w 170°C 30–35 minut.",
+        "Przelej do tortownicy wyłożonej papierem tylko na dnie (boków nie smaruj). Piecz w 170°C 30–35 minut.",
         "Po upieczeniu upuść formę z wysokości 30 cm na blat (biszkopt mniej opadnie) i wystudź do góry dnem.",
         "Dla większej tortownicy (26 cm) zwiększ ilość o 20%. Przekrój na 3 blaty dopiero następnego dnia, nasącz i przełóż kremem."
       ] },
@@ -987,7 +987,7 @@
       unitWeight: 500, defaultCount: 1, unit: "porcja na 4 jabłka", bakeNote: "frytkownica olejowa, 170°C, 7–8 min, po 4 plastry", sweet: true,
       steps: c => [
         `Wymieszaj mąki (${c.flour}) z proszkiem, cukrem i solą. Dodaj mleko (${c.g("milk")}) i jajka (${c.g("eggs")}), wymieszaj na gęste, gładkie ciasto. Odstaw na 10 minut.`,
-        "Rozgrzej olej we frytkownicy do 170°C (zgaśnie kontrolka grzania). 4 jabłka obierz, wydrąż gniazda nasienne i pokrój w plastry grubości 1 cm.",
+        "Rozgrzej olej we frytkownicy do 170°C (poczekaj, aż zgaśnie kontrolka grzania). 4 jabłka obierz, wydrąż gniazda nasienne i pokrój w plastry grubości 1 cm.",
         "Plastry osusz, obtocz w odrobinie mąki, zanurz w cieście i strzep nadmiar.",
         "Smaż po 4 plastry, 7–8 minut, w połowie obróć szczypcami, aż będą złote.",
         "Odsącz na podniesionym koszu i na ręczniku papierowym. Posyp cukrem pudrem z cynamonem."
@@ -996,7 +996,7 @@
       basis: "flour", components: [["iceWater", 115], ["eggs", 15], ["oil", 5], ["bakingPowder", 2.5], ["salt", 2.0]], prefer: { kuk: 0.15 },
       unitWeight: 450, defaultCount: 1, unit: "porcja na ok. 500 g cebuli", bakeNote: "frytkownica olejowa, 180°C, 4–5 min",
       steps: c => [
-        `Wymieszaj mąki (${c.flour}) z proszkiem i solą. Wlej lodowatą wodę (${c.g("iceWater")}) – może być piwo bezglutenowe – jajko i olej. Wymieszaj krótko, grudki mogą zostać.`,
+        `Wymieszaj mąki (${c.flour}) z proszkiem i solą. Dodaj lodowatą wodę (${c.g("iceWater")}; może być piwo bezglutenowe), jajko i olej. Wymieszaj krótko, grudki mogą zostać.`,
         "Rozgrzej olej we frytkownicy do 180°C. 2–3 duże cebule pokrój w plastry 1 cm i rozdziel na krążki (albo 500 g kalmarów w krążki, osuszonych).",
         "Krążki obtocz w odrobinie mąki, zanurz w cieście, strzep nadmiar.",
         "Smaż partiami 4–5 minut, aż będą złote i chrupiące. Nie przepełniaj kosza.",
@@ -1020,7 +1020,7 @@
         `Wymieszaj mąki (${c.flour}) z proszkiem i solą. W drugiej misce roztrzep jajka (${c.g("eggs")}) z cukrem, jogurtem lub mlekiem (${c.g("milkOrYogurt")}) i olejem.`,
         "Połącz krótko łyżką. Przełóż do rękawa lub woreczka z odciętym rogiem.",
         `Wyciśnij ciasto do silikonowych foremek na donuty (do 3/4 wysokości), po ok. ${c.pw} g. Foremki muszą się zmieścić w koszu z odstępem od grzałki.`,
-        "Rozgrzej frytkownicę 3 min w trybie ręcznym 160°C. Piecz partiami 9–10 minut – komunikat „Potrząśnij” zignoruj. Patyczek ma być suchy.",
+        "Rozgrzej frytkownicę przez 3 minuty w trybie ręcznym na 160°C. Piecz partiami 9–10 minut – komunikat „Potrząśnij” zignoruj. Patyczek ma być suchy.",
         "Wystudź 5 minut w foremkach, wyjmij. Zanurz wierzch w polewie czekoladowej lub lukrze i posyp posypką."
       ] },
     // OptiGrill Elite: tryb ręczny (wyświetlacz pokazuje temperaturę), płyty do gofrów i płyty grillowe.
@@ -1051,7 +1051,7 @@
         `Mąki (${c.flour}) – głównie kukurydzianą – wymieszaj z psyllium i solą. Zalej gorącą wodą (${c.g("hotWater")}), dodaj olej, wymieszaj i odstaw na 10 minut.`,
         `Zagnieć gładkie ciasto (jeśli pęka, dodaj łyżkę wody). Podziel na ${c.pcs} kulek po ok. ${c.pw} g i spłaszcz na placki grubości 1,5 cm.`,
         "Na płytach grillowych w trybie ręcznym ustaw 200°C i poczekaj na sygnał nagrzania. Posmaruj płyty odrobiną oleju.",
-        "Połóż arepy, zamknij grill i piecz 8–10 minut, aż będą złote z obu stron, a postukane brzmią głucho.",
+        "Połóż arepy, zamknij grill i piecz 8–10 minut, aż będą złote z obu stron, a po postukaniu brzmią głucho.",
         "Natnij z boku jak bułkę i nadziej: ser, awokado, fasola, szarpana wieprzowina."
       ] }
 

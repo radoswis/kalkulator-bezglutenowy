@@ -687,18 +687,23 @@ function calc(){syncTex();
  const pr=1+((calib[b.id]&&calib[b.id].proof)||0)/100,rise=`${Math.round(45*pr)}–${Math.round(60*pr)} minut`,rise2=`${Math.round(35*pr)}–${Math.round(45*pr)} minut`;
  const two=!pour&&!cold&&prefs.rise2&&r.binderShare<0.5;
  const s1=hasPsy?`Do dużej miski wlej ${wMain} g ${wTxt}. Rozkrusz w niej drożdże i wymieszaj, aż się rozpuszczą. Wsyp psyllium (najlepiej jasną łuskę – ciemna barwi ciasto) i wymieszaj. Odczekaj 5 minut, aż zrobi się gęsta galaretka.`:`Do dużej miski wlej ${wMain} g ${wTxt} i rozkrusz w niej drożdże${hasXan?", potem wmieszaj gumę ksantanową":""}.`;
- const s2=`Dodaj ${tz?"zaparzkę, ":""}mąki${tz?" (bez odsypanej porcji)":""}, sól${b.sugar?", cukier":""}${b.fat?(b.sweet?", roztopione masło":", oliwę"):""}${hasEggs?" i roztrzepane jajka":""}. Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż zwykłe i tak ma być.`
+ const add2=[...(tz?["zaparzkę"]:[]),"mąki"+(tz?" (bez odsypanej porcji)":""),"sól",...(b.sugar?["cukier"]:[]),...(b.fat?[b.sweet?"roztopione masło":"oliwę"]:[]),...(hasEggs?["roztrzepane jajka"]:[])];
+ const s2=`Dodaj ${add2.slice(0,-1).join(", ")} i ${add2[add2.length-1]}. Wyrabiaj ręką lub mikserem 3–4 minuty, aż ciasto będzie gładkie. Będzie bardziej klejące niż pszenne – tak ma być.`
   +(pour?"":two?` Przykryj miskę i zostaw w ciepłym miejscu na ${rise}, aż ciasto wyraźnie urośnie (pierwsze wyrastanie). Potem wyłóż je na blat i krótko zagnieć, żeby wypuścić powietrze.`:" Przykryj miskę i odstaw ciasto na 15–20 minut, żeby psyllium i mąki dobrze związały wodę (to nie jest wyrastanie). Potem ciasto mniej się klei, lepiej formuje i nie pęka.");
- const shape={RHEO_FREE_STANDING_LOAF:`uformuj ${pcs>1?`${pcs} szt. po około ${pw} g`:"bochenek"}`,RHEO_TENSILE_SHAPED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
-  RHEO_LAMINATED_ROLLED_STUFFED:`podziel na ${pcs} kawałków po około ${pw} g, rozwałkuj, nałóż farsz i zlep lub zwiń`,RHEO_STIFF_EXTRUDED_BOILED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`,
-  RHEO_ENRICHED_BRIOCHE_FRIED:`podziel na ${pcs} kawałków po około ${pw} g i uformuj (${b.unit})`}[cl];
+ // forma „kogo? co?” jednostki do zdania „uformuj …”
+ const UNIT_ACC={bułka:"bułkę",pizza:"pizzę",placek:"placek",bajgiel:"bajgla",precel:"precla",paluch:"palucha",chałka:"chałkę",babka:"babkę",drożdżówka:"drożdżówkę",cynamonka:"cynamonkę",pączek:"pączka",bombolone:"bombolone",bochenek:"bochenek",bagietka:"bagietkę"};
+ const kaw=`${pcs} ${plural(pcs,"kawałek","kawałki","kawałków")} po około ${pw} g`,acc=UNIT_ACC[b.unit]||b.unit;
+ const form=pcs>1?`podziel ciasto na ${kaw} i z każdego uformuj ${acc}`:`uformuj z ciasta ${acc}`;
+ const shape={RHEO_FREE_STANDING_LOAF:form,RHEO_TENSILE_SHAPED:form,
+  RHEO_LAMINATED_ROLLED_STUFFED:pcs>1?`podziel ciasto na ${kaw}, każdy rozwałkuj, nałóż farsz i zlep lub zwiń`:"rozwałkuj ciasto, nałóż farsz i zlep lub zwiń",RHEO_STIFF_EXTRUDED_BOILED:form,
+  RHEO_ENRICHED_BRIOCHE_FRIED:form}[cl];
  const steps=pour?[...(s0?[s0]:[]),s1,s2,
   "Od razu przełóż ciasto do naoliwionej formy lub na blachę i rozprowadź mokrymi dłońmi.",
   cold?"Przykryj formę szczelnie folią i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie urośnie.":`Przykryj ściereczką i zostaw w formie w ciepłym miejscu na ${rise}, aż wyraźnie urośnie. Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać.`,
   `Na koniec: ${b.bakeNote}.`]
  :[...(s0?[s0]:[]),s1,s2,
-  b.shapeStep?b.shapeStep({pcs,pw}):`${two?"Teraz":"Bez wyrastania w misce"} ${shape}. Zwilż dłonie wodą, wtedy ciasto nie klei się do rąk. Ułóż na blasze wyłożonej papierem do pieczenia.`,
-  cold?"Przykryj szczelnie folią, żeby nie obeschły, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie się napuszą.":`Przykryj ściereczką lub folią, żeby nie obeschły, i odstaw w ciepłe miejsce na ${two?rise2:rise}, aż wyraźnie się napuszą${two?" (drugie wyrastanie)":""}.`+(/smaż|patelni/i.test(b.bakeNote)?" W tym czasie przygotuj olej lub patelnię.":" Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać."),
+  b.shapeStep?b.shapeStep({pcs,pw}):`${two?"Teraz":"Od razu, bez wyrastania w misce,"} ${shape}. Zwilż dłonie wodą – wtedy ciasto nie będzie się kleić do rąk. ${pcs>1?"Ułóż je":"Połóż"} na blasze wyłożonej papierem do pieczenia.`,
+  cold?`Przykryj ${pcs>1?"je szczelnie folią, żeby nie obeschły":"ciasto szczelnie folią, żeby nie obeschło"}, i wstaw do lodówki na 8–14 godzin (najlepiej na noc). Rano wyjmij i zostaw w ciepłym miejscu na 30–60 minut, aż wyraźnie ${pcs>1?"urosną":"urośnie"}.`:`Przykryj ${pcs>1?"je ściereczką lub folią, żeby nie obeschły":"ciasto ściereczką lub folią, żeby nie obeschło"}, i odstaw w ciepłe miejsce na ${two?rise2:rise}, aż wyraźnie ${pcs>1?"urosną":"urośnie"}${two?" (drugie wyrastanie)":""}.`+(/smaż|patelni/i.test(b.bakeNote)?" W tym czasie przygotuj olej lub patelnię.":" Po około 30 minutach włącz piekarnik, żeby zdążył się nagrzać."),
   ...(b.preBake?[b.preBake]:[]),
   `Na koniec: ${b.bakeNote}.`];
  const loaf=cl==="RHEO_FREE_STANDING_LOAF"||["chleb_tostowy","babka","chalka"].includes(b.id)||/chleb/.test(b.id);
@@ -755,8 +760,8 @@ const FBI={
  oily:["Nasiąkło tłuszczem",{temp:10}],rawin:["Surowe w środku, z wierzchu gotowe",{temp:-10,time:15}],fdark:["Za ciemne z zewnątrz",{temp:-10}],
  outraw:["Przypieczone z wierzchu, surowe w środku",{temp:-10,time:15}],dried:["Wysuszone",{time:-10}],
  // beza Pavlova: korekty temperatury i czasu trafiają wprost do kroków (pavlovaSize)
- pv_crack:["Mocno popękała, zapadła się",{temp:-10}],pv_weep:["Kropelki syropu na wierzchu",{time:10}],pv_brown:["Zbrązowiała zamiast kremowej",{temp:-10,time:10}],
- pv_soft:["Miękka, lepka skorupka",{time:15}],pv_dry:["Sucha w środku, bez pianki",{time:-15}],pv_hollow:["Skorupka odstaje, pusto pod spodem",{temp:-10}]};
+ pv_crack:["Mocno popękała albo opadła",{temp:-10}],pv_weep:["Kropelki syropu na wierzchu",{time:10}],pv_brown:["Zbrązowiała zamiast kremowej",{temp:-10,time:10}],
+ pv_soft:["Miękka, lepka skorupka",{time:15}],pv_dry:["Sucha w środku, bez pianki",{time:-15}],pv_hollow:["Pod skorupką pusta przestrzeń",{temp:-10}]};
 const FB_BOIL=/pierog|uszk|knedl|kopytk|kluski|gnocchi|pyzy|leniwe|makaron|nokedl|spaetzl|kopytka/;
 const FB_FRYPAN=/placki|racuch|pancake|nalesnik|tortill|arep|langosz/;
 function fbItems(b){const c=b.rheologyClass||"",id=b.id,dev=curDev,L=[];const add=(...k)=>k.forEach(x=>{if(!L.includes(x))L.push(x)});
@@ -918,7 +923,7 @@ function cookView(c){const b=BAKES.find(x=>x.id===c.id);let s=[...c.steps];if(!b
   else{const tips=plain.slice(1).filter(x=>!/^Najpierw płyny/.test(x)||!s.some(y=>/płyn|mleko|wod/i.test(y)));
    s[K]=s[K].replace(/(^|\s)(łyżką|ręką|widelcem|trzepaczką)(?=[\s,.]|$)/i,"$1w MUM5").replace(/\s*\(najwyżej \d+ ruchów\)/,"");
    const FB=s.findIndex(x=>/\bpiecz(?!eni)|\bsmaż|gotuj partiami|nakładaj|przelej|wylej do/i.test(x)),end=FB<0?s.length:FB,left=[];
-   const KEY=[[/^Białka/i,/białk/i],[/^Żółtka/i,/żółtk/i],[/^Mąki/i,/mąk|skrobi/i],[/^(Ser|Masa)/i,/twaróg|\bser|mas[ęa]/i],[/^Mokre|^Dodaj suche/i,/połącz|wymieszaj|zmiksuj/i],[/^Najpierw płyny/i,/mlek|wod|płyn|jajk/i],[/^Wszystkie składniki/i,/utrzyj|zmiksuj|wymieszaj|połącz/i],[/^Bakalie/i,/bakali|czekolad|owoc|rodzyn/i],[/^Zimne masło/i,/masło/i],[/^Jajko lub płyn/i,/jajk|żółtk|wod|śmietan/i],[/^Przed użyciem/i,/odstaw/i],[/^Masło z cukrem/i,/utrzyj|ucier/i],[/^Jajka i płyny/i,/mąk/i],[/^Zaparz/i,/zaparz|garn/i],[/^Jajka dodawaj/i,/jajk/i],[/^Skończ/i,/jajk/i],[/^Przełącz na 7/i,/dodawaj cukier/i],[/^Pastę ze skrobi/i,/dodaj pastę/i]];
+   const KEY=[[/^Białka/i,/białk/i],[/^Żółtka/i,/żółtk/i],[/^Mąki/i,/mąk|skrobi/i],[/^(Ser|Masa)/i,/twaróg|\bser|mas[ęa]/i],[/^Mokre|^Dodaj suche/i,/połącz|wymieszaj|zmiksuj/i],[/^Najpierw płyny/i,/mlek|wod|płyn|jajk/i],[/^Wszystkie składniki/i,/utrzyj|zmiksuj|wymieszaj|połącz/i],[/^Bakalie/i,/bakali|czekolad|owoc|rodzyn/i],[/^Zimne masło/i,/masło/i],[/^Jajko lub płyn/i,/jajk|żółtk|wod|śmietan/i],[/^Przed użyciem/i,/odstaw/i],[/^Masło z cukrem/i,/utrzyj|ucier/i],[/^Jajka i płyny/i,/mąk/i],[/^Zaparz/i,/zaparz|garn/i],[/^Jajka dodawaj/i,/jajk/i],[/^Skończ/i,/jajk/i],[/^Przełącz na 7/i,/cukier po łyżce/i],[/^Pastę ze skrobi/i,/dodaj pastę/i]];
    for(const t of tips){const kw=(KEY.find(([a])=>a.test(t))||[])[1];let j=-1;if(kw){for(let x=i;x<end;x++)if(kw.test(s[x])){j=x;break}if(j<0)continue}else if(K>=i&&K<end)j=K;if(j<0){left.push(t);continue}s[j]=s[j].replace(/\s*$/,"")+" MUM5: "+t.replace(/\.$/,"")+"."}
    s.splice(i,0,head+(left.length?" "+left.map(x=>x.replace(/\.$/,"")).join("; ")+".":""))}}}
  const k=curDev;if(k==="uni"||k==="stove")return cap(s);const f=k==="gorenje"?{ok:"yes"}:devFit(b,k),h=devCard(b);if(!h)return cap(s);
@@ -1320,7 +1325,7 @@ const AIR_NO=[[L("biszkopt biszkopt_kakaowy rolada biszkopty_tiramisu torta_capr
  [L("bao pampuchy"),"To ciasto gotowane na parze."],
  [L("tortilla czapati piadina placki_dymka gozleme podplomyki"),"Placki z suchej patelni – na patelni albo w OptiGrillu wyjdą lepiej."],
  [L("strucla_makowa paska chleb_tostowy"),"Za duże na komorę 3,5 l (forma się nie zmieści)."],
- [L("pavlova"),"Beza suszy się prawie 2 godziny w 120°C i stygnie w zamkniętej komorze – silny nawiew ją spęka i zbrązowi."]];
+ [L("pavlova"),"Beza suszy się prawie 2 godziny w 120°C, a potem powoli stygnie w piekarniku – silny nawiew frytkownicy sprawi, że popęka i zbrązowieje."]];
 const OPTI_PLATE=L("piadina tortilla czapati podplomyki naan pita gozleme placki_dymka english_muffin");
 const OPTI_WAFFLE=L("gofry gofry_bialkowe gofry_ziemniaczane gofry_pizzowe");
 const OPTI_TRAY=L("brownie ciasto_jogurtowe placek_kruszonka crumble clafoutis pizza_patelnia focaccia quiche lasagne cookies murzynek");
@@ -1392,7 +1397,7 @@ function mumSpec(b){const c=b.rheologyClass||"",id=b.id,W="Składniki odważ wcz
  if(/CURD_POTATO/.test(c))return{tool:"flexi",sp:[1,2],main:1,steps:["Załóż <b>Profi Flexi</b>. "+W,`Mieszaj tylko <b>30–60 s na 1–2</b>, do połączenia – dłużej i masa zrobi się rzadka. ${T}`]};
  if(/SHORTCRUST/.test(c)){if(MUM_LAM.has(id))return{tool:"hak",sp:[1,2],main:2,steps:["Załóż <b>hak</b>. "+W,"Ciasto bazowe: <b>30 s na 1, potem 2 min na 2</b>. "+T,"Wkładanie masła i składanie rób ręcznie."]};
   return{tool:"flexi",sp:[1,2],main:2,steps:["Załóż <b>Profi Flexi</b>. "+W,"Zimne masło w kostce, mąki i cukier: <b>30–60 s na 2</b>, aż powstanie kruszonka.",`Jajko lub płyn dodaj na 1 i mieszaj <b>najwyżej 30 s</b>, tylko do połączenia. Resztę zagnieć ręką w kulę. ${T}`]}}
- if(id==="pavlova")return{tool:"whisk",sp:[4,7],main:7,steps:["Załóż <b>końcówkę do ubijania</b>. Misę i końcówkę przetrzyj octem – nawet ślad tłuszczu niszczy pianę. "+W,"Białka: <b>1–2 min na 4</b>, do miękkiej piany.",`Przełącz na <b>7</b> i dosypuj cukier łyżką przez otwór w pokrywie co 20–30 s. Po całym cukrze jeszcze <b>5–8 min na 7</b>, aż masa nie zgrzyta między palcami. ${T}`,"Pastę ze skrobi i octu wmieszaj ręcznie szpatułką (albo 10 s na 1)."]};
+ if(id==="pavlova")return{tool:"whisk",sp:[4,7],main:7,steps:["Załóż <b>końcówkę do ubijania</b>. Misę i końcówkę przetrzyj octem – nawet ślad tłuszczu niszczy pianę. "+W,"Białka: <b>1–2 min na 4</b>, aż powstanie miękka piana.",`Przełącz na <b>7</b> i dosypuj cukier po łyżce przez otwór w pokrywie co 20–30 s. Po dodaniu całego cukru ubijaj jeszcze <b>5–8 min na 7</b>, aż w masie nie będzie czuć kryształków. ${T}`,"Pastę ze skrobi i octu wmieszaj ręcznie szpatułką (albo 10 s na 1)."]};
  if(/FOAM/.test(c)){if(/sernik|brownie|lava/.test(id))return{tool:"flexi",sp:[1,3],main:2,steps:["Załóż <b>Profi Flexi</b>. "+W,`${id==="sernik"?"Ser z cukrem":"Masa"}: <b>1 min na 2</b>, potem jajka po jednym, każde ok. 20 s na 2.`,`Mąki na końcu: <b>15 s na 1</b> – nie napowietrzaj za mocno. ${T}`]};
   return{tool:"whisk",sp:[4,7],main:7,steps:["Załóż <b>końcówkę do ubijania</b>. Miska i końcówka muszą być czyste i suche. "+W,`Białka: <b>3–4 min na 7</b>, cukier dosypuj łyżką przez otwór w pokrywie. ${T}`,"Żółtka dodawaj po jednym na 4.","Mąki wmieszaj ręcznie szpatułką albo Profi Flexi <b>10–15 s na 1</b>."]}}
  if(/BATTER/.test(c))return{tool:"flexi",sp:[1,3],main:3,steps:["Załóż <b>Profi Flexi</b>. "+W,"Najpierw płyny i jajka, potem mąki.",`<b>30 s na 1</b>, potem <b>1 min na 3</b>, aż bez grudek. ${T}`,"Przed użyciem zmiksuj jeszcze 10 s na 2."]};
