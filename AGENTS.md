@@ -88,7 +88,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 
 ## Testy (2.24)
 - `node tests/proporcje.js` – proporcje wszystkich przepisów (spiżarnie, porcje, mąka z nazwy). Kod 1 = błąd.
-- `python3 tests/kroki.py` – tryb gotowania: przepis × urządzenie × MUM5 (Playwright + Chrome), reguły kolejności. Kod 1 = błąd.
+- `node tests/kroki.js` – tryb gotowania: przepis × urządzenie × MUM5 (Playwright dla Node, własny serwer plików), reguły kolejności. Kod 1 = błąd. `tests/kroki.py` = ta sama wersja w Pythonie (wymaga `pip install playwright`).
 - Uruchom oba przed każdym wdrożeniem zmieniającym przepisy, kroki, urządzenia lub MUM5. Katalog tests/ jest w .assetsignore.
 
 ## Testy (uruchom przed każdym wdrożeniem)
@@ -96,7 +96,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - `node tests/obciazenie.js` – każdy przepis × 10 spiżarni × 3 ilości × 6 ustawień (bilans masy, ujemne gramy, teksty kroków, wartości odżywcze).
 - `node tests/synchronizacja.js` – scalanie stanu i API stanu z udawanym KV.
 - `node tests/minutniki.js` – API minutników, cron i podpis powiadomień (udawany KV i serwer push).
-- `python3 tests/kroki.py` – kroki w przeglądarce (wymaga `pip install playwright`).
+- `node tests/kroki.js` – kroki w przeglądarce (Playwright dla Node; zapasowo `python3 tests/kroki.py`).
 
 ## Beza Pavlova i przepisy „od składnika” (2.28)
 - Pole `anchor: {key, per, def}` w przepisie bezdrożdżowym = liczymy od składnika, który użytkownik MA (beza: białka). UI (`qtyLabels`, `pcsOf`) pyta o liczbę sztuk (× `per` g) albo gramy; `calculateRecipe({..., anchorGrams})` wylicza masę całości z `anchorPct(b)`, kotwica = dokładnie podane gramy, bilans domyka największy inny składnik; procenty w tabeli od masy kotwicy.
