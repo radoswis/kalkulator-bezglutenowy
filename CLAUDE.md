@@ -1,4 +1,6 @@
 # Zasady dla Claude
+
+@AGENTS.md
 ## Oszczędzanie tokenów
 - Odpowiadaj krótko, po polsku. Bez podsumowań tego, co zrobiłeś krok po kroku.
 - Czytaj tylko pliki potrzebne do zadania; używaj grep/fragmentów zamiast całych plików.
