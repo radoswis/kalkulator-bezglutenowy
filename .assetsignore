@@ -14,3 +14,4 @@ tests/**
 .gitignore
 .vapid-private.json
 .vapid-public.txt
+docs/
