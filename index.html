@@ -643,7 +643,7 @@ const SIMILAR={focaccia:[85],pizza_blacha:[85],pizza_patelnia:[85],langosz:[88],
  czapati:[80],placki_dymka:[78,"mniej elastyczne warstwy"],gozleme:[82],francuskie:[72,"rośnie i listkuje się słabiej niż pszenne"],paluchy_francuskie:[78],panierka:[97,"często bardziej chrupiąca"],
  beszamel:[97],lamance:[92],baranek:[94],roze_karnawalowe:[78,"płatki cieńsze trudniej uzyskać"],biszkopt_kakaowy:[93],paluszki_serowe:[95],muffinki_wytrawne:[94],gougeres:[85,"rosną trochę słabiej"],
  placuszki_bananowe:[97],gofry_bialkowe:[95],scones:[92],gofry_ziemniaczane:[97],gofry_pizzowe:[95],
- paczki_air:[75,"pieczone, więc bardziej bułeczkowe niż smażone"],donuty_air:[92],jablka_w_ciescie:[97],krazki_cebulowe:[97],pieczarki_w_ciescie:[97],gofry_czekoladowe:[95],gofry_kukurydziane:[96],arepy:[100,"arepy są z natury bezglutenowe"],pavlova:[100,"beza jest z natury bezglutenowa"]};
+ paczki_air:[75,"pieczone, więc bardziej bułeczkowe niż smażone"],donuty_air:[92],jablka_w_ciescie:[97],krazki_cebulowe:[97],pieczarki_w_ciescie:[97],gofry_czekoladowe:[95],gofry_kukurydziane:[96],arepy:[100,"arepy są z natury bezglutenowe"],pavlova:[100,"beza jest z natury bezglutenowa"],zapiekanki:[85,"skórka cieńsza i mniej chrupiąca niż pszenna, ale pod pieczarkami i serem różnica jest mała"]};
 function simHtml(id,fam){const v=SIMILAR[id];if(!v)return"";const [p,n]=v;
  const lvl=p>=90?"prawie jak pszenne":p>=80?"bardzo podobne":p>=70?"podobne, z różnicami":"wyraźnie inne";
  return `<div>Podobieństwo do pszennego: <b>${p}%</b> – ${lvl}${n?`. ${n[0].toUpperCase()+n.slice(1)}.`:""}</div><div class="simbar"><i style="width:${p}%"></i></div>`+
@@ -707,6 +707,7 @@ function calc(){syncTex();
   ...(b.preBake?[b.preBake]:[]),
   `Na koniec: ${b.bakeNote}.`];
  const loaf=cl==="RHEO_FREE_STANDING_LOAF"||["chleb_tostowy","babka","chalka"].includes(b.id)||/chleb/.test(b.id);
+ if(b.afterBake)steps.push(...[].concat(b.afterBake({pcs,pw})));
  if(loaf)steps.push("Wyjmij z formy i studź na kratce co najmniej 2 godziny przed krojeniem. Miąższ bezglutenowy ścina się dopiero podczas studzenia; pokrojony na ciepło będzie kleisty.");
  cur={id:b.id,title:b.name,steps,lines:r.lines,pcs};
  const tip=pour?"":two?`<div class="note">Wybrałeś dwa wyrastania: przy cieście z samych mąk i większej ilości psyllium ciasto zniesie odgazowanie. Jeśli po uformowaniu słabo rośnie, wróć do jednego wyrastania.</div>`:`<div class="note">Ciasto bezglutenowe rośnie tylko raz. Jeśli wyrośnie w misce, a potem je ugnieciesz, już się nie podniesie, dlatego formujemy od razu.</div>`;
@@ -1198,7 +1199,7 @@ const THEMES=[
  ["Święta i okazje",TH("pavlova uszka lamance pierniczki piernik strucla_makowa paska baranek babka mazurek sernik faworki roze_karnawalowe paczki rogale_marcinskie biszkopt biszkopt_kakaowy chalka szarlotka tartaletki rolada")],
  ["Śniadanie",TH("donuty_air pancakes placuszki_bananowe gofry_bialkowe scones bliny nalesniki placki_twarogowe chleb_proteinowy chleb_owsiany english_muffin bulki_ziarniste kajzerki buleczki_maslane brioche croissant drozdzowki banana_bread muffinki")],
  ["Na obiad",TH("pierogi uszka knedle kopytka kluski_slaskie kluski_kladzione kluski_lane leniwe gnocchi pyzy placki_ziemniaczane ravioli lasagne gyoza makaron panierka beszamel tempura quiche pampuchy gozleme calzone pierogi_drozdzowe")],
- ["Przekąski i do pudełka",TH("krazki_cebulowe pieczarki_w_ciescie pizzerinki paluszki_serowe muffinki_wytrawne krakersy taralli grissini paszteciki gougeres paluchy_francuskie precle bulki_czosnkowe gofry_pizzowe cebularze piadina pide")],
+ ["Przekąski i do pudełka",TH("zapiekanki krazki_cebulowe pieczarki_w_ciescie pizzerinki paluszki_serowe muffinki_wytrawne krakersy taralli grissini paszteciki gougeres paluchy_francuskie precle bulki_czosnkowe gofry_pizzowe cebularze piadina pide")],
  ["Bez drożdży (szybciej)",null]];
 const plural=(n,a,b,c)=>n===1?a:(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?b:c;
 const byName=(a,b)=>a.name.localeCompare(b.name,"pl");
@@ -1257,7 +1258,7 @@ const GOR={
 const GOR_ID={
  // pieczywo z parą
  chleb_jasny:"gdp",chleb_gryczany:"gdp",bagietka:"gdp",ciabatta:"gdp",chleb_tostowy:"gdp",chleb_ziarnisty:"gdp",chleb_owsiany:"gdp",chleb_proteinowy:"gdp",bulka_tarta:"gdp",
- kajzerki:"gdp",hamburger:"gdp",subway:"gdp",bulki_ziarniste:"gdp",pide:"gdp",bajgle:"gdp",precle:"gdp",chalka:"gdp",brioche:"gdp",
+ kajzerki:"gdp",zapiekanki:"gdp",hamburger:"gdp",subway:"gdp",bulki_ziarniste:"gdp",pide:"gdp",bajgle:"gdp",precle:"gdp",chalka:"gdp",brioche:"gdp",
  // pizza i chrupiący spód
  pizza_neapol:"pizza",pinsa:"pizzap",pita:"pizza",pizza_blacha:"pizza",pizza_patelnia:"pizza",focaccia:"pizzap",calzone:"pizza",cebularze:"pizza",pizzerinki:"pizza",
  quiche:"pizza",tarta:"pizza",szarlotka:"pizza",crostata:"pizza",mazurek:"pizza",
@@ -1318,6 +1319,7 @@ const AIR_PART={
  pizza:[L("pizza_patelnia pizza_blacha pizza_neapol pinsa focaccia calzone"),"Jeden placek do 18 cm średnicy naraz, na papierze perforowanym. Dodatki dopiero na podpieczony spód (po 4–5 min)."],
  cake:[L("banana_bread babka_piaskowa marchewkowe ciasto_jogurtowe murzynek piernik placek_kruszonka quiche tarta szarlotka crostata mazurek francuskie lasagne"),"Połowa porcji w foremce 16–18 cm. Wierzch szybko się rumieni – po 10 minutach przykryj folią."],
  fried:[L("paczki bomboloni oponki panzerotti paczki_serowe langosz panierka"),"Wersja pieczona zamiast smażonej: posmaruj lub spryskaj olejem, układaj w jednej warstwie z odstępami. Wyjdą mniej puszyste i mniej rumiane niż z oleju."],
+ zap:[L("zapiekanki"),"Bułka 24 cm nie zmieści się w koszu: uformuj krótsze, ok. 16 cm (po ok. 100 g), i piecz po 2 naraz. Same zapiekanki z gotowych bułek wychodzą tu szybko – ser rumieni się w kilka minut."],
  boiled:[L("pierogi kopytka gnocchi placki_ziemniaczane"),"Najpierw zrób jak w przepisie (ugotuj lub uformuj), potem odsmaż bez tłuszczu: posmaruj olejem, 200°C, 8–12 min, w połowie obróć."]};
 const AIR_NO=[[L("biszkopt biszkopt_kakaowy rolada biszkopty_tiramisu torta_caprese sernik"),"Silny nawiew i mała komora: biszkopt opadnie, a sernik upiecze się nierówno."],
  [L("nalesniki pancakes racuchy bliny placuszki_bananowe placki_twarogowe gofry gofry_bialkowe gofry_ziemniaczane gofry_pizzowe"),"Ciasto lejące – potrzebna patelnia albo gofrownica (gofry: OptiGrill z płytami do gofrów)."],

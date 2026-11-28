@@ -1084,7 +1084,7 @@
     chleb_jasny: 1, chleb_gryczany: 1, chleb_tostowy: 1, ciabatta: 1, bagietka: 1,
     hamburger: 2, subway: 2, kajzerki: 2, english_muffin: 2, brioche: 2, bajgle: 2, precle: 2, grissini: 2,
     calzone: 3, paszteciki: 3, pierogi_drozdzowe: 3, chalka: 3, babka: 3, drozdzowki: 3, cynamonki: 3, buleczki_maslane: 3, paczki: 3, placek_kruszonka: 3,
-    chleb_ziarnisty: 1, chleb_owsiany: 1, bulki_ziarniste: 2, cebularze: 2, pide: 2, bulki_czosnkowe: 2, szneki: 3, jagodzianki: 3, strucla_makowa: 3, rogaliki_drozdzowe: 3, pampuchy: 3
+    chleb_ziarnisty: 1, chleb_owsiany: 1, bulki_ziarniste: 2, cebularze: 2, pide: 2, bulki_czosnkowe: 2, zapiekanki: 2, szneki: 3, jagodzianki: 3, strucla_makowa: 3, rogaliki_drozdzowe: 3, pampuchy: 3
   };
   for (const b of BAKES) { b.category = OLD_CATEGORIES[YEAST_CATEGORY[b.id] ?? 3]; b.family = "yeast"; }
   for (const b of PASTRY_BAKES) b.family = "pastry";

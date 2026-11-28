@@ -161,6 +161,24 @@
     { id: "hamburger",   name: "Bułki hamburgerowe",    rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 1.45, fat: 7, sugar: 5, eggs: 8, unitWeight: 90, defaultCount: 8, unit: "bułka", bakeNote: "200°C, 18 min" },
     { id: "subway",      name: "Bułki subway / hot dog", rheologyClass: "RHEO_TENSILE_SHAPED", salt: 1.8, yeastDry: 1.45, fat: 6, sugar: 4, eggs: 5, unitWeight: 110, defaultCount: 6, unit: "bułka", bakeNote: "200°C, 20 min" },
     { id: "kajzerki",    name: "Kajzerki",              rheologyClass: "RHEO_TENSILE_SHAPED", salt: 2.0, yeastDry: 1.45, fat: 4, sugar: 2, eggs: 0, unitWeight: 80, defaultCount: 8, unit: "bułka", bakeNote: "220°C, 20 min z parą" },
+    // Bułki do zapiekanek (jak z budki): połówka długiej, miękkiej bagietki, ok. 24 cm. Ciasto chude jak bagietka (pszenne: woda 64–75%, sól 2%,
+    // drożdże 2% świeżych – Bora, Thermomix, Umami), ale z odrobiną oleju i cukru, żeby skórka była cienka i miękka, a miąższ delikatny.
+    // Wersje bezglutenowe: N. Devlin (Real Bread Campaign) – woda+białka 100% mąk, psyllium 2,6%, 260°C z parą; Elavegan – woda 109%, psyllium 9% (proszek).
+    // Tu hydratacja na górze klasy formowanej (85%, miękki miąższ), pieczenie 220°C z parą (cienka skórka), studzenie pod ściereczką.
+    { id: "zapiekanki", name: "Bułki do zapiekanek (jak z budki)", rheologyClass: "RHEO_TENSILE_SHAPED", hydration: 85, salt: 1.9, yeastDry: 1.45, fat: 4, sugar: 3, eggs: 0, unitWeight: 150, defaultCount: 4, unit: "bułka", bakeNote: "220°C, 18–20 min z parą",
+      shapeStep: c => {
+        const len = Math.max(14, Math.min(30, Math.round(c.pw * 0.16)));
+        return `Od razu, bez wyrastania w misce, podziel ciasto na ${pl(c.pcs, "kawałek", "kawałki", "kawałków")} po ${c.pw} g – każdy odważ na wadze. Zwilż dłonie wodą. Każdy kawałek rozpłaszcz na prostokąt ok. ${Math.round(len * 0.4)} × ${Math.round(len * 0.65)} cm, zwiń ciasno wzdłuż dłuższego boku i mocno dociśnij złączenie. Tocząc wałek dłońmi od środka na boki, wydłuż go do ok. ${len} cm i zaokrąglij końce. Ułóż bułki złączeniem do spodu na blasze wyłożonej papierem do pieczenia, co najmniej 6 cm od siebie, bo rosną też na szerokość.`;
+      },
+      preBake: "Gdy bułki wyrosną, delikatnie zwilż je wodą (pędzelkiem albo spryskiwaczem) – skórka będzie cieńsza i bardziej miękka. Ostrym nożem zrób na każdej 3 płytkie, ukośne nacięcia, głębokie na ok. 5 mm.",
+      afterBake: c => {
+        const n = c.pcs, mush = n * 100, onion = n * 25, cheese = n * 50;
+        return [
+          "Od razu przełóż bułki na kratkę i przykryj czystą ściereczką. Para zostanie pod spodem i skórka zmięknie jak w bułkach z budki. Studź co najmniej 30 minut – na ciepło miąższ jest jeszcze kleisty.",
+          `Na zapiekanki (${pl(n, "bułka", "bułki", "bułek")}): ${mush} g pieczarek pokrój w plasterki, a ${onion} g cebuli w drobną kostkę. Podsmaż je na łyżce masła na dużym ogniu przez 8–10 minut, aż odparuje woda, i dopraw solą oraz pieprzem.`,
+          `Przekrój bułki wzdłuż na połowy i posmaruj je cienko masłem. Rozłóż na nich pieczarki z cebulą i posyp startym serem (${cheese} g – najlepiej gouda albo mozzarella). Zapiekaj w 220°C przez 8–10 minut, aż ser się roztopi i zrumieni. Podawaj z ketchupem i szczypiorkiem.`
+        ];
+      } },
     // English muffin (bułeczki do McMuffina): wilgotne ciasto mleczne, pieczone na patelni. Źródło: klasyczne receptury (P. Reinhart, King Arthur), hydratacja podniesiona – ciasto miękkie.
     { id: "english_muffin", name: "English muffin (bułeczki do McMuffina)", rheologyClass: "RHEO_TENSILE_SHAPED", hydration: 86, salt: 1.8, yeastDry: 1.45, fat: 5, sugar: 3, eggs: 0, unitWeight: 80, defaultCount: 8, unit: "bułeczka", bakeNote: "patelnia",
       shapeStep: c => `Od razu, bez wyrastania w misce, podziel ciasto na ${pl(c.pcs, "kawałek", "kawałki", "kawałków")} po około ${c.pw} g. Mokrymi dłońmi zrób kulki i spłaszcz je na placki grubości ok. 2 cm (średnica 8–9 cm). Każdy obtocz z obu stron w kaszce kukurydzianej lub mące kukurydzianej i ułóż na blasze z papierem, z odstępami.`,
@@ -268,6 +286,7 @@
     ciabatta: [230, 25, 30, "steam"], chleb_jasny: [220, 45, 55, "twoStage"], chleb_gryczany: [220, 50, 60, "twoStage"], bagietka: [240, 22, 25, "steam"],
     pizza_neapol: [300, 6, 8, "stone"], pita: [260, 4, 5, "stone"], naan: [0, 2, 2, "pan"],
     hamburger: [200, 16, 18], subway: [200, 18, 20], kajzerki: [220, 18, 20, "steam"],
+    zapiekanki: [220, 16, 18, "steam"], // jak bagietka pszenna 230°C/20 min, niżej i krócej – miękka, cienka skórka
     calzone: [240, 12, 15, "filled"], paszteciki: [200, 14, 17, "filled"] /* kalibracja 11.11: 200°C/16 min = wierzch gotowy, środek o chwilę za krótko → 180°C, 20–24 min */, pierogi_drozdzowe: [190, 18, 20, "filled"],
     bajgle: [210, 18, 20, "boil"], precle: [210, 13, 15, "boil"], grissini: [200, 13, 15],
     chalka: [180, 30, 35], babka: [175, 45, 50], drozdzowki: [180, 18, 20], cynamonki: [180, 20, 22], buleczki_maslane: [190, 16, 18],

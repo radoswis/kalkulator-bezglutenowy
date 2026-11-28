@@ -10,7 +10,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - Bez logowania. Dwie osoby w domu, wspólne dane.
 - Działa na telefonie (Samsung S21 Ultra) i laptopie.
 
-## Stan obecny (v2.28 – 138 przepisów: 52 drożdżowe + 86 bezdrożdżowych)
+## Stan obecny (v2.29 – 139 przepisów: 53 drożdżowe + 86 bezdrożdżowych)
 - `engine.js` – silnik (globalny `GFEngine`, działa też w Node: `require("./engine.js")`). Typy w JSDoc.
   - `INGREDIENT_MATRIX` – składniki: `macros` (g/100 g), `wac_cold`, `wac_hot` (na razie informacyjnie), `flavorProfile`, `role`, mixy: `isCommercialMix`, `hasHPMC`, `starchBase`, `mixPriority`; `maxShare` = limit udziału.
   - `RHEOLOGY_CLASSES` – 6 klas reologicznych: zakresy hydratacji bazowej, psyllium, tłuszczu, jajek, cukru i cel profilu mąk (skrobia = udział frakcji skrobiowej, białko, błonnik).
@@ -49,7 +49,7 @@ Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zazna
 - Zaparzka (index.html, `tzOn`): klasy formowane/wałkowane/bogate (bez pizzy neapolitańskiej i pity) + chleb tostowy: 5% mąk + 5× woda, brane z odważonych składników (bilans bez zmian); ciasta niewlewane: 15–20 min odpoczynku przed formowaniem.
 - Psyllium wg The Loopy Whisk (engine.js: `hasBinder`, `binderShareOf`, `PSY_PURE` per klasa, `PSY_POWDER`=0,85, `PSY_WATER_PER_PCT`=8): ilości klas zakładają mieszankę ze spoiwem (HPMC/guma/płesznik); przy samych mąkach psyllium rośnie do `PSY_PURE` proporcjonalnie do udziału mąk bez spoiwa, +8 pkt % wody na każdy dodatkowy 1%. `psyForm` ("husk"/"powder") z `prefs.psyForm`. Ostrzeżenie, gdy płyn < 10× psyllium. pastry.js: `XAN_CLASS` – ksantan w kruchych/biszkoptach/muffinkach, gdy mąki bez spoiwa i ksantan w spiżarni. `mixdom` = domowa mieszanka 5:3:2 (idealExclude). index.html: `prefs.rise2` – dwa wyrastania (opcja, tylko gdy binderShare < 0,5); studzenie bochenków ≥ 2 h.
 - Podobieństwo do pszennego (index.html: `SIMILAR`, `simHtml`): szacunek % + uwaga per przepis, pokazywany pod opisem przepisu. Nowy przepis = dopisz wpis do `SIMILAR`.
-- Przepis drożdżowy może mieć `shapeStep(ctx)` (własny krok formowania zamiast ogólnego z klasy) i `preBake` (krok tuż przed pieczeniem); tryb pieczenia `griddle` = sucha patelnia (English muffin).
+- Przepis drożdżowy może mieć `shapeStep(ctx)` (własny krok formowania zamiast ogólnego z klasy) i `preBake` (krok tuż przed pieczeniem); tryb pieczenia `griddle` = sucha patelnia (English muffin); `afterBake(ctx)` (v2.29) = krok lub lista kroków po pieczeniu (np. studzenie i składanie zapiekanek). W `afterBake` unikaj słów mieszania (wymieszaj, ubij) – test kroków traktuje je jako błąd po pieczeniu.
 - Kategorie w UI (v2.16): `CATEGORIES` = 12 rodzajów wypieku (pastry.js). Starsze przypisania (`YEAST_CATEGORY` → `OLD_CATEGORIES`, pola `category`) przemapowane przez `CAT_FROM_OLD`, wyjątki w `CAT_BY_ID`. Nowy przepis: daj `category` z nowej listy (pastry) albo wpis w `CAT_BY_ID` (drożdżowe). Tematy w index.html: `THEMES` (listy id; null = wszystkie bez drożdży) – nowy przepis dopisz do pasujących tematów. Ikony kafelków `CAT_ICON` w kolejności `CATEGORIES`.
 - Ciasta laminowane (v2.16): pole `laminate` w przepisie drożdżowym (klasa wzbogacona) = masło do przekładania jako ułamek masy ciasta; UI dopisuje osobną pozycję „Masło do przekładania” (klucz `butter`, wliczane w wartości odżywcze), bez zaparzki; technika składania w `shapeStep`. Bezdrożdżowe francuskie = klasa kruchych z zimnym masłem i składaniem w krokach.
 - `index.html` – interfejs; spiżarnia i własne mąki w `localStorage`.
