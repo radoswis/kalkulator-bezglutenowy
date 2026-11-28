@@ -1,108 +1,37 @@
-# Instrukcje dla asystentów AI (Claude, ChatGPT/Codex, Google Antigravity)
+# Kalkulator bezglutenowy — zasady dla agentów
 
-Czytaj ten plik przed każdą zmianą. Odpowiadaj i komentuj po polsku.
+Odpowiadaj po polsku. Szczegóły każdego modułu: `docs/SZCZEGOLY.md` — czytaj tylko potrzebny fragment (grep po nazwie), nie całość.
 
-## Cel aplikacji
-Kalkulator bezglutenowych ciast drożdżowych. Użytkownik wybiera wypiek, zaznacza mąki, które ma, podaje ilość (sztuki lub gramy). Aplikacja sama dobiera najlepszą mieszankę z posiadanych mąk i liczy gramy: mąki, woda, psyllium, sól, drożdże, tłuszcz, cukier, jajka. Cel: ciasto jak najbliższe glutenowemu.
+## Cel i warunki
+Kalkulator ciast bezglutenowych (drożdżowe + bezdrożdżowe): z mąk w spiżarni dobiera mieszankę i liczy gramy, by ciasto było jak najbliższe pszennemu.
+- Tylko darmowe usługi (GitHub, Cloudflare Workers/KV w darmowych limitach, Open Food Facts).
+- Bez logowania, dwie osoby w domu, wspólne dane. Telefon (Samsung S21 Ultra) i laptop.
+- Bez frameworków i builda. Współczynniki są szacunkowe.
 
-## Warunki twarde
-- Tylko darmowe rozwiązania (GitHub, Cloudflare Pages/Workers/D1 w limitach darmowych, Open Food Facts, Tesseract.js).
-- Bez logowania. Dwie osoby w domu, wspólne dane.
-- Działa na telefonie (Samsung S21 Ultra) i laptopie.
+## Mapa plików
+| Plik | Co tam jest |
+|---|---|
+| engine.js | `GFEngine`: składniki `INGREDIENT_MATRIX`, klasy `RHEOLOGY_CLASSES`, przepisy drożdżowe `BAKES`, `solveFlourBlend`, `calculateLaboratoryFormulation`, `ovenPlan`, smak `FLAVOR`, tekstura `TEXTURE`, psyllium |
+| pastry.js | przepisy bezdrożdżowe `PASTRY_BAKES`, klasy 7–12, `solvePastryBlend`, `calculateRecipe` (wspólne wejście), `CATEGORIES`, `PAV` |
+| nutrition.js | `nutritionOf` — wartości odżywcze |
+| sync.js | `GFSync.mergeState` — scalanie stanu domu |
+| worker.js | API: `/api/state` (KV), `/api/off`, `/api/label` (Workers AI), `/api/timers` + cron push |
+| index.html | cały interfejs: widoki, spiżarnia, urządzenia (`DEVS`, `devFit`, `gorCard`), MUM5, tryb gotowania, „Jak wyszło?” (`FBI`, `calFor`) |
+| version.js / sw.js | wersja + `APP_CHANGELOG`; PWA i cache |
 
-## Stan obecny (v2.29 – 139 przepisów: 53 drożdżowe + 86 bezdrożdżowych)
-- `engine.js` – silnik (globalny `GFEngine`, działa też w Node: `require("./engine.js")`). Typy w JSDoc.
-  - `INGREDIENT_MATRIX` – składniki: `macros` (g/100 g), `wac_cold`, `wac_hot` (na razie informacyjnie), `flavorProfile`, `role`, mixy: `isCommercialMix`, `hasHPMC`, `starchBase`, `mixPriority`; `maxShare` = limit udziału.
-  - `RHEOLOGY_CLASSES` – 6 klas reologicznych: zakresy hydratacji bazowej, psyllium, tłuszczu, jajek, cukru i cel profilu mąk (skrobia = udział frakcji skrobiowej, białko, błonnik).
-  - `BAKES` – 52 wypieki drożdżowe zmapowanych na klasy; domyślne porcje 500–750 g.
-  - `solveFlourBlend()` – zaznaczone mąki to SPIŻARNIA. Gdy jest gotowy mix: baza (Mix B > Mix It! > Mix C) 65–100% + 1–2 mąki 20–35%, czyste skrobie zablokowane (wyjątek: tapioka 5% w klasach formowanych/wałkowanych/bogatych). Bez mixu: wspinaczka po siatce 5%. Filtr smaku dla słodkich (tylko jaglana, owsiana, ryżowa, migdałowa, sorgo).
-  - `calculateLaboratoryFormulation()` – ΔWAC = (WAC_mix − 0,96) × 0,65 × 100 pp; tłuszcz −0,40 pp na każdy % powyżej 5; cukier −0,25 pp powyżej 6% i kompensacja drożdży; jajka = 75% wody (odejmowane od wody do dolania); mikroskładniki < 10 g zaokrąglane do 0,5 g, woda domyka bilans.
-  - Przepis podaje DROŻDŻE ŚWIEŻE (= suche × 3, wliczone w bilans masy); suche tylko jako zamiennik w notce. Drożdże suche: baza 1,45% (wytrawne), 1,5% (słodkie); mnożnik osmotyczny podnosi słodkie do ok. 1,9–2,25%.
-  - Klasa wałkowana ma `proteinPriority: 2` (większa waga białka w koszcie solvera).
-  - Instrukcje: ciasta formowane rosną RAZ, po uformowaniu (bez wyrastania w misce); ciasta wlewane rosną w formie.
-  - `validateDefaultBatches()` – kontrola: porcje 500–750 g, sól/drożdże/psyllium ≥ 4,5 g. Uruchom po każdej zmianie danych.
-- `pastry.js` – rozszerzenie (ładowane PO engine.js): 85 przepisów bezdrożdżowych (`PASTRY_BAKES`), klasy 7–12 (`PASTRY_CLASSES`), składniki receptur (`COMPONENTS`), solver `solvePastryBlend()`:
-  - `YEAST_HYDROCOLLOID_MODE` (klasa 7: pierogi, tortilla, makaron) – jedna baza komercyjna, Mix B pierwszy, tapioka preferowana ok. 10–15%.
-  - `PASTRY_STARCH_MODE` (klasy 8–12) – czyste skrobie odblokowane, Mix C preferowany, tapioka karana (gumowatość) chyba że przepis ją preferuje; koszt = odległość od ZAKRESU celu.
-  - Receptury w % od mąk (`basis: "flour"`) albo od masy ciasta (`basis: "total"` + `flourPct`, np. kopytka, sernik).
-  - Każdy przepis ma własne `steps(ctx)` (gramatury wstawiane w tekst, jajka z liczbą sztuk). Bilans masy domyka największy składnik.
-  - `calculateRecipe()` – jedno wejście dla wszystkich przepisów (`ALL_BAKES`, obecnie 137); `validateAllRecipes(pantryIds)` – test całości.
-- Mąki i mieszanki ze sklepów (Auchan, Carrefour i in.): pole `brands` (marki), `composition` (skład z etykiety), flagi `wheatStarch` (skrobia pszenna BG – ostrzeżenie), `leavened` (spulchniacz – wykluczone z drożdżowych), `batterOnly`, `savoryOnly`, `saltPct` (sól w mieszance odejmowana od soli przepisu), `starchLike`, `idealExclude`.
-- `suggestIdealBlend(bakeId, pantryIds)` – najlepszy zestaw z całej bazy (bez skrobi pszennej i produktów niszowych/o nieznanym składzie), porównany ze spiżarnią; w UI sekcja „Najlepszy zestaw do tego przepisu” + przycisk dodania brakujących.
-- Solvery mają pamięć podręczną (przepis + spiżarnia).
-- Model pieczenia (`OVEN_BASE`, `ovenPlan()` w engine.js): temperatura bazowa jak dla pszennego, obniżana o 10–20°C przy cukrze/jajkach/tłuszczu (`browningDrop`) i o dodatkowe 10°C dla wypieków z nadzieniem, min. 150°C (`MIN_OVEN_TEMP`, także drugi etap `twoStage`); czas ×1,2 dla ciast bezglutenowych + 5% na każde 5°C mniej; góra–dół bez termoobiegu; `doneness` = jak sprawdzić upieczenie (96–98°C w środku dla dużych). Kalibracja: paszteciki 11.11 – przy 200°C wyjęte po 16 min, wierzch gotowy, środek mógł chwilę dłużej → ustawione 180°C, 20–24 min (OVEN_BASE paszteciki).
-- `worker.js` + `wrangler.jsonc`: Worker serwuje pliki (`.assetsignore` ukrywa pliki techniczne) i API:
-  - `GET/PUT /api/state` – wspólny stan domu w KV `DATA` (klucz `state:v1`): `{pantry, custom, calib, prefs, updatedAt}`; bez logowania; UI zapisuje grupowo co 1,5 s (limit darmowy KV: 1000 zapisów/dzień). PUT sprawdza kształt (`validState`) i nagłówek `x-base-version`: gdy na serwerze jest NOWSZA wersja → 409 `{conflict, state}`. Przed zapisem kopia poprzedniego stanu `state:bak:RRRR-MM-DDTHH` (najwyżej 1 na godzinę, TTL 60 dni); `GET /api/state/backups`, `POST /api/state/restore {at}`.
-  - Kod domowy (opcjonalny): sekret `HOME_CODE` (`npx wrangler secret put HOME_CODE`) → stan i `/api/label` wymagają nagłówka `x-home-code`; UI pyta o kod przy 401 (`askCode`, localStorage `gf_home_code`). Bez sekretu – bez kodu.
-- Synchronizacja (v2.25, `sync.js` = `GFSync.mergeState(base, local, server)`, index.html `save/push/loadShared/applyState`): każda zmiana → `sync.dirty` w localStorage `gf_sync_v1` (`{dirty, base, ver}`); wysyłka z `x-base-version`; przy 409 albo po powrocie internetu scalanie trójstronne (spiżarnia wg dodanych/odznaczonych, własne mąki po id, kalibracje per przepis z połączonym dziennikiem, preferencje per pole). Odświeżanie przy `online` i `visibilitychange`. Nowe pole stanu domu = obsłuż w `mergeState` i dopisz test.
-  - `GET /api/off?q=` – pośrednik do Open Food Facts (nazwa lub kod kreskowy): najpierw Polska + kategoria mąk, potem Polska (filtr nazw `FLOUR_RE`), na końcu świat; do 8 wyników, polskie pierwsze, pole `poland`.
-- Kalibracja „Jak wyszło?” (index.html: `FBQ` = 10 pytań po 3 odpowiedzi, `applyFeedback(id, sel, stars)`; `c.dir` = kierunek ostatniej korekty per pole, zmiana kierunku = pół kroku): oceny zmieniają per przepis `calib[bakeId] = {water (pkt %), yeast, psy, salt, proof, time (%), temp (°C), taste, tex:{chew,soft,short,grit}, log}` z limitami `CAP`/`TEX_CAP`. `tex` trafia do silnika przez `GFEngine.setTexAdj` (`syncTex()` na początku `calc`) i przesuwa wzorzec tekstury w `textureCost`; `proof` wydłuża wyrastanie w krokach; `time` wydłuża też licznik smażenia. Silniki przyjmują `calib`; `ovenPlan(b, calib)` przelicza temperaturę i czas; w przepisach bezdrożdżowych i smażonych korekta temp./czasu jest pokazywana jako notka.
-- Aplikacja na telefon (PWA): `manifest.webmanifest`, ikony `icon-*.png`, `sw.js` (praca bez internetu: pliki z pamięci, nowa wersja pobierana w tle; `/api/*` zawsze z sieci). Przycisk „Zainstaluj na telefonie” (beforeinstallprompt). `version.js` = numer wersji i lista zmian (jedno źródło; nazwa cache w sw.js = wersja). PRZY KAŻDYM WDROŻENIU dopisz wpis na górze `APP_CHANGELOG` i podbij numer. Stopka: wersja, „Co nowego”, „Sprawdź aktualizację”; nowy SW czeka i pokazuje pasek „Odśwież teraz” (skipWaiting po kliknięciu). Instalacja: przycisk zawsze widoczny (poza trybem aplikacji); bez `beforeinstallprompt` pokazuje instrukcję Chrome/Samsung Internet. Nowy plik → dopisz do `FILES` w sw.js.
-- Licznik smażenia/gotowania partiami (index.html: `FRY[id] = [strona1 s, strona2 s (0 = bez odwracania), sztuk w partii, nazwa, od wypłynięcia]`, `FRY_STEP` = regex kroku, `fryStart/fryTick/fryHtml`); stan `fry` zapisywany w `saveUI`. Nowy przepis smażony/gotowany = dopisz do `FRY`.
-- Minutniki przy zamkniętej aplikacji (v2.26): minutnik = `{id, label, end}` (godzina końca), zapisywany od razu w localStorage `gf_timers_v1` (`saveTimers`, odtwarzany na starcie niezależnie od `restoreUI`). `timersChanged()` po każdej zmianie (start, anulowanie, akcje smażenia, `fryTick`) wysyła listę do service workera (opisy powiadomień, cache `gf-timers`) i `PUT /api/timers {sub, timers:[{id,end}]}`. Zgoda na powiadomienia – przy pierwszym minutniku (`pushEnsure`). Serwer: cron `* * * * *` → `runPush(env, scheduledTime)`: okno [T, T+60 s) z czekaniem do sekundy końca + spóźnione (do 10 min); pusty push z podpisem VAPID (ES256), SW (`push`) pokazuje powiadomienie z opisem. KV: `push:index` + `push:dev:<hash>`. Konfiguracja: `vars.VAPID_PUBLIC` w wrangler.jsonc, sekret `VAPID_PRIVATE_JWK` (bez niego funkcja wyłączona, minutniki w aplikacji działają jak dawniej). Klucz prywatny lokalnie w `.vapid-private.json` (w .gitignore – NIE commitować).
-- Minutniki w sekundach (`findTimes` → s; domyślne czasy dla nagrzewania, studzenia, gotowania ziemniaków). Odhaczanie składników: wiersze `tr[data-ing]`, `doneIng` + `ingSig()` (reset po zmianie przepisu/ilości).
-- Tryb gotowania (index.html): `openCook()` – kroki na cały ekran, przesuwanie palcem/strzałkami, minutniki wykrywane z tekstu kroku (`findTimes`), dźwięk + wibracja, blokada wygaszania ekranu (Wake Lock), pasek minutników na dole po zamknięciu.
-- Smak (engine.js): `FLAVOR` = intensywność smaku mąki 0–1 + nuta (sorgo 0,1, owsiana 0,2 … gryczana 0,9), `flavorOf()` (w słodkich nuty słodkie ×0,5), `tasteOf(blend)` = opis smaku mieszanki. `tasteWeight(bake, taste, calib)`: tryb „wheat” (domyślny, `TASTE_W`=50; w „wheat” białko/błonnik liczone do zakresu z luzem, bo strukturę trzyma psyllium), tryb „bold” = 0. `boldByDesign` (chleb gryczany, z `preferFlour`), `masked` (czekoladowe, korzenne – waga ×0,3). `calib.taste` (ocena „Smak nie jak pszenny”, 0–3) wzmacnia wagę o 50% na poziom.
-- Wyrastanie w lodówce (`coldProof`): drożdże ×0,6, letnia woda, uformowane sztuki 8–14 h w lodówce + 30–60 min w cieple. Preferencje domu `prefs = {taste, proof}` zapisywane wspólnie z resztą stanu.
-- `nutrition.js` (ładowany po pastry.js): `nutritionOf(result, pieces)` – wartości odżywcze samego ciasta (bez nadzienia): mąki z etykiet producentów (`FLOUR_NUTR`), pozostałe składniki z tabel IŻŻ/USDA (`OTHER_NUTR`), energia wg przeliczników UE (4/4/9/2); 100 g gotowego wyrobu z utratą wody i wchłoniętym olejem (`PASTRY_COOK`, `cookChange`). W UI zwijana tabela: 100 g / 1 szt. / całość.
-- Tekstura (engine.js: `TEXTURE` [chew, soft, short, grit] per mąka, `TEXTURE_ROLE` dla własnych, `TEX_TARGET` per klasa = pszenny wzorzec, przepis może nadpisać `texture`): `textureCost` dodawany w `blendCost` i `pastryCost`; tapioka > 30% karana; `textureMatch` (0–100) w wyniku przepisu (na razie niewyświetlany). Wartości SZACUNKOWE.
-- Zaparzka (index.html, `tzOn`): klasy formowane/wałkowane/bogate (bez pizzy neapolitańskiej i pity) + chleb tostowy: 5% mąk + 5× woda, brane z odważonych składników (bilans bez zmian); ciasta niewlewane: 15–20 min odpoczynku przed formowaniem.
-- Psyllium wg The Loopy Whisk (engine.js: `hasBinder`, `binderShareOf`, `PSY_PURE` per klasa, `PSY_POWDER`=0,85, `PSY_WATER_PER_PCT`=8): ilości klas zakładają mieszankę ze spoiwem (HPMC/guma/płesznik); przy samych mąkach psyllium rośnie do `PSY_PURE` proporcjonalnie do udziału mąk bez spoiwa, +8 pkt % wody na każdy dodatkowy 1%. `psyForm` ("husk"/"powder") z `prefs.psyForm`. Ostrzeżenie, gdy płyn < 10× psyllium. pastry.js: `XAN_CLASS` – ksantan w kruchych/biszkoptach/muffinkach, gdy mąki bez spoiwa i ksantan w spiżarni. `mixdom` = domowa mieszanka 5:3:2 (idealExclude). index.html: `prefs.rise2` – dwa wyrastania (opcja, tylko gdy binderShare < 0,5); studzenie bochenków ≥ 2 h.
-- Podobieństwo do pszennego (index.html: `SIMILAR`, `simHtml`): szacunek % + uwaga per przepis, pokazywany pod opisem przepisu. Nowy przepis = dopisz wpis do `SIMILAR`.
-- Przepis drożdżowy może mieć `shapeStep(ctx)` (własny krok formowania zamiast ogólnego z klasy) i `preBake` (krok tuż przed pieczeniem); tryb pieczenia `griddle` = sucha patelnia (English muffin); `afterBake(ctx)` (v2.29) = krok lub lista kroków po pieczeniu (np. studzenie i składanie zapiekanek). W `afterBake` unikaj słów mieszania (wymieszaj, ubij) – test kroków traktuje je jako błąd po pieczeniu.
-- Kategorie w UI (v2.16): `CATEGORIES` = 12 rodzajów wypieku (pastry.js). Starsze przypisania (`YEAST_CATEGORY` → `OLD_CATEGORIES`, pola `category`) przemapowane przez `CAT_FROM_OLD`, wyjątki w `CAT_BY_ID`. Nowy przepis: daj `category` z nowej listy (pastry) albo wpis w `CAT_BY_ID` (drożdżowe). Tematy w index.html: `THEMES` (listy id; null = wszystkie bez drożdży) – nowy przepis dopisz do pasujących tematów. Ikony kafelków `CAT_ICON` w kolejności `CATEGORIES`.
-- Ciasta laminowane (v2.16): pole `laminate` w przepisie drożdżowym (klasa wzbogacona) = masło do przekładania jako ułamek masy ciasta; UI dopisuje osobną pozycję „Masło do przekładania” (klucz `butter`, wliczane w wartości odżywcze), bez zaparzki; technika składania w `shapeStep`. Bezdrożdżowe francuskie = klasa kruchych z zimnym masłem i składaniem w krokach.
-- `index.html` – interfejs; spiżarnia i własne mąki w `localStorage`.
-- Wygląd 3.0 (v2.12): zmienne CSS w `:root` (tło #FBF7F1, akcent #1F4D3A, złoty `--gold` #E8A33D), czcionki Atkinson Hyperlegible Next (tekst) i Poppins (nagłówki); nadpisania stylu w bloku „Wygląd 3.0” na końcu `<style>`. Projekt makiet: artefakt „Kalkulator bezglutenowy – nowy wygląd”. Zmiany wyglądu tylko w CSS – identyfikatory i struktura HTML bez zmian.
-- Układ 3.0 (v2.14): widoki `#vStart`, `#vPantry`, `#vRecipe` + dolny `.tabbar` (`go(view)`, `data-go`, zapamiętany w `gf_view`). `pickBake` i `#bake.onchange` przełączają na Przepis. Kategorie `renderCats()` (`CAT_ICON` w kolejności `CATEGORIES`), karta ostatniego przepisu `renderStart()`. `decorateOut()` (MutationObserver na `#out`) dodaje tytuł `#rTitle`, zwija `prefBar` w `details.prefs` i rysuje pasek proporcji mąk z wierszy `tr.sub`. Gotowe mieszanki w spiżarni pierwsze, klasa `.chips.mixes`.
-- Mój piekarnik (v2.17, index.html): `prefs.oven` = "uni" (przepisy bez zmian) | "gorenje" (Gorenje MEKS5141X, instrukcja str. 14–15). `GOR` = tryby (ikony w `gorenje/*.png`, wycięte z instrukcji), `GOR_ID` = tryb per przepis (domyślnie górna i dolna grzałka), `GOR_HOT` = temperatury ponad 250°C, `GOR_MULTI` = ciastka z opcją 2 blach (gorące powietrze −20°C), `NO_OVEN` = przepisy bez piekarnika (regex po bakeNote). `gorNote` przerabia notę `ovenPlan` w krokach, `gorCard` dokładana w `decorateOut`. Para: zimna płytka blacha z max 2 dl wody na 1. poziomie, potrawa na 2. Nowy przepis pieczony: ewentualnie wpis w `GOR_ID`.
-- Urządzenia (v2.19, index.html): „Na czym dziś?” na Start (`#dayDevs`, `renderDayDevs`), wybór `curDev` w localStorage `gf_dev` (na telefonie, nie wspólny). `DEV_ORDER` = uni, gorenje, air, opti, fry, stove. Uniwersalnie = przepisy bez zmian (bez kart, kroki oryginalne). `VB()` = przepisy widoczne dla urządzenia (filtrują kafelki, tematy, podpowiedzi wyszukiwarki; pełna lista `#bake` bez filtra). `devFit(b,k)` → {ok: yes/part/no, why, acc}; listy zgodności `AIR_YES`, `AIR_PART`, `AIR_NO`, `OPTI_PLATE/WAFFLE/TRAY/PART`, `FRY_YES/PART`; stove = przepisy bez piekarnika (`gorMode` null). `pillsHtml` dzieli na pasujące i zwinięte „da się, ale…”. W przepisie `#devSeg` (`renderDevSeg`) – tylko pasujące urządzenia. `devCard` = karta ustawień (Gorenje → `gorCard`). Air fryer: T−20°C (max 200), czas ×0,75. Ikony urządzeń: własne SVG `DEV_SVG` (do zamiany na grafiki z instrukcji). Przepisy dedykowane (v2.20): pole `device` (air/opti/fry; dla OptiGrilla `optiAcc` waffle/plate) – widoczne w swoim urządzeniu i w Uniwersalnie, `bakeNote` już w ustawieniach urządzenia (bez przeliczeń). Grafiki kart urządzeń (v2.21) rysowane w HTML/SVG w stylu aplikacji (`airDial`, `airLayers`, `optiPanel`, `fryGauge`, `STEPS`, schemat poziomów w `gorCard`) – wartości z przepisu; symbole Gorenje z instrukcji w `gorenje/*.png` (przezroczyste tło). Frytkownica Tefal: temperatury z tabeli produktów w instrukcji. Nowe urządzenie: wpis w `DEVS`, `DEV_ORDER`, `DEV_SVG`, gałąź w `devFit` i `devCard`.
-- Skaner kodu kreskowego (index.html: `openScan/closeScan/gotCode`, okno `#scan`): `BarcodeDetector` (EAN-13/8, UPC), zapasowo ZXing z jsDelivr (`loadZX`); kod → pole `#q` → `searchBtn` → `/api/off`; jeden wynik wpisywany automatycznie.
-- Zdjęcie etykiety (v2.13): `#labelBtn`/`#labelFile` → zdjęcie zmniejszone do 1024 px (`shrinkImage`) → `POST /api/label` (worker.js `handleLabel`, Workers AI, binding `AI` w wrangler.jsonc; modele `LABEL_MODELS`: Mistral Small 3.1, zapasowo Gemma 3 – licencja Apache, Llama 3.2 Vision ma ograniczenia w UE) → JSON {name, brands, type, protein, fiber, carbs, fat, composition, wheatStarch, glutenFree, estimated}. Pola z `estimated` to szacunek AI. `offExtra` przenosi `brands`/`wheatStarch` do dodawanej mąki. Brak wyników w OFF pokazuje przycisk „Zrób zdjęcie etykiety”.
-- Psyllium = łuska babki jajowatej (Plantago ovata) lub płesznik.
-- Wszystkie współczynniki są SZACUNKOWE (ze specyfikacji, bez pomiarów). Makro Mix It!/Mix C do weryfikacji z etykietą.
+## Nowy przepis — checklista
+- Dane: `BAKES` (drożdżowe, + `CAT_BY_ID`) lub `PASTRY_BAKES` (z `category`); źródło w komentarzu.
+- index.html: `SIMILAR`, pasujące `THEMES`; smażony/gotowany → `FRY`; pieczony → ewent. `GOR_ID`; MUM5 → ewent. `MUM_HAND`/`MUM_LAM`.
+- Od składnika → `anchor` + `unitWeight`.
+- Kroki po pieczeniu (drożdżowe) → `afterBake(ctx)`, bez słów mieszania.
 
-## Plan (kolejność)
-1. Kalibracja współczynników na prawdziwych wypiekach + ocena wypieku (za suche / kleiste / płaskie) korygująca wodę.
-2. Cloudflare Worker jako proxy do Open Food Facts (wyszukiwanie po nazwie i kodzie kreskowym).
-3. Cloudflare D1: wspólna baza mąk i ocen zamiast `localStorage`.
-4. Skan kodu (v2.12) i odczyt etykiety przez AI (v2.13) – zrobione.
-5. Więcej gotowych mieszanek z polskich sklepów.
-6. `wac_hot` – wykorzystać do prognozy czerstwienia / czasu pieczenia.
+## Zawsze
+- Wdrożenie: wpis na górze `APP_CHANGELOG` i podbicie wersji w version.js. Nowy plik → `FILES` w sw.js.
+- Nowe pole stanu domu → obsłuż w `mergeState` + test.
+- Kalibrację czytaj przez `calFor(id)`. Karta urządzenia to źródło kroków — zmieniaj ją, nie `cookView`.
+- NIE commituj `.vapid-private.json`. Nie podpowiadaj wagi MUM5 (użytkownik waży na HOTO co 1 g).
+- Zmiany wyglądu tylko w CSS (blok „Wygląd 3.0”), bez zmian id/struktury HTML.
+- Po większych zmianach zaktualizuj `docs/SZCZEGOLY.md`.
 
-## Zasady zmian
-- Nie dodawaj frameworków ani builda bez potrzeby.
-- Każda zmiana danych w `BASE` / `BAKES`: dopisz źródło w komentarzu.
-- Po zmianie `optimize()` sprawdź czas obliczeń (ma być < 100 ms dla 15 mąk).
-- Aktualizuj sekcję „Stan obecny” w tym pliku po większych zmianach.
-
-## Bosch MUM5 (2.22)
-- Ważenie: użytkownik waży na osobnej wadze (HOTO, co 1 g); NIE podpowiadaj wagi MUM5 (co 5 g).
-- `useMum` (localStorage `gf_mum`), przełącznik `.mumseg` na Starcie i w przepisie, niezależny od `curDev`.
-- `mumSpec(b)` mapuje rheologyClass (+ wyjątki MUM_HAND, MUM_LAM, id) na końcówkę, zakres prędkości i kroki; `mumCard` wstawia kartę przed „Jak zrobić” (przez `mumDecor` w `decorateOut`) i li `.mumli` na początku kroków.
-- Limity misy `MUM_LIM` (hak 1600 g, Flexi 2200 g, ubijanie 1500 g) liczone z „ciasta wyjdzie” w `.hyd`.
-- Nowy przepis: sprawdź, czy jego klasa daje sensowną kartę MUM5; wyjątki dopisz do MUM_HAND/MUM_LAM.
-- Tryb gotowania: `cookView(cur)` buduje `cur.view` z `cur.steps` + kroki MUM5 (narzędzie i „płyny najpierw” przed mieszaniem, czasy po kroku wyrabiania) + ustawienia/wskazówki z karty urządzenia (Gorenje przed nagrzewaniem, reszta przed ostatnim krokiem pieczenia). Karta urządzenia to źródło – zmieniaj ją, nie cookView.
-- Audyt 2.23: /tmp-owe skrypty sprawdzały 1644 kombinacji (przepis × urządzenie × MUM5) regułami kolejności: brak mieszania po pieczeniu, MUM przed pieczeniem, ustawienia urządzenia przed pierwszym pieczeniem, brak „piekarnik” w air/opti/fry, brak pustych wartości. Po zmianach w krokach powtórz taki test.
-- preferFlour jest prawie twardy: brak mąki z nazwy = kara 80 w blendCost.
-
-## Testy (2.24)
-- `node tests/proporcje.js` – proporcje wszystkich przepisów (spiżarnie, porcje, mąka z nazwy). Kod 1 = błąd.
-- `node tests/kroki.js` – tryb gotowania: przepis × urządzenie × MUM5 (Playwright dla Node, własny serwer plików), reguły kolejności. Kod 1 = błąd. `tests/kroki.py` = ta sama wersja w Pythonie (wymaga `pip install playwright`).
-- Uruchom oba przed każdym wdrożeniem zmieniającym przepisy, kroki, urządzenia lub MUM5. Katalog tests/ jest w .assetsignore.
-
-## Testy (uruchom przed każdym wdrożeniem)
-- `node tests/proporcje.js` – wszystkie przepisy na domyślnej spiżarni.
-- `node tests/obciazenie.js` – każdy przepis × 10 spiżarni × 3 ilości × 6 ustawień (bilans masy, ujemne gramy, teksty kroków, wartości odżywcze).
-- `node tests/synchronizacja.js` – scalanie stanu i API stanu z udawanym KV.
-- `node tests/minutniki.js` – API minutników, cron i podpis powiadomień (udawany KV i serwer push).
-- `node tests/kroki.js` – kroki w przeglądarce (Playwright dla Node; zapasowo `python3 tests/kroki.py`).
-
-## Beza Pavlova i przepisy „od składnika” (2.28)
-- Pole `anchor: {key, per, def}` w przepisie bezdrożdżowym = liczymy od składnika, który użytkownik MA (beza: białka). UI (`qtyLabels`, `pcsOf`) pyta o liczbę sztuk (× `per` g) albo gramy; `calculateRecipe({..., anchorGrams})` wylicza masę całości z `anchorPct(b)`, kotwica = dokładnie podane gramy, bilans domyka największy inny składnik; procenty w tabeli od masy kotwicy.
-- `PAV` w pastry.js: na 100 g białek 175 g cukru (granica rozpuszczalności sacharozy w wodzie białek w 20°C ≈ 179 g), 3,5 g skrobi, 3 g octu. `pavlovaSize(masa, calib)` → średnica (gęstość 0,21 g/ml), wysokość, temperatura 120°C (+ `calib.temp`) i czas ∝ grubości (+ `calib.time`); `ownOven: true` = korekty z „Jak wyszło?” trafiają wprost do kroków (pozycje `pv_*` w `FBI`).
-- Nowy przepis „od składnika”: dodaj `anchor`, `unitWeight` = masa jednej sztuki/blatu (decyduje o podziale na sztuki).
-
-## Jak wyszło? (2.27)
-- `FBI` = katalog pozycji [etykieta, efekty]; `fbItems(b)` dobiera listę wg rodziny/klasy/id i `curDev` (pozycje urządzenia na 4. miejscu). Pierwsze 6 widoczne, reszta pod „Więcej”.
-- temp/time z ocen trafiają do `calib[id].devAdj[air|opti|fry]` albo do `calib[id]` (piekarnik); zawsze czytaj przez `calFor(id)`.
+## Testy (przed wdrożeniem zmian w przepisach/krokach/urządzeniach)
+`node tests/proporcje.js`, `node tests/obciazenie.js`, `node tests/synchronizacja.js`, `node tests/minutniki.js`, `node tests/kroki.js` (Playwright). Kod 1 = błąd.

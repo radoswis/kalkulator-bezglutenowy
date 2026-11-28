@@ -1,0 +1,15 @@
+{
+  "model": "sonnet",
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
+  },
+  "permissions": {
+    "deny": [
+      "Read(./node_modules/**)",
+      "Read(./dist/**)",
+      "Read(./.wrangler/**)",
+      "Read(./package-lock.json)",
+      "Read(./pnpm-lock.yaml)"
+    ]
+  }
+}
